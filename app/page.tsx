@@ -13,7 +13,7 @@ export default function Home() {
       ssr: false
     }
   ), [])
-
+  
   return <div>
     <Map />
   </div>
