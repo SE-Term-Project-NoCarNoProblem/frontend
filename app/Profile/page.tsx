@@ -1,14 +1,65 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import NavBar from "../components/NavBar";
 
+interface Profile {
+    firstName: string;
+    lastName: string;
+    age: number;
+    role: string;
+    email: string;
+    phoneNumber: string;
+    home: string;
+    favouriteLocation: string;
+}
+
 export default function ProfilePage() {
-    const themeColor1 = "#0E4663";
-    const themeColor2 = "#F8F8F8";
+    // const themeColor1 = "#0E4663";
+    // const themeColor2 = "#F8F8F8";
     const router = useRouter();
+    const [loading, setLoading] = useState(true);
+    const [profile, setProfile] = useState<Profile | null>(null);
+
+    useEffect(() => {
+
+        async function fetchProfile() {
+            try {
+                // const res = await fetch("http://localhost:5000/api/profile");
+                // const data = await res.json();
+                const data = { // mock data
+                    firstName: "string",
+                    lastName: "string",
+                    age: 8,
+                    role: "User",
+                    email: "string",
+                    phoneNumber: "string",
+                    home: "string",
+                    favouriteLocation: "string"
+                }
+                setProfile(data);
+                console.log(data);
+            }catch(err) {
+                console.error("Error fetching profile:", err);
+            }finally {
+                setLoading(false);
+            }
+        }
+
+        fetchProfile();
+
+    }, []);
+
+    if(loading){
+        return <div className="p-12 text-xl text-[#0E4663] bg-[#F8F8F8] flex w-full justify-center">Loading...</div>;
+    }
+
+    if(!profile){
+        return <div className="p-12 text-xl text-[#0E4663] bg-[#F8F8F8] flex w-full justify-center">No profile data</div>;
+
+    }
 
     return (<>
         <NavBar />
@@ -35,7 +86,7 @@ export default function ProfilePage() {
                             onClick = {() => router.push("/")}
                             className = "hover:cursor-pointer hover:opacity-70 invisible"
                         >
-                            <Image
+                            <Image 
                                 alt = "arrow icon"
                                 src = "/icons/left-arrow-svgrepo-com.svg"
                                 width={50}
@@ -56,12 +107,12 @@ export default function ProfilePage() {
                     </div>
 
                     {/* -------------------- text under pic. -------------------- */}
-                    <div className="text-2xl font-semibold text-[#F8F8F8]"> First name Last name {/* รอใส่ตัวแปร */} </div>
+                    <div className="text-2xl font-semibold text-[#F8F8F8]"> {profile.firstName} {profile.lastName} {/* รอใส่ตัวแปร */} </div>
                     <div className="flex flex-col items-center text-[#F8F8F8]">  
-                        Age: xx {/* รอใส่ตัวแปร */}<br/>
+                        Age: {profile.age}<br/>
                     </div>
                     <div className="flex flex-col items-center text-[#F8F8F8]">  
-                        User or Driver {/* รอใส่ตัวแปร */}
+                        {profile.role} {/* รอใส่ตัวแปร */}
                     </div>
                 </div>
             </div>
@@ -83,7 +134,7 @@ export default function ProfilePage() {
                     />
                     <p className="flex items-center text-[#0E4663]"> Email : </p>
                 </div>
-                <div className="px-12 text-[#0E4663]"> First name Last name {/* รอใส่ตัวแปร */}</div>
+                <div className="px-12 text-[#0E4663]"> {profile.email} {/* รอใส่ตัวแปร */}</div>
             </div>
 
             <div className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
@@ -96,7 +147,7 @@ export default function ProfilePage() {
                     />
                     <p className="flex items-center text-[#0E4663]"> Telephone number : </p>
                 </div>
-                <div className="px-12 text-[#0E4663]"> +66 XX XXX XXXX {/* รอใส่ตัวแปร */}</div>
+                <div className="px-12 text-[#0E4663]"> {profile.phoneNumber} {/* รอใส่ตัวแปร */}</div>
             </div>
 
             <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 justify-center`}>
@@ -109,7 +160,7 @@ export default function ProfilePage() {
                     />
                     <p className="flex items-center text-[#0E4663]"> Home : </p>
                 </div>
-                <div className="px-12 text-[#0E4663]"> Somewhere {/* รอใส่ตัวแปร */}</div>
+                <div className="px-12 text-[#0E4663]"> {profile.home} {/* รอใส่ตัวแปร */}</div>
             </div>
 
             <div className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
@@ -122,7 +173,7 @@ export default function ProfilePage() {
                     />
                     <p className="flex items-center text-[#0E4663]"> Favourite location : </p>
                 </div>
-                <div className="px-12 text-[#0E4663]"> Somewhere {/* รอใส่ตัวแปร */}</div>
+                <div className="px-12 text-[#0E4663]"> {profile.favouriteLocation} {/* รอใส่ตัวแปร */}</div>
             </div>
 
             <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
