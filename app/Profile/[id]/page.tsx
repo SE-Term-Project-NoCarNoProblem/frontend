@@ -14,6 +14,7 @@ interface Profile {
     phoneNumber: string;
     home: string;
     favouriteLocation: string;
+    profilePic: string;
 }
 
 export default function ProfilePage() {
@@ -39,7 +40,8 @@ export default function ProfilePage() {
                     email: "string",
                     phoneNumber: "string",
                     home: "string",
-                    favouriteLocation: "string"
+                    favouriteLocation: "string",
+                    profilePic : ".././globe.svg",
                 }
                 setProfile(data);
                 console.log(data);
@@ -101,7 +103,7 @@ export default function ProfilePage() {
                     <div className="flex rounded-full bg-white w-32 h-32 items-center justify-center border-4 border-gray-300">
                         <Image
                             alt="Profile Picture"
-                            src={`.././globe.svg`}
+                            src={profile.profilePic}
                             width={120}
                             height={120}
                             className="rounded-full"
