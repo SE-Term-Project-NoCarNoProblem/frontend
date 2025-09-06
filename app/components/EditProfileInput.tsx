@@ -8,7 +8,7 @@ interface EditProfileInputProps {
 function EditProfileInput({ name,value,text,onChange }: EditProfileInputProps) {
     return (
         <div className="flex lg:justify-center">
-            <input className="rounded-xl bg-[#FFFFFF] border border-black w-12/12 lg:w-9/12 h-[50] py-1 px-5" type="text" id={name} name={name} value={value} placeholder={text} />
+            <input className="rounded-xl bg-[#FFFFFF] border border-black w-12/12 lg:w-9/12 h-[50] py-1 px-5" type="text" id={name} name={name} value={value} placeholder={text} onChange={(e) => onChange(e.target.value)} />
         </div>
     )
 }

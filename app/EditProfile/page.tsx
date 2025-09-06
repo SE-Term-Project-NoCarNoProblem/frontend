@@ -19,13 +19,16 @@ function EditProfile() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState<Profile | null>(null);
-    const [name,setName]=useState("");
-    const [age,setAge]=useState("");
-    const [email,setEmail]=useState("");
-    const [phone,setPhone]=useState("");
-    const [home,setHome]=useState("");
-    const [favLoc,setFavLoc]=useState("");
-
+    const [name, setName] = useState("");
+    const [age, setAge] = useState("");
+    const [email, setEmail] = useState("");
+    const [phone, setPhone] = useState("");
+    const [home, setHome] = useState("");
+    const [favLoc, setFavLoc] = useState("");
+    const [form, setForm] = useState<{ profilePic: File | null }>({//profilePic task
+        profilePic: null,
+    });
+    const [preview, setPreview] = useState<string | null>(null);//profilePic task
     useEffect(() => {
 
         async function fetchProfile() {
@@ -54,6 +57,10 @@ function EditProfile() {
         fetchProfile();
 
     }, []);
+    useEffect(() => {
+        if (!preview) return;
+        return () => URL.revokeObjectURL(preview);
+    }, [preview]);
 
     if (loading) {
         return <div className="p-12 text-xl text-[#0E4663] bg-[#F8F8F8] flex w-full justify-center">Loading...</div>;
@@ -64,18 +71,43 @@ function EditProfile() {
 
     }
 
-    async function onSave(){
-        
-    // const res = await fetch(`http://localhost:5000/api/editProfile`, {
-    //   method: "PATCH",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ name, age, email,phone,home,favLoc }),
-    //   credentials: "include"
-    // });
+    async function onSave() {
+        // const fd = new FormData();
+
+        // // only send non-blank fields so you don't overwrite unchanged values
+        // if (name.trim()) fd.append("name", name.trim());
+        // if (age.trim()) fd.append("age", age.trim());
+        // if (email.trim()) fd.append("email", email.trim());
+        // if (phone.trim()) fd.append("phone", phone.trim());
+        // if (home.trim()) fd.append("home", home.trim());
+        // if (favLoc.trim()) fd.append("favLoc", favLoc.trim());
+
+        // // include new profilePic if user picked one
+        // if (form.profilePic) {
+        //     fd.append("profilePic", form.profilePic); // field name must match backend
+        // }
+
+        // const res = await fetch("http://localhost:5000/api/editProfile", {
+        //     method: "PATCH",
+        //     body: fd,                // <-- multipart/form-data
+        //     credentials: "include",
+        // });
+
+        // const data = await res.json();
+        // if (!res.ok) {
+        //     console.error(data);
+        //     alert(data.error || "Save failed");
+        //     return;
+        // }
         console.log("saved");
-   
-    
     }
+
+    //handleChange of upload new profilePic
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] ?? null;
+        setForm({ profilePic: file });
+        setPreview(file ? URL.createObjectURL(file) : null);
+    };
 
     return (<>
         <NavBar />
@@ -112,15 +144,49 @@ function EditProfile() {
                     </div>
 
                     {/* -------------------- Profile Picture -------------------- */}
-                    <div className="flex rounded-full bg-white w-32 h-32 items-center justify-center border-4 border-gray-300">
-                        <Image
-                            alt="Profile Picture"
-                            src={`./globe.svg`}
-                            width={120}
-                            height={120}
-                            className="rounded-full"
+
+
+                    <div className="relative inline-block">
+                        {/* Avatar circle */}
+                        <div className="w-40 h-40 rounded-full overflow-hidden bg-gray-200">
+                            {preview ? (
+                                <img src={preview} alt="profile preview" className="w-full h-full object-cover" />
+                            ) : (
+                                <Image
+                                    src="/globe.svg"   // fallback or old avatar from DB
+                                    alt="default avatar"
+                                    width={160}
+                                    height={160}
+                                    className="w-full h-full object-cover"
+                                />
+                            )}
+                        </div>
+
+                        {/* Hidden input */}
+                        <input
+                            type="file"
+                            id="profilePic"
+                            name="profilePic"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleChange}
                         />
+
+                        {/* Camera button */}
+                        <label
+                            htmlFor="profilePic"
+                            className="absolute -bottom-1 -right-1 cursor-pointer rounded-full bg-white p-2 shadow ring-2 ring-white"
+                        >
+                            <Image alt="camera icon" src="/icons/Camera.svg" width={30} height={30} />
+                        </label>
+
+
                     </div>
+
+
+
+
+
 
                     {/* -------------------- text under pic. -------------------- */}
                     <div className="text-2xl font-semibold text-[#F8F8F8]"> {profile.firstName} {profile.lastName} {/* รอใส่ตัวแปร */} </div>
@@ -148,7 +214,7 @@ function EditProfile() {
             </div>
             <div className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
                 <div className="flex flex-1 ">
-                     <Image
+                    <Image
                         alt="email icon"
                         src="/icons/age.svg"
                         width={25}
@@ -157,7 +223,7 @@ function EditProfile() {
                     />
                     <p className="flex items-center text-[#0E4663]"> Age : </p>
                 </div>
-                <EditProfileInput name="age" value={age} text="XX" onChange={setAge}/>
+                <EditProfileInput name="age" value={age} text="XX" onChange={setAge} />
             </div>
             <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 `}>
                 <div className="flex flex-1 ">
@@ -166,11 +232,11 @@ function EditProfile() {
                         src="/icons/mail-svgrepo-com.svg"
                         width={50}
                         height={50}
-                        
+
                     />
                     <p className="flex items-center text-[#0E4663]"> Email : </p>
                 </div>
-                <EditProfileInput name="email" value={email} text="nocarnoproblem@gmail.com" onChange={setEmail}/>
+                <EditProfileInput name="email" value={email} text="nocarnoproblem@gmail.com" onChange={setEmail} />
             </div>
             <div className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
                 <div className="flex flex-1 ">
@@ -182,7 +248,7 @@ function EditProfile() {
                     />
                     <p className="flex items-center text-[#0E4663]"> Telephone number : </p>
                 </div>
-                <EditProfileInput name="phone number" value={phone} text="+66 xx-xxx-xxxx" onChange={setPhone}/>
+                <EditProfileInput name="phone number" value={phone} text="+66 xx-xxx-xxxx" onChange={setPhone} />
             </div>
 
             <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 justify-center`}>
@@ -195,7 +261,7 @@ function EditProfile() {
                     />
                     <p className="flex items-center text-[#0E4663]"> Home : </p>
                 </div>
-                <EditProfileInput name="home" value={home} text="" onChange={setHome}/>
+                <EditProfileInput name="home" value={home} text="" onChange={setHome} />
             </div>
 
             <div className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
@@ -208,7 +274,7 @@ function EditProfile() {
                     />
                     <p className="flex items-center text-[#0E4663]"> Favourite location : </p>
                 </div>
-                <EditProfileInput name="favLoc" value={favLoc} text="" onChange={setFavLoc}/>
+                <EditProfileInput name="favLoc" value={favLoc} text="" onChange={setFavLoc} />
             </div>
 
             {/* <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 justify-center`}>
