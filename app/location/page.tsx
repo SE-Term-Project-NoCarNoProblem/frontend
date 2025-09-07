@@ -1,7 +1,4 @@
 'use client'
-import Image from "next/image";
-import { MapContainer, TileLayer } from "react-leaflet";
-import Map from "@/app/components/Map";
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 
