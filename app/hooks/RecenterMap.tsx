@@ -5,7 +5,8 @@ export function RecenterMap({ position }: { position: [number, number] }) {
     const map = useMap();
 
     useEffect(() => {
-        map.setView(position);
+        if (!position || position.length !== 2) return;
+        map.setView(position, 13);
     }, [position, map]);
 
     return null;

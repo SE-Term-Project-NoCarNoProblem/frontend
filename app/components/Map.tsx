@@ -14,6 +14,20 @@ export default function Map(props: any) {
   const [query, setQuery] = useState("");
 
   useEffect(() => {
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setMarker([latitude, longitude]);
+      },
+      (err) => {
+        console.warn("Geolocation error:", err);
+      }
+    );
+  }
+}, []);
+
+  useEffect(() => {
     if (!marker) return;
 
     const fetchAddress = async () => {
@@ -77,9 +91,11 @@ export default function Map(props: any) {
           value={query}
           placeholder="Enter a place"
           onChange={(e) => setQuery(e.target.value)}
-          className="flex-1 p-2 border rounded-xl text-black placeholder-slate-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+          className="flex-1 p-2 border rounded-xl text-black placeholder-slate-600 focus:outline-none 
+          focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
         />
-        <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
+        <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-indigo-500 
+        hover:shadow-lg hover:-translate-y-1 hover:scale-110">
           Search
         </button>
       </form>
@@ -88,13 +104,15 @@ export default function Map(props: any) {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <Marker position={marker}>
-            <Popup>
-              <b>Address:</b> {address}
-            </Popup>
-        </Marker>
+        {marker && (
+          <>
+            <Marker position={marker}>
+              <Popup><b>Address:</b> {address}</Popup>
+            </Marker>
+            <RecenterMap position={marker} />
+          </>
+        )}
         <OnMapClicked />
-        <RecenterMap position={marker}/>
     </MapContainer>
     </div>
   );

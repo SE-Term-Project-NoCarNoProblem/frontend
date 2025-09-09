@@ -13,7 +13,7 @@ export default function Home() {
 
   const [position, setPosition] = useState<[number, number] | null>(null);
   useEffect(() => {
-        getUserLocation().then(setPosition).catch(console.error);
+        getUserLocation().then(setPosition).catch(()=>{console.error; setPosition([13.7563, 100.5018])});
   }, []);
   
   return <div>
