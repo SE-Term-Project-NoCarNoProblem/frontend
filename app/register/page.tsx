@@ -73,7 +73,7 @@ export default function RegisterPage() {
     }
 
     // password validation
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])/;
     if (!passwordRegex.test(form.password)) {
       if(form.password.length < 8) alert("Password must be at least 8 characters long.");
       else alert("Password must contain at least one letter, one number, and one special character.");
