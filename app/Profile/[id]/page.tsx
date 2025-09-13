@@ -30,21 +30,23 @@ export default function ProfilePage() {
 
         async function fetchProfile() {
             try {
-                // const res = await fetch("http://localhost:5000/api/profile");
-                // const data = await res.json();
-                const data = { // mock data
-                    firstName: "string",
-                    lastName: "string",
-                    age: 8,
+                const res = await fetch("http://localhost:8000/api/users/me");
+               const apiResponse = await res.json();
+               console.log("Data from API:", apiResponse); 
+                const data = { // not complete
+                    firstName: apiResponse.data.fullname,
+                    lastName: apiResponse.data.fullname,
+                    age: 20,
                     role: "User",
-                    email: "string",
-                    phoneNumber: "string",
+                    email: apiResponse.data.email,
+                    phoneNumber: apiResponse.data.phone_number,
                     home: "string",
                     favouriteLocation: "string",
-                    profilePic : ".././globe.svg",
+                    profilePic : apiResponse.data.profile_pic,
                 }
+
                 setProfile(data);
-                console.log(data);
+                // console.log(data);
             }catch(err) {
                 console.error("Error fetching profile:", err);
             }finally {

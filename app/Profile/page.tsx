@@ -24,23 +24,23 @@ export default function ProfilePage() {
     const [profile, setProfile] = useState<Profile | null>(null);
 
     useEffect(() => {
-
         async function fetchProfile() {
             try {
-                // const res = await fetch("http://localhost:5000/api/profile");
-                // const data = await res.json();
-                const data = { // mock data
-                    firstName: "string",
-                    lastName: "string",
-                    age: 8,
+               const res = await fetch("http://localhost:8000/api/users/me");
+               const apiResponse = await res.json();
+               console.log("Data from API:", apiResponse); 
+                const data = { // not complete
+                    firstName: apiResponse.data.fullname,
+                    lastName: apiResponse.data.fullname,
+                    age: 20,
                     role: "User",
-                    email: "string",
-                    phoneNumber: "string",
+                    email: apiResponse.data.email,
+                    phoneNumber: apiResponse.data.phone_number,
                     home: "string",
-                    favouriteLocation: "string"
+                    favouriteLocation: "string",
+                    profilePic : apiResponse.data.profile_pic,
                 }
-                setProfile(data);
-                console.log(data);
+                setProfile(data);;
             }catch(err) {
                 console.error("Error fetching profile:", err);
             }finally {
@@ -112,7 +112,7 @@ export default function ProfilePage() {
                         Age: {profile.age}<br/>
                     </div>
                     <div className="flex flex-col items-center text-[#F8F8F8]">  
-                        {profile.role} {/* รอใส่ตัวแปร */}
+                        {profile.role} 
                     </div>
                 </div>
             </div>
@@ -134,7 +134,7 @@ export default function ProfilePage() {
                     />
                     <p className="flex items-center text-[#0E4663]"> Email : </p>
                 </div>
-                <div className="px-12 text-[#0E4663]"> {profile.email} {/* รอใส่ตัวแปร */}</div>
+                <div className="px-12 text-[#0E4663]"> {profile.email} </div>
             </div>
 
             <div className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
@@ -147,7 +147,7 @@ export default function ProfilePage() {
                     />
                     <p className="flex items-center text-[#0E4663]"> Telephone number : </p>
                 </div>
-                <div className="px-12 text-[#0E4663]"> {profile.phoneNumber} {/* รอใส่ตัวแปร */}</div>
+                <div className="px-12 text-[#0E4663]"> {profile.phoneNumber} </div>
             </div>
 
             <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 justify-center`}>
@@ -160,7 +160,7 @@ export default function ProfilePage() {
                     />
                     <p className="flex items-center text-[#0E4663]"> Home : </p>
                 </div>
-                <div className="px-12 text-[#0E4663]"> {profile.home} {/* รอใส่ตัวแปร */}</div>
+                <div className="px-12 text-[#0E4663]"> {profile.home} </div>
             </div>
 
             <div className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
@@ -173,22 +173,9 @@ export default function ProfilePage() {
                     />
                     <p className="flex items-center text-[#0E4663]"> Favourite location : </p>
                 </div>
-                <div className="px-12 text-[#0E4663]"> {profile.favouriteLocation} {/* รอใส่ตัวแปร */}</div>
+                <div className="px-12 text-[#0E4663]"> {profile.favouriteLocation} </div>
             </div>
 
-            <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
-                <div className="flex flex-1 ">
-                    <Image
-                        alt = "Blank icon"
-                        // src = "/icons/mail-svgrepo-com.svg"
-                        src = ""
-                        width={50}
-                        height={50}  
-                    />
-                    <p className="flex items-center text-[#0E4663]"> Blank : </p>
-                </div>
-                <div className="px-12 text-[#0E4663]"> Blank {/* รอใส่ตัวแปร */}</div>
-            </div>
 
             {/* -------------------- Under -------------------- */}
              <button className="mt-6 mb-6 bg-[#0E4663] text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer">
