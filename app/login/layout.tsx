@@ -14,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="">
+      <body>
         {/* Navbar */}
         <nav className="bg-[#D9D9D9] px-6 py-3 flex items-center shadow-sm">
           <span className="flex items-center text-lg font-semibold text-[#0E4663]">

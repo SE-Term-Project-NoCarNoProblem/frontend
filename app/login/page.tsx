@@ -13,7 +13,7 @@ export default function LoginPage() {
     password: ""
   });
 
-    function handelChange(e:any){
+    function handleChange(e:any){
         console.log(e.target.value);
         setForm({...form, [e.target.name]: e.target.value}); 
     }
@@ -25,11 +25,11 @@ export default function LoginPage() {
     }
 
   return (<>
-    <div className="bg-white p-12 flex flex-col items-center text-[#000000]">
-      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-md p-8 flex border-r-gray-400">
-        <div className="flex-1 pr-8 border-r overflow-auto">
-            <h1 className = {`text-2xl font-semibold text-[${themeColor}]`}> Welcom Back</h1>
-            <p className= {`text-sm text-[${themeColor}] py-2`}> 
+    <div className="flex items-center justify-center w-full min-h-screen bg-white text-[#000000]">
+      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-md p-8 flex flex-col min-[680px]:flex-row min-[680px]:border-r min-[680px]:border-gray-400 min-w-[350px]">
+        <div className=" min-[680px]:flex-1 pr-8 min-[680px]:border-r overflow-auto ">
+            <h1 className = {`text-2xl font-semibold text-[${themeColor}] max-[680]:text-center`}> Welcome Back</h1>
+            <p className= {`text-sm text-[${themeColor}] py-2 max-[680]:text-center`}> 
                 Don't have an account? {" "}
                 <button 
                     className= {`underline text-[${themeColor}] hover:cursor-pointer `}
@@ -38,6 +38,15 @@ export default function LoginPage() {
                     Register
                 </button>
             </p>
+            <div className="flex-1 flex justify-center mt-8 min-[679px]:hidden" >
+                <Image
+                    aria-hidden 
+                    src="/temp_image.svg"
+                    alt="Car illustration"
+                    width={230}
+                    height={320}
+                />
+            </div>
 
             {/* ---------------- Form ---------------- */}
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
@@ -49,7 +58,7 @@ export default function LoginPage() {
                     className="w-full p-2 border rounded-md"
                     name="email"
                     value={form.email}
-                    onChange={handelChange}
+                    onChange={handleChange}
                 />
 
                 {/* ---------------- Password ---------------- */}
@@ -61,7 +70,7 @@ export default function LoginPage() {
                         className="w-1/2 p-2 border rounded-md w-full"
                         name="password"
                         value={form.password}
-                        onChange={handelChange}
+                        onChange={handleChange}
                     />
                 </div>
 
@@ -85,7 +94,7 @@ export default function LoginPage() {
             </form>
         </div>
 
-        <div className="flex-1 flex justify-center ">
+        <div className="flex-1 flex justify-center max-[680px]:hidden">
             <Image
                 aria-hidden 
                 src="/temp_image.svg"
