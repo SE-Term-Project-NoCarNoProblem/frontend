@@ -24,6 +24,7 @@ export default function RegisterPage() {
     const { name, value, type, files } = e.target;
     if (type === "file") {
       setForm({ ...form, profilePic: files ? files[0] : null });
+      e.target.value = "";
     } else {
       setForm({ ...form, [name]: value });
     }
@@ -75,28 +76,34 @@ export default function RegisterPage() {
     // password validation
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])/;
     if (!passwordRegex.test(form.password)) {
-      if(form.password.length < 8) alert("Password must be at least 8 characters long.");
-      else alert("Password must contain at least one letter, one number, and one special character.");
+      if (form.password.length < 8)
+        alert("Password must be at least 8 characters long.");
+      else
+        alert(
+          "Password must contain at least one letter, one number, and one special character."
+        );
       return;
     }
-    
+
     // Confirm password match
     if (form.password !== form.confirmPassword) {
       alert("Passwords do not match.");
       return;
     }
-    
+
     // for backend integration
     console.log(form);
   };
-//  #0E4663
+  //  #0E4663
 
   return (
     <div className="bg-white p-12 flex flex-col items-center text-[#000000]">
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-md p-8 flex border-r-gray-400">
         {/* Left side form */}
         <div className="flex-1 pr-8 border-r overflow-auto">
-          <h1 className="text-2xl font-semibold text-[#0E4663]">Create an account</h1>
+          <h1 className="text-2xl font-semibold text-[#0E4663]">
+            Create an account
+          </h1>
           <p className="text-sm text-[#0E4663] py-2">
             Already has an account?{" "}
             <button
@@ -149,36 +156,83 @@ export default function RegisterPage() {
 
             {/* Gender */}
             <div>
-              <label className="text-sm text-[#0E4663]">Gender (optional)</label>
+              <label className="text-sm text-[#0E4663]">
+                Gender (optional)
+              </label>
               <div className="flex gap-4 mt-1">
                 <label className="flex items-center gap-1 text-[#0E4663]">
-                  <input type="radio" name="gender" value="male" checked={form.gender === "male"} onChange={handleChange} /> Male
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="male"
+                    checked={form.gender === "male"}
+                    onChange={handleChange}
+                  />{" "}
+                  Male
                 </label>
                 <label className="flex items-center gap-1 text-[#0E4663]">
-                  <input type="radio" name="gender" value="female" checked={form.gender === "female"} onChange={handleChange} /> Female
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="female"
+                    checked={form.gender === "female"}
+                    onChange={handleChange}
+                  />{" "}
+                  Female
                 </label>
                 <label className="flex items-center gap-1 text-[#0E4663]">
-                  <input type="radio" name="gender" value="non-binary" checked={form.gender === "non-binary"} onChange={handleChange} /> Non-binary
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="non-binary"
+                    checked={form.gender === "non-binary"}
+                    onChange={handleChange}
+                  />{" "}
+                  Non-binary
                 </label>
               </div>
             </div>
 
             {/* Profile picture upload */}
             <div className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center cursor-pointer hover:bg-gray-50">
-              <input type="file" className="hidden" id="profilePic" />
-              <label htmlFor="profilePic" className="cursor-pointer flex flex-col items-center">
-                <div>
-                        <Image
-                            aria-hidden
-                            src="/upload _cloud.svg"
-                            alt="upload cloud icon"
-                            width={24}
-                            height={24}
-                        />
-                </div>
-                <span className="text-[#0E4663]">Upload your profile picture.</span>
+              <input
+                type="file"
+                className="hidden"
+                id="profilePic"
+                onChange={handleChange}
+                name="profilePic"
+                accept="image/*"
+              />
+              <label
+                htmlFor="profilePic"
+                className="cursor-pointer flex flex-col items-center"
+              >
+                {!form.profilePic ? (
+                  <span className="text-[#0E4663] flex flex-col items-center">
+                    <div>
+                      <Image
+                        aria-hidden
+                        src="/upload _cloud.svg"
+                        alt="upload cloud icon"
+                        width={24}
+                        height={24}
+                      />
+                    </div>
+                    Upload your profile picture.
+                  </span>
+                ) : (
+                  <div className="flex flex-col items-center">
+                    <img
+                      src={URL.createObjectURL(form.profilePic)}
+                      alt="Profile preview"
+                      className="w-24 h-24 rounded-2xl object-cover border mb-2"
+                    />
+                    <span className="text-xs text-[#0E4663]">
+                      {form.profilePic.name}
+                    </span>
+                  </div>
+                )}
               </label>
-              {form.profilePic && <span className="text-xs text-[#0E4663]">{form.profilePic.name}</span>}
             </div>
 
             {/* Role selection */}
@@ -186,10 +240,24 @@ export default function RegisterPage() {
               <label className="text-sm text-[#0E4663]">Select your role</label>
               <div className="flex gap-6 mt-1">
                 <label className="flex items-center gap-1 text-[#0E4663]">
-                  <input type="radio" name="role" value="user" checked={form.role === "user"} onChange={handleChange} /> User
+                  <input
+                    type="radio"
+                    name="role"
+                    value="user"
+                    checked={form.role === "user"}
+                    onChange={handleChange}
+                  />
+                  User
                 </label>
                 <label className="flex items-center gap-1 text-[#0E4663]">
-                  <input type="radio" name="role" value="driver" checked={form.role === "driver"} onChange={handleChange} /> Driver
+                  <input
+                    type="radio"
+                    name="role"
+                    value="driver"
+                    checked={form.role === "driver"}
+                    onChange={handleChange}
+                  />
+                  Driver
                 </label>
               </div>
             </div>
@@ -249,15 +317,15 @@ export default function RegisterPage() {
 
         {/* Right side illustration */}
         <div className="flex-1 flex justify-center">
-                <div>
-                        <Image
-                            aria-hidden
-                            src="/temp_image.svg"
-                            alt="upload cloud icon"
-                            width={253}
-                            height={379}
-                        />
-                </div>
+          <div>
+            <Image
+              aria-hidden
+              src="/temp_image.svg"
+              alt="upload cloud icon"
+              width={253}
+              height={379}
+            />
+          </div>
         </div>
       </div>
     </div>
