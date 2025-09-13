@@ -6,14 +6,14 @@ import { useRouter } from "next/navigation";
 import NavBar from "../components/NavBar";
 import EditProfileInput from "../components/EditProfileInput"
 interface Profile {
-    firstName: string;
-    lastName: string;
+    fullName: string;
     age: number;
     role: string;
     email: string;
     phoneNumber: string;
     home: string;
     favouriteLocation: string;
+
 }
 function EditProfile() {
     const router = useRouter();
@@ -33,18 +33,19 @@ function EditProfile() {
 
         async function fetchProfile() {
             try {
-                // const res = await fetch("http://localhost:5000/api/profile");
-                // const data = await res.json();
-                const data = { // mock data
-                    firstName: "string",
-                    lastName: "string",
-                    age: 8,
+                const res = await fetch("http://localhost:8000/api/users/me");
+                const apiResponse = await res.json();
+                console.log("Data from API:", apiResponse);
+                const data = { // not complete
+                    fullName: apiResponse.data.fullname,
+                    age: 20,
                     role: "User",
-                    email: "string",
-                    phoneNumber: "string",
+                    email: apiResponse.data.email,
+                    phoneNumber: apiResponse.data.phone_number,
                     home: "string",
-                    favouriteLocation: "string"
-                }
+                    favouriteLocation: apiResponse.favourite_pickup_location,
+                    profilePic: apiResponse.data.profile_pic,
+                };
                 setProfile(data);
                 console.log(data);
             } catch (err) {
@@ -72,33 +73,37 @@ function EditProfile() {
     }
 
     async function onSave() {
-        // const fd = new FormData();
 
-        // // only send non-blank fields so you don't overwrite unchanged values
-        // if (name.trim()) fd.append("name", name.trim());
-        // if (age.trim()) fd.append("age", age.trim());
-        // if (email.trim()) fd.append("email", email.trim());
-        // if (phone.trim()) fd.append("phone", phone.trim());
-        // if (home.trim()) fd.append("home", home.trim());
-        // if (favLoc.trim()) fd.append("favLoc", favLoc.trim());
+        const nameNormalized = name.trim().split(/\s+/).map(w => w.split(/([-'])/).map(part => /[-']/.test(part) ? part : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()).join('')).join(' ');
+        setName(nameNormalized);
+        setEmail(email.trim());
+        setPhone(phone.trim());
+        const data = {
+            fullname: name,
+            email: email,
+            phone_number: phone,
+            favourite_pickup_location: favLoc,
 
-        // // include new profilePic if user picked one
-        // if (form.profilePic) {
-        //     fd.append("profilePic", form.profilePic); // field name must match backend
-        // }
+        }
 
-        // const res = await fetch("http://localhost:5000/api/editProfile", {
-        //     method: "PATCH",
-        //     body: fd,                // <-- multipart/form-data
-        //     credentials: "include",
-        // });
+        const res = await fetch("http://localhost:8000/api/users/me", {
+            method: "PATCH",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),                // <-- multipart/form-data
 
-        // const data = await res.json();
-        // if (!res.ok) {
-        //     console.error(data);
-        //     alert(data.error || "Save failed");
-        //     return;
-        // }
+        });
+        if (!res.ok) throw new Error(`PATCH /me failed: ${res.status}`);
+        if (form.profilePic != null) {
+            const fd = new FormData();
+            fd.append('profilePicture', form.profilePic);
+            const res2 = await fetch("http://localhost:8000/api/profile/upload", {
+                method: 'POST',            // or PATCH
+                body: fd,                  // don't set Content-Type yourself
+                credentials: 'include',
+            });
+            if (!res2.ok) throw new Error(`POST /profile/upload failed: ${res2.status}`);
+        }
+
         console.log("saved");
     }
 
@@ -189,7 +194,7 @@ function EditProfile() {
 
 
                     {/* -------------------- text under pic. -------------------- */}
-                    <div className="text-2xl font-semibold text-[#F8F8F8]"> {profile.firstName} {profile.lastName} {/* รอใส่ตัวแปร */} </div>
+                    <div className="text-2xl font-semibold text-[#F8F8F8]"> {profile.fullName} {/* รอใส่ตัวแปร */} </div>
                     <div className="flex flex-col items-center text-[#F8F8F8]">
                         Age: {profile.age}<br />
                     </div>
