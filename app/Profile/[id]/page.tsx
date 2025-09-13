@@ -6,8 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import NavBar from "../../components/NavBar";
 
 interface Profile {
-    firstName: string;
-    lastName: string;
+    fullName: string;
     age: number;
     role: string;
     email: string;
@@ -34,8 +33,7 @@ export default function ProfilePage() {
                const apiResponse = await res.json();
                console.log("Data from API:", apiResponse); 
                 const data = { // not complete
-                    firstName: apiResponse.data.fullname,
-                    lastName: apiResponse.data.fullname,
+                    fullName: apiResponse.data.fullname,
                     age: 20,
                     role: "User",
                     email: apiResponse.data.email,
@@ -46,7 +44,6 @@ export default function ProfilePage() {
                 }
 
                 setProfile(data);
-                // console.log(data);
             }catch(err) {
                 console.error("Error fetching profile:", err);
             }finally {
@@ -113,12 +110,12 @@ export default function ProfilePage() {
                     </div>
 
                     {/* -------------------- text under pic. -------------------- */}
-                    <div className="text-2xl font-semibold text-[#F8F8F8]"> {profile.firstName} {profile.lastName} {/* รอใส่ตัวแปร */} </div>
+                    <div className="text-2xl font-semibold text-[#F8F8F8]"> {profile.fullName}  </div>
                     <div className="flex flex-col items-center text-[#F8F8F8]">  
                         Age: {profile.age}<br/>
                     </div>
                     <div className="flex flex-col items-center text-[#F8F8F8]">  
-                        {profile.role} {/* รอใส่ตัวแปร */}
+                        {profile.role} 
                     </div>
                 </div>
             </div>
@@ -140,7 +137,7 @@ export default function ProfilePage() {
                     />
                     <p className="flex items-center text-[#0E4663]"> Email : </p>
                 </div>
-                <div className="px-12 text-[#0E4663]"> {profile.email} {/* รอใส่ตัวแปร */}</div>
+                <div className="px-12 text-[#0E4663]"> {profile.email} </div>
             </div>
 
             <div className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
@@ -153,7 +150,7 @@ export default function ProfilePage() {
                     />
                     <p className="flex items-center text-[#0E4663]"> Telephone number : </p>
                 </div>
-                <div className="px-12 text-[#0E4663]"> {profile.phoneNumber} {/* รอใส่ตัวแปร */}</div>
+                <div className="px-12 text-[#0E4663]"> {profile.phoneNumber}</div>
             </div>
 
             <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 justify-center`}>
@@ -166,7 +163,7 @@ export default function ProfilePage() {
                     />
                     <p className="flex items-center text-[#0E4663]"> Home : </p>
                 </div>
-                <div className="px-12 text-[#0E4663]"> {profile.home} {/* รอใส่ตัวแปร */}</div>
+                <div className="px-12 text-[#0E4663]"> {profile.home} </div>
             </div>
 
             <div className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
@@ -179,22 +176,9 @@ export default function ProfilePage() {
                     />
                     <p className="flex items-center text-[#0E4663]"> Favourite location : </p>
                 </div>
-                <div className="px-12 text-[#0E4663]"> {profile.favouriteLocation} {/* รอใส่ตัวแปร */}</div>
+                <div className="px-12 text-[#0E4663]"> {profile.favouriteLocation} </div>
             </div>
 
-            <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
-                <div className="flex flex-1 ">
-                    <Image
-                        alt = "Blank icon"
-                        // src = "/icons/mail-svgrepo-com.svg"
-                        src = ""
-                        width={50}
-                        height={50}  
-                    />
-                    <p className="flex items-center text-[#0E4663]"> Blank : </p>
-                </div>
-                <div className="px-12 text-[#0E4663]"> Blank {/* รอใส่ตัวแปร */}</div>
-            </div>
 
             {/* -------------------- Under -------------------- */}
              <button className="mt-6 mb-6 bg-[#0E4663] text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer">

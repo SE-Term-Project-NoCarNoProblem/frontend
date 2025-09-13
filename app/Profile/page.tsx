@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import NavBar from "../components/NavBar";
 
 interface Profile {
-    firstName: string;
-    lastName: string;
+    fullName: string;
     age: number;
     role: string;
     email: string;
@@ -30,8 +29,7 @@ export default function ProfilePage() {
                const apiResponse = await res.json();
                console.log("Data from API:", apiResponse); 
                 const data = { // not complete
-                    firstName: apiResponse.data.fullname,
-                    lastName: apiResponse.data.fullname,
+                    fullName: apiResponse.data.fullname,
                     age: 20,
                     role: "User",
                     email: apiResponse.data.email,
@@ -107,7 +105,7 @@ export default function ProfilePage() {
                     </div>
 
                     {/* -------------------- text under pic. -------------------- */}
-                    <div className="text-2xl font-semibold text-[#F8F8F8]"> {profile.firstName} {profile.lastName} {/* รอใส่ตัวแปร */} </div>
+                    <div className="text-2xl font-semibold text-[#F8F8F8]"> {profile.fullName} {/* รอใส่ตัวแปร */} </div>
                     <div className="flex flex-col items-center text-[#F8F8F8]">  
                         Age: {profile.age}<br/>
                     </div>
