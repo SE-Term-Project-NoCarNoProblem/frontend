@@ -28,7 +28,9 @@ export default function LoginPage() {
     <div className="flex items-center justify-center w-full min-h-screen bg-white text-[#000000]">
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-md p-8 flex flex-col min-[680px]:flex-row min-[680px]:border-r min-[680px]:border-gray-400 min-w-[350px]">
         <div className=" min-[680px]:flex-1 pr-8 min-[680px]:border-r overflow-auto ">
-            <h1 className = {`text-2xl font-semibold text-[${themeColor}] max-[680]:text-center`}> Welcome Back</h1>
+            <h1 className = {`text-2xl font-semibold text-[${themeColor}] max-[680]:text-center max-[680]:text-4xl`}> 
+                Welcome Back
+            </h1>
             <p className= {`text-sm text-[${themeColor}] py-2 max-[680]:text-center`}> 
                 Don't have an account? {" "}
                 <button 
@@ -92,7 +94,29 @@ export default function LoginPage() {
                     Log in
                 </button>
             </form>
+                <div className="flex items-center w-full my-4">
+                    <div className="flex-grow border-t border-gray-300"></div>
+                    <span className="px-4 text-sm text-gray-500">or login with</span>
+                    <div className="flex-grow border-t border-gray-300"></div>
+                </div>
+                <button
+                    onClick={() => router.push("./googleLogin")}
+                    type="submit"
+                    className={`w-full flex items-center gap-2 justify-center border-1 border-gray-900 text-black p-2 rounded-md  hover:cursor-pointer my-4 opacity-100 hover:opacity-50` }
+                >
+                        <Image
+                            aria-hidden
+                            alt="Google"
+                            src="/google-icon-logo-svgrepo-com.svg"
+                            width={25}
+                            height={25}
+                        />
+                    <span>    
+                        Google
+                    </span>
+                </button>
         </div>
+        
 
         <div className="flex-1 flex justify-center max-[680px]:hidden">
             <Image
