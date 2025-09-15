@@ -15,7 +15,7 @@ interface Driver {
 
 export default function RideRequest() {
   const Map = useMemo(() => dynamic(
-    () => import('@/app/components/Map'),
+    () => import('@/app/components/MapDriver'),
     { 
       loading: () => <p>A map is loading</p>,
       ssr: false
