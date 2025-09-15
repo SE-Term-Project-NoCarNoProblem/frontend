@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-export default function createAcc() {
+export default function createAccountPage() {
   const router = useRouter();
   const themeColor = "#0E4663";
   const [showPassword, setShowPassword] = useState(false);
@@ -80,7 +80,7 @@ export default function createAcc() {
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-md p-8 flex flex-col min-[680px]:flex-row min-[680px]:border-r min-[680px]:border-gray-400 min-w-[350px]">
         <div className=" min-[680px]:flex-1 pr-8 min-[680px]:border-r overflow-auto ">
             <h1 className = {`text-2xl font-semibold  max-[680]:text-center max-[680]:text-4xl` } style={{ color: themeColor }}> 
-                Create an Account
+                Register
             </h1>
             <p className= {`text-sm  py-2 max-[680]:text-center`} style={{ color: themeColor }}> 
                 Already has an account? {" "}
