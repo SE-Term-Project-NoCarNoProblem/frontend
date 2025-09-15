@@ -8,8 +8,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
+    fullName: "",
     telephone: "",
     idNumber: "",
     gender: "",
@@ -32,20 +31,14 @@ export default function RegisterPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // First name validation
-    const nameRegex = /^[A-Za-z]+$/;
-    if (!form.firstName.trim() || !nameRegex.test(form.firstName)) {
-      if (!form.firstName.trim()) alert("Please enter your first name.");
-      else alert("First name should contain only letters.");
+    // Full name validation
+    const nameRegex = /^[A-Za-z\-]+$/;
+    if (!form.fullName.trim() || !nameRegex.test(form.fullName)) {
+      if (!form.fullName.trim()) alert("Please enter your first name.");
+      else alert("First name should contain only letters and hyphen.");
       return;
     }
 
-    // Last name validation
-    if (!form.lastName.trim() || !nameRegex.test(form.lastName)) {
-      if (!form.lastName.trim()) alert("Please enter your last name.");
-      else alert("Last name should contain only letters.");
-      return;
-    }
     // Phone number validation (10 digits)
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(form.telephone)) {
@@ -117,13 +110,12 @@ export default function RegisterPage() {
           {/* Form */}
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
             {/* Name */}
-            <div className="flex gap-4">
               <input
                 type="text"
-                placeholder="First name"
-                className="w-1/2 p-2 border rounded-md"
+                placeholder="Full name"
+                className="w-full p-2 border rounded-md"
                 name="firstName"
-                value={form.firstName}
+                value={form.fullName}
                 onChange={handleChange}
               />
               <input
