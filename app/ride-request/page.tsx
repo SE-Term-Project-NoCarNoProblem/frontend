@@ -28,7 +28,7 @@ useEffect(() => {
 
       // Send to backend
       console.log(position);
-      await fetch("http://localhost:8000/api/drivers/location", {
+      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/drivers/location`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lat: position[0], lng: position[1] }),
