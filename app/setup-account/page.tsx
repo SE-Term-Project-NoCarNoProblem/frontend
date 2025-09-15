@@ -3,11 +3,68 @@
 import { useState } from "react";
 import Image from "next/image";
 import { redirect, useRouter } from "next/navigation";
-import { fetchWithAuth } from "../lib/api";
+import { fetchWithAuth, fetchWithAuthFile } from "../lib/api";
+
+// Simple TestHelper component for debugging
+function TestHelper() {
+  const checkAuth = () => {
+    const token = localStorage.getItem('token');
+    const message = token 
+      ? `✅ Token found: ${token.substring(0, 30)}...` 
+      : '❌ No token found in localStorage';
+    
+    console.log('🔐 Auth check:', message);
+    alert(message);
+    
+    // Show all localStorage keys
+    console.log('📋 All localStorage keys:', Object.keys(localStorage));
+  };
+
+  const setMockToken = () => {
+    const mockToken = 'mock-jwt-token-for-testing-12345';
+    localStorage.setItem('token', mockToken);
+    console.log('🧪 Mock token set');
+    alert('Mock token set for testing!');
+  };
+
+  const clearStorage = () => {
+    localStorage.clear();
+    console.log('🗑️ localStorage cleared');
+    alert('localStorage cleared!');
+  };
+
+  // Only show in development
+  if (process.env.NODE_ENV !== 'development') {
+    return null;
+  }
+
+  return (
+    <div className="fixed top-4 right-4 z-50 bg-white border rounded-lg shadow-lg p-3">
+      <h4 className="text-sm font-bold mb-2">🧪 Debug Helper</h4>
+      <div className="space-y-1">
+        <button onClick={checkAuth} className="block w-full text-xs bg-blue-500 text-white px-2 py-1 rounded">
+          Check Auth
+        </button>
+        <button onClick={setMockToken} className="block w-full text-xs bg-green-500 text-white px-2 py-1 rounded">
+          Set Mock Token
+        </button>
+        <button onClick={clearStorage} className="block w-full text-xs bg-red-500 text-white px-2 py-1 rounded">
+          Clear Storage
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);     
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState({
+    profilePic: false,
+    idPic: false,
+    licensePic: false,
+  });     
 
   const [form, setForm] = useState({
     fullName: "",
@@ -31,66 +88,177 @@ export default function RegisterPage() {
     }
   };
 
+  const uploadProfilePicture = async () => {
+    if (!form.profilePic) return true;
+    
+    try {
+      const response = await fetchWithAuthFile(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/profile/upload`,
+        form.profilePic,
+        'profilePicture'
+      );
+      
+      if (response.ok) {
+        setUploadStatus(prev => ({ ...prev, profilePic: true }));
+        return true;
+      } else {
+        const errorText = await response.text();
+        throw new Error(`Profile picture upload failed: ${errorText}`);
+      }
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const uploadIdPicture = async () => {
+    if (!form.idPic) return true;
+    
+    try {
+      const response = await fetchWithAuthFile(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/profile/id-pic/upload`,
+        form.idPic,
+        'idPicture'
+      );
+      
+      if (response.ok) {
+        setUploadStatus(prev => ({ ...prev, idPic: true }));
+        return true;
+      } else {
+        const errorText = await response.text();
+        throw new Error(`ID picture upload failed: ${errorText}`);
+      }
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const uploadLicensePicture = async () => {
+    if (!form.licensePic) return true;
+    
+    try {
+      const response = await fetchWithAuthFile(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/profile/license-pic/upload`,
+        form.licensePic,
+        'licensePicture'
+      );
+      
+      if (response.ok) {
+        setUploadStatus(prev => ({ ...prev, licensePic: true }));
+        return true;
+      } else {
+        throw new Error(`License picture upload failed: ${await response.text()}`);
+      }
+    } catch (error) {
+      return false;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    // Full name validation
-    const nameRegex = /^[A-Za-z\- ]+$/;
-    if (!form.fullName.trim() || !nameRegex.test(form.fullName)) {
-      if (!form.fullName.trim()) alert("Please enter your first name.");
-      else alert("First name should contain only letters and hyphen.");
-      return;
-    }
+    setIsLoading(true);
+    
+    try {
+      // Full name validation
+      const nameRegex = /^[A-Za-z\- ]+$/;
+      if (!form.fullName.trim() || !nameRegex.test(form.fullName)) {
+        if (!form.fullName.trim()) alert("Please enter your first name.");
+        else alert("First name should contain only letters and hyphen.");
+        return;
+      }
 
-    // Phone number validation (10 digits)
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(form.telephone)) {
-      alert("Please enter a valid 10-digit phone number.");
-      return;
-    }
+      // Phone number validation (10 digits)
+      const phoneRegex = /^[0-9]{10}$/;
+      if (!phoneRegex.test(form.telephone)) {
+        alert("Please enter a valid 10-digit phone number.");
+        return;
+      }
 
-    // ID number validation (13 digits)
-    const idRegex = /^[0-9]{13}$/;
-    if (!idRegex.test(form.idNumber)) {
-      alert("Please enter a valid 13-digit ID number.");
-      return;
-    }
+      // ID number validation (13 digits)
+      const idRegex = /^[0-9]{13}$/;
+      if (!idRegex.test(form.idNumber)) {
+        alert("Please enter a valid 13-digit ID number.");
+        return;
+      }
 
-    // role validation
-    if (!form.role) {
-      alert("Please select a role.");
-      return;
-    }
+      // role validation
+      if (!form.role) {
+        alert("Please select a role.");
+        return;
+      }
 
-    // TODO: validate age (must be number)
+      // TODO: validate age (must be number)
 
-    // for backend integration
-    console.log(form);
-    let role = form.role;
-    if (role == 'user') role = 'customer';
-    const submitData = {
-      fullName: form.fullName,
-      phone_number: form.telephone,
-      idNumber: form.idNumber,
-      gender: form.gender,
-      age: form.age,
-      role: role,
-      // profilePic: null as File | null,
-      // idPic: null as File | null,
-      // licensePic: null as File | null,
-    }
-    const result = await fetchWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/account_setup`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(submitData)
-    });
+      // Check authentication token before proceeding
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token not found. Please login again.');
+      }
 
-    if (!result.ok){
-      setError(`Error ${result.status}: ${await result.text()}`);
-    } else {
-      redirect('/')
+      // Step 1: Submit account setup data
+      let role = form.role;
+      if (role == 'user') role = 'customer';
+      const submitData = {
+        fullName: form.fullName,
+        phone_number: form.telephone,
+        idNumber: form.idNumber,
+        gender: form.gender,
+        age: form.age,
+        role: role,
+      }
+      
+      const result = await fetchWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/account_setup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(submitData)
+      });
+
+      if (!result.ok) {
+        const errorText = await result.text();
+        throw new Error(`Account setup failed (${result.status}): ${errorText}`);
+      }
+
+      // Step 2: Upload images if account setup was successful
+      // NOTE: Upload sequentially because backend requires ID picture before license picture
+      const failedUploads: string[] = [];
+
+      if (form.idPic) {
+        const idSuccess = await uploadIdPicture();
+        if (!idSuccess) {
+          failedUploads.push('ID Picture');
+        }
+      }
+
+      if (form.profilePic) {
+        const profileSuccess = await uploadProfilePicture();
+        if (!profileSuccess) {
+          failedUploads.push('Profile Picture');
+        }
+      }
+
+      if (form.licensePic && form.role === 'driver') {
+        const licenseSuccess = await uploadLicensePicture();
+        if (!licenseSuccess) {
+          failedUploads.push('License Picture');
+        }
+      }
+
+      if (failedUploads.length > 0) {
+        setError(`Account created successfully, but failed to upload: ${failedUploads.join(', ')}. You can upload these later from your profile.`);
+        // Still redirect after showing the warning
+        setTimeout(() => redirect('/'), 3000);
+      } else {
+        // All successful, redirect immediately
+        redirect('/');
+      }
+
+    } catch (error: any) {
+      const errorMessage = error.message || 'An unexpected error occurred. Please try again.';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
   //  #0E4663
@@ -354,12 +522,35 @@ export default function RegisterPage() {
                     </div>
                 )}
 
+            {/* Upload Status */}
+            {isLoading && (
+              <div className="text-sm text-[#0E4663]">
+                <p className="mb-2">Setting up your account...</p>
+                {form.profilePic && (
+                  <p className={uploadStatus.profilePic ? "text-green-600" : "text-gray-500"}>
+                    {uploadStatus.profilePic ? "✓" : "⏳"} Profile Picture
+                  </p>
+                )}
+                {form.idPic && (
+                  <p className={uploadStatus.idPic ? "text-green-600" : "text-gray-500"}>
+                    {uploadStatus.idPic ? "✓" : "⏳"} ID Picture
+                  </p>
+                )}
+                {form.licensePic && form.role === 'driver' && (
+                  <p className={uploadStatus.licensePic ? "text-green-600" : "text-gray-500"}>
+                    {uploadStatus.licensePic ? "✓" : "⏳"} License Picture
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Submit */}
             <button
               type="submit"
-              className="w-full bg-[#0E4663] text-white p-2 rounded-md hover:bg-[#0E4663]/90 hover:cursor-pointer"
+              disabled={isLoading}
+              className="w-full bg-[#0E4663] text-white p-2 rounded-md hover:bg-[#0E4663]/90 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Create an account
+              {isLoading ? "Creating Account..." : "Create an account"}
             </button>
           </form>
         </div>
