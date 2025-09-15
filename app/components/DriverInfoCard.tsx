@@ -73,67 +73,134 @@ export default function DriverInfoCard({
 
       {/* Status Bar */}
       {showStatus && (
-        <div className="flex items-center justify-center py-4 px-4 bg-gray-50 rounded-lg">
-          <div className="flex items-center space-x-4">
+        <div className="py-4 px-4 bg-gray-50 rounded-lg">
+          {/* Horizontal layout for larger screens (600px+) */}
+          <div className="hidden min-[600px]:flex items-center justify-center">
+            <div className="flex items-center space-x-4">
+              {/* Accepted */}
+              <div className="text-center">
+                <div className="mx-auto mb-1 flex items-center justify-center">
+                  <img src="/complete.svg" alt="accepted" className="w-4 h-4" />
+                </div>
+                <span className="text-xs text-gray-600">accepted</span>
+              </div>
+              
+              {/* Timeline connecting line */}
+              <div className="flex items-center">
+                <img src="/timeline.svg" alt="timeline" className="w-16 h-1" />
+              </div>
+              
+              {/* On the way */}
+              <div className="text-center">
+                <div className="mx-auto mb-1 flex items-center justify-center">
+                  <img 
+                    src={driver.status === 'on the way' ? "/complete.svg" : "/notcomplete.svg"} 
+                    alt="on the way" 
+                    className="w-4 h-4" 
+                  />
+                </div>
+                <span className={`text-xs font-medium ${
+                  driver.status === 'on the way' ? 'text-[#0E4663]' : 'text-gray-600'
+                }`}>on the way</span>
+              </div>
+              
+              {/* Timeline connecting line */}
+              <div className="flex items-center">
+                <img src="/timeline.svg" alt="timeline" className="w-16 h-1" />
+              </div>
+              
+              {/* Pick up */}
+              <div className="text-center">
+                <div className="mx-auto mb-1 flex items-center justify-center">
+                  <img 
+                    src={driver.status === 'arrived' ? "/complete.svg" : "/notcomplete.svg"} 
+                    alt="pick up" 
+                    className="w-4 h-4" 
+                  />
+                </div>
+                <span className={`text-xs ${driver.status === 'arrived' ? 'text-[#0E4663] font-medium' : 'text-gray-600'}`}>pick up</span>
+              </div>
+              
+              {/* Timeline connecting line */}
+              <div className="flex items-center">
+                <img src="/timeline.svg" alt="timeline" className="w-16 h-1" />
+              </div>
+              
+              {/* Drop off */}
+              <div className="text-center">
+                <div className="mx-auto mb-1 flex items-center justify-center">
+                  <img 
+                    src={driver.status === 'completed' ? "/complete.svg" : "/notcomplete.svg"} 
+                    alt="drop off" 
+                    className="w-4 h-4" 
+                  />
+                </div>
+                <span className={`text-xs ${driver.status === 'completed' ? 'text-[#0E4663] font-medium' : 'text-gray-600'}`}>drop off</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Vertical layout for small screens (under 600px) */}
+          <div className="min-[600px]:hidden flex flex-col items-start space-y-3">
             {/* Accepted */}
-            <div className="text-center">
-              <div className="mx-auto mb-1 flex items-center justify-center">
+            <div className="flex items-center w-full">
+              <div className="w-6 flex justify-center">
                 <img src="/complete.svg" alt="accepted" className="w-4 h-4" />
               </div>
-              <span className="text-xs text-gray-600">accepted</span>
+              <span className="text-xs text-gray-600 ml-3">accepted</span>
             </div>
             
-            {/* Timeline connecting line */}
-            <div className="flex items-center">
-              <img src="/timeline.svg" alt="timeline" className="w-16 h-1" />
+            {/* Vertical timeline */}
+            <div className="w-6 flex justify-center">
+              <div className="w-0.5 h-4 bg-[#0E4663]"></div>
             </div>
             
             {/* On the way */}
-            <div className="text-center">
-              <div className="mx-auto mb-1 flex items-center justify-center">
+            <div className="flex items-center w-full">
+              <div className="w-6 flex justify-center">
                 <img 
                   src={driver.status === 'on the way' ? "/complete.svg" : "/notcomplete.svg"} 
                   alt="on the way" 
                   className="w-4 h-4" 
                 />
               </div>
-              <span className={`text-xs font-medium ${
+              <span className={`text-xs font-medium ml-3 ${
                 driver.status === 'on the way' ? 'text-[#0E4663]' : 'text-gray-600'
               }`}>on the way</span>
             </div>
             
-            {/* Timeline connecting line */}
-            <div className="flex items-center">
-              <img src="/timeline.svg" alt="timeline" className="w-16 h-1" />
+            {/* Vertical timeline */}
+            <div className="w-6 flex justify-center">
+              <div className="w-0.5 h-4 bg-[#0E4663]"></div>
             </div>
             
             {/* Pick up */}
-            <div className="text-center">
-              <div className="mx-auto mb-1 flex items-center justify-center">
+            <div className="flex items-center w-full">
+              <div className="w-6 flex justify-center">
                 <img 
                   src={driver.status === 'arrived' ? "/complete.svg" : "/notcomplete.svg"} 
                   alt="pick up" 
                   className="w-4 h-4" 
                 />
               </div>
-              <span className={`text-xs ${driver.status === 'arrived' ? 'text-[#0E4663] font-medium' : 'text-gray-600'}`}>pick up</span>
+              <span className={`text-xs ml-3 ${driver.status === 'arrived' ? 'text-[#0E4663] font-medium' : 'text-gray-600'}`}>pick up</span>
             </div>
             
-            {/* Timeline connecting line */}
-            <div className="flex items-center">
-              <img src="/timeline.svg" alt="timeline" className="w-16 h-1" />
+            {/* Vertical timeline */}
+            <div className="w-6 flex justify-center">
+              <div className="w-0.5 h-4 bg-[#0E4663]"></div>
             </div>
             
             {/* Drop off */}
-            <div className="text-center">
-              <div className="mx-auto mb-1 flex items-center justify-center">
+            <div className="flex items-center w-full">
+              <div className="w-6 flex justify-center">
                 <img 
                   src={driver.status === 'completed' ? "/complete.svg" : "/notcomplete.svg"} 
                   alt="drop off" 
                   className="w-4 h-4" 
                 />
               </div>
-              <span className={`text-xs ${driver.status === 'completed' ? 'text-[#0E4663] font-medium' : 'text-gray-600'}`}>drop off</span>
+              <span className={`text-xs ml-3 ${driver.status === 'completed' ? 'text-[#0E4663] font-medium' : 'text-gray-600'}`}>drop off</span>
             </div>
           </div>
         </div>
