@@ -211,7 +211,7 @@ export default function DriverInfoCard({
         <div className="flex space-x-3">
           <button
             onClick={onMessageDriver}
-            className="flex-[2] bg-[#0E4663] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#0A3A50] transition-colors flex items-center justify-center"
+            className="flex-[2] max-w-xs bg-[#0E4663] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#0A3A50] transition-colors flex items-center justify-center"
           >
             Message a driver
           </button>
@@ -219,7 +219,7 @@ export default function DriverInfoCard({
           {onCancel && (
             <button
               onClick={onCancel}
-              className="flex-1 py-3 px-6 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+              className="flex-1 max-w-24 py-3 px-6 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
             >
               Cancel
             </button>
