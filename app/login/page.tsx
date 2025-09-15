@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { redirect, useRouter } from "next/navigation";
+import getGoogleSignInLink from "../lib/googleLink";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,7 +15,17 @@ export default function LoginPage() {
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);     
+  const [error, setError] = useState<string | null>(null);
+
+    const [googleLink, setGoogleLink] = useState('#');
+
+    useEffect(() => {
+        async function fetchGoogleLink() {
+            const link = await getGoogleSignInLink();
+            setGoogleLink(link || '#');
+        }
+        fetchGoogleLink();
+    }, []);
 
     function handleChange(e:any){
         console.log(e.target.value);
@@ -149,9 +160,8 @@ export default function LoginPage() {
                     <span className="px-4 text-sm text-gray-500">or login with</span>
                     <div className="flex-grow border-t border-gray-300"></div>
                 </div>
-                <button
-                    onClick={() => router.push("./googleLogin")}
-                    type="button"
+                <a
+                    href={googleLink}
                     className={`w-full flex items-center gap-2 justify-center border-1 border-gray-900 text-black p-2 rounded-md  hover:cursor-pointer my-4 opacity-100 hover:opacity-50` }
                 >
                         <Image
@@ -164,7 +174,7 @@ export default function LoginPage() {
                     <span>    
                         Google
                     </span>
-                </button>
+                </a>
         </div>
         
 
