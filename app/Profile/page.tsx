@@ -13,6 +13,7 @@ interface Profile {
     phoneNumber: string;
     home: string;
     favouriteLocation: string;
+    profilePic: string;
 }
 
 export default function ProfilePage() {
@@ -23,24 +24,34 @@ export default function ProfilePage() {
     const [profile, setProfile] = useState<Profile | null>(null);
 
     useEffect(() => {
+
         async function fetchProfile() {
             try {
-               const res = await fetch("http://localhost:8000/api/users/me");
+
+               const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/me`);
+
+                if (!res.ok) {
+                    throw new Error('Failed to fetch profile, invalid token');
+                }
+               
                const apiResponse = await res.json();
                console.log("Data from API:", apiResponse); 
-                const data = { // not complete
+                const data: Profile  = { // not complete
                     fullName: apiResponse.data.fullname,
-                    age: 20,
-                    role: "User",
+                    age: apiResponse.data.age || 20,
+                    role: apiResponse.data.role || "User",
                     email: apiResponse.data.email,
                     phoneNumber: apiResponse.data.phone_number,
-                    home: "string",
-                    favouriteLocation: "string",
+                    home: apiResponse.data.home || "N/A",
+                    favouriteLocation: apiResponse.data.favouriteLocation || "N/A",
                     profilePic : apiResponse.data.profile_pic,
                 }
-                setProfile(data);;
+
+                setProfile(data);
             }catch(err) {
                 console.error("Error fetching profile:", err);
+                localStorage.removeItem('accessToken');
+                router.push('/login');
             }finally {
                 setLoading(false);
             }
@@ -49,6 +60,12 @@ export default function ProfilePage() {
         fetchProfile();
 
     }, []);
+
+    function handleLogout() {
+        localStorage.removeItem('accessToken');
+        router.push('/login');
+        alert('You have been logged out.'); 
+    }
 
     if(loading){
         return <div className="p-12 text-xl text-[#0E4663] bg-[#F8F8F8] flex w-full justify-center">Loading...</div>;
@@ -97,7 +114,7 @@ export default function ProfilePage() {
                     <div className="flex rounded-full bg-white w-32 h-32 items-center justify-center border-4 border-gray-300">
                         <Image
                             alt="Profile Picture"
-                            src={`./globe.svg`}
+                            src={profile.profilePic ||`./globe.svg`}
                             width={120}
                             height={120}
                             className="rounded-full"
@@ -176,8 +193,10 @@ export default function ProfilePage() {
 
 
             {/* -------------------- Under -------------------- */}
-             <button className="mt-6 mb-6 bg-[#0E4663] text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer">
-             <div className="flex px-30">
+             <button 
+                className="mt-6 mb-6 bg-[#0E4663] text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer" 
+                onClick = {handleLogout}>
+                <div className="flex px-30">
                     <Image
                         alt = "log out icon"
                         src = "/icons/log-out-1-svgrepo-com.svg"
@@ -186,7 +205,6 @@ export default function ProfilePage() {
                     />
                     <p className="flex items-center text-[#F8F8F8]"> Log out  </p>
                 </div>
-
             </button>
         </div>  
         
