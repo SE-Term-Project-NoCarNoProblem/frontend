@@ -13,24 +13,39 @@ export default function RideRequest() {
     }
   ), [])
 
-  const [userPosition, setUserPosition] = useState<[number, number] | null>(null);
-  const [drivers, setDrivers] = useState<[number, number][]>([]);
+  const [driverPosition, setDriverPosition] = useState<[number, number] | null>(null);
+  // Mock users/passengers
+  const [users, setUsers] = useState<[number, number][]>([
+    [13.7420, 100.5470], // Random
+    [13.7300, 100.5800], // Random
+    [13.7650, 100.5200]  // Random
+  ]);
 
-  useEffect(() => {
-    getUserLocation().then(setUserPosition).catch(console.error);
+useEffect(() => {
+  const interval = setInterval(async () => {
+    try {
+      const position = await getDriverLocation();
 
-    // Example: fetch drivers location (replace with real API later)
-    setDrivers([
-      [13.7563, 100.5018], // Bangkok
-      [13.7420, 100.5470], // Random
-      [13.7300, 100.5800]  // Random
-    ]);
-  }, []);
+      // Send to backend
+      console.log(position);
+      await fetch("http://localhost:8000/api/drivers/location", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lat: position[0], lng: position[1] }),
+      });
+      setDriverPosition(position);
+    } catch (err) {
+      console.error(err);
+    }
+  }, 5000); // every 5 seconds
+
+  return () => clearInterval(interval);
+}, []);
   
   return (
   <div className="relative w-full h-screen">
-    {userPosition && (
-      <Map position={userPosition} drivers={drivers}/>
+    {driverPosition && (
+      <Map position={driverPosition} drivers={users}/>
     )}
 
     {/* Bottom panel */}
@@ -62,7 +77,7 @@ export default function RideRequest() {
   )
 }
 
-function getUserLocation(): Promise<[number, number]> {
+function getDriverLocation(): Promise<[number, number]> {
     return new Promise((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(
             (position) => {
