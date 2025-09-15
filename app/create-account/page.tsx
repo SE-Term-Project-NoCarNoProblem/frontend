@@ -4,13 +4,14 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
+export default function createAcc() {
   const router = useRouter();
   const themeColor = "#0E4663";
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     email: "",
-    password: ""
+    password: "",
+    confirmPassword: ""
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +27,25 @@ export default function LoginPage() {
         setIsLoading(true); 
         setError(null);
 
+
         try {
+            // password validation
+            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])/;
+            if (!passwordRegex.test(form.password)) {
+                if (form.password.length < 8)
+                    alert("Password must be at least 8 characters long.");
+                else
+                    alert(
+                    "Password must contain at least one letter, one number, and one special character."
+                    );
+                return;
+            }
+
+            // Confirm password match
+            if (form.password !== form.confirmPassword) {
+                alert("Passwords do not match.");
+                return;
+            }
             const loginResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`, {
                 method:"POST",
                 headers:{
@@ -41,7 +60,7 @@ export default function LoginPage() {
                 throw new Error(data.message || 'Login failed. Please check your credentials.');
             }
 
-            router.push('/');
+            router.push('/register');
 
         } catch(err: any) {
             console.error("Login Error:", err);
@@ -54,21 +73,23 @@ export default function LoginPage() {
         // console.log(`password : `, form.password);  
     }
 
-  return (<>
+   
+
+    return (<>
     <div className="flex items-center justify-center w-full min-h-screen bg-white text-[#000000]">
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-md p-8 flex flex-col min-[680px]:flex-row min-[680px]:border-r min-[680px]:border-gray-400 min-w-[350px]">
         <div className=" min-[680px]:flex-1 pr-8 min-[680px]:border-r overflow-auto ">
             <h1 className = {`text-2xl font-semibold  max-[680]:text-center max-[680]:text-4xl` } style={{ color: themeColor }}> 
-                Welcome Back
+                Create an Account
             </h1>
             <p className= {`text-sm  py-2 max-[680]:text-center`} style={{ color: themeColor }}> 
-                Don't have an account? {" "}
+                Already has an account? {" "}
                 <button 
                     className= {`underline hover:cursor-pointer `}
-                    onClick={() => router.push("/register2")}
+                    onClick={() => router.push("/login")}
                     style={{ color: themeColor }}
                 >
-                    Register
+                    Login
                 </button>
             </p>
             <div className="flex-1 flex justify-center mt-8 min-[679px]:hidden" >
@@ -111,6 +132,21 @@ export default function LoginPage() {
                     />
                 </div>
 
+                <p className={`my-0`} style={{ color: themeColor }} > Confirm your password</p>
+                <div className="flex gap-4">
+                    <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Confirm your password"
+                        className="w-1/2 p-2 border rounded-md w-full"
+                        name="confirmPassword"
+                        value={form.confirmPassword}
+                        onChange={handleChange}
+                    />
+                </div>
+                 <p className="text-xs text-[#0E4663]">
+                    Use 8 or more characters with a mix of letters, numbers & symbols
+                </p>
+
                  {/* ---------------- Show password toggle ---------------- */}
                 <label className={`flex items-center gap-2 text-sm my-1 mb-4`} style={{ color: themeColor }}>
                     <input 
@@ -134,7 +170,7 @@ export default function LoginPage() {
                     style={{ backgroundColor: themeColor }}
                     disabled={isLoading} 
                 >
-                    {isLoading ? 'Logging in...' : 'Log in'}
+                    {isLoading ? 'Creating Account...' : 'Create Account'}
                 </button>
             </form>
                 <div className="flex items-center w-full my-4">
