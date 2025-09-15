@@ -130,7 +130,7 @@ export default function Map(props: any) {
 
   return (
     <div className="flex flex-col h-screen">
-      <div className="flex flex-row w-full">
+      <div className="flex flex-col md:flex-row w-full">
         <form onSubmit={(e) => handleSearch(e, "src", srcQuery)} 
         className="flex-1 p-2 flex gap-2 bg-slate-300 border border-red-500 border-1 hover:border-3"
         onFocus={()=>{setLastFocused("src")}}
@@ -150,7 +150,7 @@ export default function Map(props: any) {
           </button>
         </form>
         <form onSubmit={(e) => handleSearch(e, "dest", destQuery)} 
-        className="flex-1 p-2 flex gap-2 bg-slate-300 border border-red-500 border-1 hover:border-3"
+        className="flex-1 p-2 flex gap-2 bg-slate-300 border border-red-500 border hover:border-3"
         onFocus={()=>{setLastFocused("dest")}}
         >
           <div className="text-emerald-600 text-xl my-auto">Destination</div>
@@ -168,7 +168,7 @@ export default function Map(props: any) {
           </button>
         </form>
       </div>
-      <MapContainer center={position} zoom={zoom} className="h-[100vh]">
+      <MapContainer center={position} zoom={zoom} className="flex-1 w-full">
         <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
