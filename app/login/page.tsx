@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,13 +35,20 @@ export default function LoginPage() {
                 body:JSON.stringify({email:form.email, password:form.password})
             });
 
+            
             const data = await loginResponse.json();
-
             if (!loginResponse.ok) {
                 throw new Error(data.message || 'Login failed. Please check your credentials.');
             }
+            
+            localStorage.setItem('token', data.token);
 
-            router.push('/');
+            if(data.status == 'requires-setup'){
+                router.push('/setup-account');
+            } else {
+                router.push('/');
+            }
+
 
         } catch(err: any) {
             console.error("Login Error:", err);
@@ -51,7 +58,7 @@ export default function LoginPage() {
         }
 
         // console.log(`email : `, form.email);
-        // console.log(`password : `, form.password);  
+        // console.log(`password : `, form.password);
     }
 
   return (<>

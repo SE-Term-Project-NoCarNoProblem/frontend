@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
+import { fetchWithAuth } from "../lib/api";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [error, setError] = useState<string | null>(null);     
+
   const [form, setForm] = useState({
     fullName: "",
     telephone: "",
@@ -28,8 +31,9 @@ export default function RegisterPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     // Full name validation
     const nameRegex = /^[A-Za-z\- ]+$/;
     if (!form.fullName.trim() || !nameRegex.test(form.fullName)) {
@@ -62,6 +66,32 @@ export default function RegisterPage() {
 
     // for backend integration
     console.log(form);
+    let role = form.role;
+    if (role == 'user') role = 'customer';
+    const submitData = {
+      fullName: form.fullName,
+      phone_number: form.telephone,
+      idNumber: form.idNumber,
+      gender: form.gender,
+      age: form.age,
+      role: role,
+      // profilePic: null as File | null,
+      // idPic: null as File | null,
+      // licensePic: null as File | null,
+    }
+    const result = await fetchWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/account_setup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(submitData)
+    });
+
+    if (!result.ok){
+      setError(`Error ${result.status}: ${await result.text()}`);
+    } else {
+      redirect('/')
+    }
   };
   //  #0E4663
 
@@ -70,7 +100,9 @@ export default function RegisterPage() {
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-md p-8 flex border-r-gray-400">
         {/* Left side form */}
         <div className="flex-1 pr-8 border-r overflow-auto">
-          <h1 className="text-2xl font-semibold text-[#0E4663]"> Set up Account</h1>
+          <h1 className="text-2xl font-semibold text-[#0E4663]">
+            Set up Account
+          </h1>
           <p className="text-sm text-[#0E4663] py-2">
             Already has an account?{" "}
             <button
@@ -315,6 +347,12 @@ export default function RegisterPage() {
                 )}
               </label>
             </div>}
+
+                {error && (
+                    <div className="p-3 text-sm text-red-700 bg-red-100 border border-red-400 rounded-md">
+                        {error}
+                    </div>
+                )}
 
             {/* Submit */}
             <button

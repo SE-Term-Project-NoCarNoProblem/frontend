@@ -46,7 +46,7 @@ export default function createAccountPage() {
                 alert("Passwords do not match.");
                 return;
             }
-            const loginResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`, {
+            const loginResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`, {
                 method:"POST",
                 headers:{
                     'Content-Type':'application/json'
@@ -57,10 +57,11 @@ export default function createAccountPage() {
             const data = await loginResponse.json();
 
             if (!loginResponse.ok) {
-                throw new Error(data.message || 'Login failed. Please check your credentials.');
+                throw new Error(data.message || 'Register failed. Please check your credentials.');
             }
 
-            router.push('/register');
+            localStorage.setItem('token', data.token);
+            router.push('/setup-account');
 
         } catch(err: any) {
             console.error("Login Error:", err);
