@@ -5,25 +5,25 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import NavBar from "../components/NavBar";
 import EditProfileInput from "../components/EditProfileInput"
+import { fetchWithAuth,fetchWithAuthFile} from "../lib/api";
 interface Profile {
     fullName: string;
-    age: number;
+    age: string;
+    gender: string;
     role: string;
-    email: string;
+    // email: string;
     phoneNumber: string;
-    home: string;
     favouriteLocation: string;
-
+    profilePic: string;
 }
 function EditProfile() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [name, setName] = useState("");
-    const [age, setAge] = useState("");
-    const [email, setEmail] = useState("");
+    const [gender, setGender] = useState("");
+    // const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
-    const [home, setHome] = useState("");
     const [favLoc, setFavLoc] = useState("");
     const [form, setForm] = useState<{ profilePic: File | null }>({//profilePic task
         profilePic: null,
@@ -33,18 +33,19 @@ function EditProfile() {
 
         async function fetchProfile() {
             try {
-                const res = await fetch("http://localhost:8000/api/users/me");
-                const apiResponse = await res.json();
+                const result = await fetchWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`);
+
+                const apiResponse = await result.json();
                 console.log("Data from API:", apiResponse);
                 const data = { // not complete
                     fullName: apiResponse.data.fullname,
-                    age: 20,
+                    age: apiResponse.data.age,
                     role: "User",
-                    email: apiResponse.data.email,
+                    // email: apiResponse.data.email,
                     phoneNumber: apiResponse.data.phone_number,
-                    home: "string",
+                    gender: apiResponse.data.gender,
                     favouriteLocation: apiResponse.favourite_pickup_location,
-                    profilePic: apiResponse.data.profile_pic,
+                    profilePic: apiResponse.data.profile_pic || "/globe.svg",
                 };
                 setProfile(data);
                 console.log(data);
@@ -75,33 +76,41 @@ function EditProfile() {
     async function onSave() {
 
         const nameNormalized = name.trim().split(/\s+/).map(w => w.split(/([-'])/).map(part => /[-']/.test(part) ? part : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()).join('')).join(' ');
+
+
         setName(nameNormalized);
-        setEmail(email.trim());
+        // setEmail(email.trim());
         setPhone(phone.trim());
+        setGender(gender.trim().toLowerCase());
+        console.log(gender);
         const data = {
             fullname: name,
-            email: email,
+            // email: email,
+            gender: gender,
             phone_number: phone,
-            favourite_pickup_location: favLoc,
+            favorite_pickup_location: favLoc,
 
         }
-
-        const res = await fetch("http://localhost:8000/api/users/me", {
-            method: "PATCH",
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),                // <-- multipart/form-data
-
+        const result = await fetchWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
         });
-        if (!res.ok) throw new Error(`PATCH /me failed: ${res.status}`);
+
+        if (!result.ok) throw new Error(`PATCH /me failed: ${result.status}`);
         if (form.profilePic != null) {
-            const fd = new FormData();
-            fd.append('profilePicture', form.profilePic);
-            const res2 = await fetch("http://localhost:8000/api/profile/upload", {
-                method: 'POST',            // or PATCH
-                body: fd,                  // don't set Content-Type yourself
-                credentials: 'include',
-            });
-            if (!res2.ok) throw new Error(`POST /profile/upload failed: ${res2.status}`);
+            // const fd = new FormData();
+            // fd.append('profilePicture', form.profilePic);
+            // const result2 = await fetch("http://localhost:8000/api/profile/upload", {
+            //     method: 'POST',            // or PATCH
+            //     body: fd,                  // don't set Content-Type yourself
+            //     credentials: 'include',
+            // });
+            const result2 = await fetchWithAuthFile(`${process.env.NEXT_PUBLIC_BACKEND_URL}/profile/upload`,form.profilePic,"profilePicture");
+
+            if (!result2.ok) throw new Error(`POST /profile/upload failed: ${result2.status}`);
         }
 
         console.log("saved");
@@ -158,7 +167,7 @@ function EditProfile() {
                                 <img src={preview} alt="profile preview" className="w-full h-full object-cover" />
                             ) : (
                                 <Image
-                                    src="/globe.svg"   // fallback or old avatar from DB
+                                    src={profile.profilePic}   // fallback or old avatar from DB
                                     alt="default avatar"
                                     width={160}
                                     height={160}
@@ -220,30 +229,18 @@ function EditProfile() {
             <div className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
                 <div className="flex flex-1 ">
                     <Image
-                        alt="email icon"
+                        alt="gender icon"
                         src="/icons/age.svg"
                         width={25}
                         height={25}
                         className="m-3"
                     />
-                    <p className="flex items-center text-[#0E4663]"> Age : </p>
+                    <p className="flex items-center text-[#0E4663]"> gender : </p>
                 </div>
-                <EditProfileInput name="age" value={age} text="XX" onChange={setAge} />
+                <EditProfileInput name="Gender" value={gender} text="XX" onChange={setGender} />
             </div>
-            <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 `}>
-                <div className="flex flex-1 ">
-                    <Image
-                        alt="email icon"
-                        src="/icons/mail-svgrepo-com.svg"
-                        width={50}
-                        height={50}
 
-                    />
-                    <p className="flex items-center text-[#0E4663]"> Email : </p>
-                </div>
-                <EditProfileInput name="email" value={email} text="nocarnoproblem@gmail.com" onChange={setEmail} />
-            </div>
-            <div className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
+            <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
                 <div className="flex flex-1 ">
                     <Image
                         alt="telephone icon"
@@ -256,7 +253,7 @@ function EditProfile() {
                 <EditProfileInput name="phone number" value={phone} text="+66 xx-xxx-xxxx" onChange={setPhone} />
             </div>
 
-            <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 justify-center`}>
+            {/* <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 justify-center`}>
                 <div className="flex flex-1 ">
                     <Image
                         alt="location icon"
@@ -267,7 +264,7 @@ function EditProfile() {
                     <p className="flex items-center text-[#0E4663]"> Home : </p>
                 </div>
                 <EditProfileInput name="home" value={home} text="" onChange={setHome} />
-            </div>
+            </div> */}
 
             <div className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
                 <div className="flex flex-1 ">
