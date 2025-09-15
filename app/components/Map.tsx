@@ -3,14 +3,21 @@ import { MapContainer, Marker, TileLayer, Popup, useMapEvents, useMap } from "re
 import "leaflet/dist/leaflet.css"
 import "leaflet-defaulticon-compatibility"
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css"
-import { useEffect, useState } from "react"
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react"
 import { RecenterMap } from "@/app/hooks/RecenterMap"
 import { useGeolocation } from '@vueuse/core'
+import { fetchWithAuth } from "../lib/api"
 
+export type MapHandle = {
+  requestRide: () => void;
+};
 
-export default function Map(props: any) {
-  //from location page
-  const { position, zoom = 10 } = props
+type MapProps = {
+  position: [number, number];
+  zoom?: number;
+};
+
+const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 10 }, ref) => {
 
   const [srcMarker, setSrcMarker] = useState<[number, number]>(position);
   const [srcAddress, setSrcAddress] = useState<string>("");
@@ -25,6 +32,38 @@ export default function Map(props: any) {
   const [lastFocused, setLastFocused] = useState<"src" | "dest" | null>(null);
   //vueuse location permission
   const { coords, locatedAt, error, resume, pause } = useGeolocation()
+
+  /* === requestRide exposed to parent === */
+  useImperativeHandle(ref, () => ({
+    requestRide() {
+      console.log("🚖 Requesting ride with:", {
+        src: srcMarker,
+        dest: destMarker,
+      });
+      if (!srcMarker || !destMarker) {
+        alert("Please select both pickup and destination!");
+        return;
+      }
+
+      fetchWithAuth("http://localhost:8000/api/requests/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          service: "car",
+          note_to_driver: "test",
+          pickup_lng: srcMarker[1], pickup_lat: srcMarker[0],
+          dropoff_lng: destMarker[1], dropoff_lat: destMarker[0],
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("✅ Ride requested:", data);
+        })
+        .catch((err) => {
+          console.error("❌ Backend error:", err);
+        });
+    },
+  }));
 
   /* ### Get source/pickup location and update ### */
   useEffect(() => {
@@ -129,8 +168,8 @@ export default function Map(props: any) {
   }
 
   return (
-    <div className="flex flex-col h-screen">
-      <div className="flex flex-col md:flex-row w-full">
+    <div className="flex flex-col h-screen relative">
+      <div className="flex flex-col w-full">
         <form onSubmit={(e) => handleSearch(e, "src", srcQuery)} 
         className="flex-1 p-2 flex gap-2 bg-slate-300 border border-red-500 border-1 hover:border-3"
         onFocus={()=>{setLastFocused("src")}}
@@ -193,4 +232,7 @@ export default function Map(props: any) {
       </MapContainer>
     </div>
   );
-}
+});
+
+Map.displayName = "Map";
+export default Map;

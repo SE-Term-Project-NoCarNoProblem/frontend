@@ -1,6 +1,8 @@
 'use client'
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import BottomSheet from "../components/BottomSheet";
+import { MapHandle } from "@/app/components/Map";
 
 export default function Home() {
   const Map = useMemo(() => dynamic(
@@ -11,13 +13,19 @@ export default function Home() {
     }
   ), [])
 
-  const [position, setPosition] = useState<[number, number] | null>(null);
+  const [position, setPosition] = useState<[number, number]>([13.7563, 100.5018]);
   useEffect(() => {
         getUserLocation().then(setPosition).catch(()=>{console.error; setPosition([13.7563, 100.5018])});
   }, []);
   
+  const mapRef = useRef<MapHandle>(null);
+  const handleRequestRide = () => {
+    mapRef.current?.requestRide();
+  };
+
   return <div>
-    <Map position={position}/>
+    <Map position={position} ref={mapRef}/>
+    <BottomSheet onRequestRide={handleRequestRide}/>
   </div>
 }
 
