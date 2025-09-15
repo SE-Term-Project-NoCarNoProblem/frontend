@@ -4,341 +4,210 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-export default function RegisterPage() {
+export default function createAccountPage() {
   const router = useRouter();
+  const themeColor = "#0E4663";
+  const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
-    fullName: "",
-    telephone: "",
-    idNumber: "",
-    gender: "",
-    age: "",
-    role: "",
-    profilePic: null as File | null,
-    idPic: null as File | null,
-    licensePic: null as File | null,
+    email: "",
+    password: "",
+    confirmPassword: ""
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, files } = e.target;
-    if (type === "file") {
-      setForm({ ...form, [name]: files ? files[0] : null });
-      e.target.value = "";
-    } else {
-      setForm({ ...form, [name]: value });
-    }
-  };
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);     
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Full name validation
-    const nameRegex = /^[A-Za-z\- ]+$/;
-    if (!form.fullName.trim() || !nameRegex.test(form.fullName)) {
-      if (!form.fullName.trim()) alert("Please enter your first name.");
-      else alert("First name should contain only letters and hyphen.");
-      return;
+    function handleChange(e:any){
+        console.log(e.target.value);
+        setForm({...form, [e.target.name]: e.target.value}); 
     }
 
-    // Phone number validation (10 digits)
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(form.telephone)) {
-      alert("Please enter a valid 10-digit phone number.");
-      return;
+    async function handleSubmit(e:any){
+        e.preventDefault(); 
+        setIsLoading(true); 
+        setError(null);
+
+
+        try {
+            // password validation
+            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])/;
+            if (!passwordRegex.test(form.password)) {
+                if (form.password.length < 8)
+                    alert("Password must be at least 8 characters long.");
+                else
+                    alert(
+                    "Password must contain at least one letter, one number, and one special character."
+                    );
+                return;
+            }
+
+            // Confirm password match
+            if (form.password !== form.confirmPassword) {
+                alert("Passwords do not match.");
+                return;
+            }
+            const loginResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`, {
+                method:"POST",
+                headers:{
+                    'Content-Type':'application/json'
+                },
+                body:JSON.stringify({email:form.email, password:form.password})
+            });
+
+            const data = await loginResponse.json();
+
+            if (!loginResponse.ok) {
+                throw new Error(data.message || 'Login failed. Please check your credentials.');
+            }
+
+            router.push('/register');
+
+        } catch(err: any) {
+            console.error("Login Error:", err);
+            setError(err.message);
+        } finally{
+            setIsLoading(false);
+        }
+
+        // console.log(`email : `, form.email);
+        // console.log(`password : `, form.password);  
     }
 
-    // ID number validation (13 digits)
-    const idRegex = /^[0-9]{13}$/;
-    if (!idRegex.test(form.idNumber)) {
-      alert("Please enter a valid 13-digit ID number.");
-      return;
-    }
+   
 
-    // role validation
-    if (!form.role) {
-      alert("Please select a role.");
-      return;
-    }
-
-    // TODO: validate age (must be number)
-
-    // for backend integration
-    console.log(form);
-  };
-  //  #0E4663
-
-  return (
-    <div className="bg-white p-12 flex flex-col items-center text-[#000000]">
-      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-md p-8 flex border-r-gray-400">
-        {/* Left side form */}
-        <div className="flex-1 pr-8 border-r overflow-auto">
-          <h1 className="text-2xl font-semibold text-[#0E4663]"> Set up Account</h1>
-          <p className="text-sm text-[#0E4663] py-2">
-            Already has an account?{" "}
-            <button
-              onClick={() => router.push("/login")}
-              className="underline text-[#0E4663] hover:cursor-pointer"
-            >
-              Log in
-            </button>
-          </p>
-
-          {/* Form */}
-          <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-            {/* Name */}
-              <input
-                type="text"
-                placeholder="Full name"
-                className="w-full p-2 border rounded-md"
-                name="fullName"
-                value={form.fullName}
-                onChange={handleChange}
-              />
-
-            {/* Age */}
-            <input
-              type="tel"
-              placeholder="Age"
-              className="w-full p-2 border rounded-md"
-              name="age"
-              value={form.age}
-              onChange={handleChange}
-            />
-
-            {/* Telephone + ID */}
-            <input
-              type="tel"
-              placeholder="Telephone number"
-              className="w-full p-2 border rounded-md"
-              name="telephone"
-              value={form.telephone}
-              onChange={handleChange}
-            />
-            <input
-              type="text"
-              placeholder="ID number"
-              className="w-full p-2 border rounded-md"
-              name="idNumber"
-              value={form.idNumber}
-              onChange={handleChange}
-            />
-
-            {/* Gender */}
-            <div>
-              <label className="text-sm text-[#0E4663]">
-                Gender (optional)
-              </label>
-              <div className="flex gap-4 mt-1">
-                <label className="flex items-center gap-1 text-[#0E4663]">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="male"
-                    checked={form.gender === "male"}
-                    onChange={handleChange}
-                  />{" "}
-                  Male
-                </label>
-                <label className="flex items-center gap-1 text-[#0E4663]">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="female"
-                    checked={form.gender === "female"}
-                    onChange={handleChange}
-                  />{" "}
-                  Female
-                </label>
-                <label className="flex items-center gap-1 text-[#0E4663]">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="non-binary"
-                    checked={form.gender === "non-binary"}
-                    onChange={handleChange}
-                  />{" "}
-                  Non-binary
-                </label>
-              </div>
+    return (<>
+    <div className="flex items-center justify-center w-full min-h-screen bg-white text-[#000000]">
+      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-md p-8 flex flex-col min-[680px]:flex-row min-[680px]:border-r min-[680px]:border-gray-400 min-w-[350px]">
+        <div className=" min-[680px]:flex-1 pr-8 min-[680px]:border-r overflow-auto ">
+            <h1 className = {`text-2xl font-semibold  max-[680]:text-center max-[680]:text-4xl` } style={{ color: themeColor }}> 
+                Register
+            </h1>
+            <p className= {`text-sm  py-2 max-[680]:text-center`} style={{ color: themeColor }}> 
+                Already has an account? {" "}
+                <button 
+                    className= {`underline hover:cursor-pointer `}
+                    onClick={() => router.push("/login")}
+                    style={{ color: themeColor }}
+                >
+                    Login
+                </button>
+            </p>
+            <div className="flex-1 flex justify-center mt-8 min-[679px]:hidden" >
+                <Image
+                    aria-hidden 
+                    src="/temp_image.svg"
+                    alt="Car illustration"
+                    width={230}
+                    height={320}
+                />
             </div>
 
-            {/* ID card upload */}
-            <div className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center cursor-pointer hover:bg-gray-50">
-              <input
-                type="file"
-                className="hidden"
-                id="idPic"
-                onChange={handleChange}
-                name="idPic"
-                accept="image/*"
-              />
-              <label
-                htmlFor="idPic"
-                className="cursor-pointer flex flex-col items-center"
-              >
-                {!form.idPic ? (
-                  <span className="text-[#0E4663] flex flex-col items-center">
-                    <div>
-                      <Image
-                        aria-hidden
-                        src="/upload _cloud.svg"
-                        alt="upload cloud icon"
-                        width={24}
-                        height={24}
-                      />
-                    </div>
-                    Upload your ID card (front side only).
-                  </span>
-                ) : (
-                  <div className="flex flex-col items-center">
-                    <img
-                      src={URL.createObjectURL(form.idPic)}
-                      alt="Profile preview"
-                      className="w-24 h-24 rounded-2xl object-cover border mb-2"
+            {/* ---------------- Form ---------------- */}
+            <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+                {/* ---------------- Email ---------------- */}
+                <p className={`my-0`} style={{ color: themeColor }}> Email </p>
+                <input
+                    type="email"
+                    placeholder="Email address"
+                    className="w-full p-2 border rounded-md"
+                    name="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    disabled={isLoading}
+                    required
+                />
+
+                {/* ---------------- Password ---------------- */}
+                <p className={`my-0`} style={{ color: themeColor }} > Password</p>
+                <div className="flex gap-4">
+                    <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Password"
+                        className="w-1/2 p-2 border rounded-md w-full"
+                        name="password"
+                        value={form.password}
+                        onChange={handleChange}
+                        disabled={isLoading}
+                        required
                     />
-                    <span className="text-xs text-[#0E4663]">
-                      {form.idPic.name}
-                    </span>
-                  </div>
-                )}
-              </label>
-            </div>
+                </div>
 
-            {/* Profile picture upload */}
-            <div className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center cursor-pointer hover:bg-gray-50">
-              <input
-                type="file"
-                className="hidden"
-                id="profilePic"
-                onChange={handleChange}
-                name="profilePic"
-                accept="image/*"
-              />
-              <label
-                htmlFor="profilePic"
-                className="cursor-pointer flex flex-col items-center"
-              >
-                {!form.profilePic ? (
-                  <span className="text-[#0E4663] flex flex-col items-center">
-                    <div>
-                      <Image
-                        aria-hidden
-                        src="/upload _cloud.svg"
-                        alt="upload cloud icon"
-                        width={24}
-                        height={24}
-                      />
-                    </div>
-                    Upload your profile picture.
-                  </span>
-                ) : (
-                  <div className="flex flex-col items-center">
-                    <img
-                      src={URL.createObjectURL(form.profilePic)}
-                      alt="Profile preview"
-                      className="w-24 h-24 rounded-2xl object-cover border mb-2"
+                <p className={`my-0`} style={{ color: themeColor }} > Confirm your password</p>
+                <div className="flex gap-4">
+                    <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Confirm your password"
+                        className="w-1/2 p-2 border rounded-md w-full"
+                        name="confirmPassword"
+                        value={form.confirmPassword}
+                        onChange={handleChange}
                     />
-                    <span className="text-xs text-[#0E4663]">
-                      {form.profilePic.name}
-                    </span>
-                  </div>
-                )}
-              </label>
-            </div>
+                </div>
+                 <p className="text-xs text-[#0E4663]">
+                    Use 8 or more characters with a mix of letters, numbers & symbols
+                </p>
 
-            {/* Role selection */}
-            <div>
-              <label className="text-sm text-[#0E4663]">Select your role</label>
-              <div className="flex gap-6 mt-1">
-                <label className="flex items-center gap-1 text-[#0E4663]">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="user"
-                    checked={form.role === "user"}
-                    onChange={handleChange}
-                  />
-                  User
-                </label>
-                <label className="flex items-center gap-1 text-[#0E4663]">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="driver"
-                    checked={form.role === "driver"}
-                    onChange={handleChange}
-                  />
-                  Driver
-                </label>
-              </div>
-            </div>
-
-            {/* Driver-specific */}
-
-            {form.role=='driver' && 
-            <div className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center cursor-pointer hover:bg-gray-50">
-              {/* Driver license upload */}
-              <input
-                type="file"
-                className="hidden"
-                id="licensePic"
-                onChange={handleChange}
-                name="licensePic"
-                accept="image/*"
-              />
-              <label
-                htmlFor="licensePic"
-                className="cursor-pointer flex flex-col items-center"
-              >
-                {!form.licensePic ? (
-                  <span className="text-[#0E4663] flex flex-col items-center">
-                    <div>
-                      <Image
-                        aria-hidden
-                        src="/upload _cloud.svg"
-                        alt="upload cloud icon"
-                        width={24}
-                        height={24}
-                      />
-                    </div>
-                    Upload your driver's license.
-                  </span>
-                ) : (
-                  <div className="flex flex-col items-center">
-                    <img
-                      src={URL.createObjectURL(form.licensePic)}
-                      alt="Profile preview"
-                      className="w-24 h-24 rounded-2xl object-cover border mb-2"
+                 {/* ---------------- Show password toggle ---------------- */}
+                <label className={`flex items-center gap-2 text-sm my-1 mb-4`} style={{ color: themeColor }}>
+                    <input 
+                        type="checkbox"
+                        checked={showPassword}
+                        onChange={() => setShowPassword(!showPassword)}
                     />
-                    <span className="text-xs text-[#0E4663]">
-                      {form.licensePic.name}
-                    </span>
-                  </div>
-                )}
-              </label>
-            </div>}
+                    Show password
+                </label>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              className="w-full bg-[#0E4663] text-white p-2 rounded-md hover:bg-[#0E4663]/90 hover:cursor-pointer"
-            >
-              Create an account
-            </button>
-          </form>
+                {error && (
+                    <div className="p-3 text-sm text-red-700 bg-red-100 border border-red-400 rounded-md">
+                        {error}
+                    </div>
+                )}
+
+                {/* ---------------- Submit botton ---------------- */}
+                <button
+                    type="submit"
+                    className={`w-full text-white p-2 rounded-md  hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
+                    style={{ backgroundColor: themeColor }}
+                    disabled={isLoading} 
+                >
+                    {isLoading ? 'Creating Account...' : 'Create Account'}
+                </button>
+            </form>
+                <div className="flex items-center w-full my-4">
+                    <div className="flex-grow border-t border-gray-300"></div>
+                    <span className="px-4 text-sm text-gray-500">or login with</span>
+                    <div className="flex-grow border-t border-gray-300"></div>
+                </div>
+                <button
+                    onClick={() => router.push("./googleLogin")}
+                    type="button"
+                    className={`w-full flex items-center gap-2 justify-center border-1 border-gray-900 text-black p-2 rounded-md  hover:cursor-pointer my-4 opacity-100 hover:opacity-50` }
+                >
+                        <Image
+                            aria-hidden
+                            alt="Google"
+                            src="/google-icon-logo-svgrepo-com.svg"
+                            width={25}
+                            height={25}
+                        />
+                    <span>    
+                        Google
+                    </span>
+                </button>
         </div>
+        
 
-        {/* Right side illustration */}
-        <div className="flex-1 flex justify-center">
-          <div>
+        <div className="flex-1 flex justify-center max-[680px]:hidden">
             <Image
-              aria-hidden
-              src="/temp_image.svg"
-              alt="upload cloud icon"
-              width={253}
-              height={379}
+                aria-hidden 
+                src="/temp_image.svg"
+                alt="Car illustration"
+                width={253}
+                height={379}
             />
-          </div>
         </div>
+
       </div>
     </div>
-  );
+  </>);
 }
