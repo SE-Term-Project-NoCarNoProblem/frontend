@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     fullName: "",
     telephone: "",
@@ -71,9 +70,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-md p-8 flex border-r-gray-400">
         {/* Left side form */}
         <div className="flex-1 pr-8 border-r overflow-auto">
-          <h1 className="text-2xl font-semibold text-[#0E4663]">
-            Create an account
-          </h1>
+          <h1 className="text-2xl font-semibold text-[#0E4663]"> Set up Account</h1>
           <p className="text-sm text-[#0E4663] py-2">
             Already has an account?{" "}
             <button
