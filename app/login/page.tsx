@@ -65,7 +65,7 @@ export default function LoginPage() {
                 Don't have an account? {" "}
                 <button 
                     className= {`underline hover:cursor-pointer `}
-                    onClick={() => router.push("/register2")}
+                    onClick={() => router.push("/create-account")}
                     style={{ color: themeColor }}
                 >
                     Register
