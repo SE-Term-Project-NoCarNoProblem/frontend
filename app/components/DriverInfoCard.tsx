@@ -208,7 +208,7 @@ export default function DriverInfoCard({
 
       {/* Action Buttons */}
       {showActions && (
-        <div className="flex space-x-3">
+        <div className="flex space-x-3 justify-center">
           <button
             onClick={onMessageDriver}
             className="flex-[2] max-w-xs bg-[#0E4663] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#0A3A50] transition-colors flex items-center justify-center"
