@@ -45,16 +45,15 @@ export default function DriverEnRoutePage() {
   }, [])
 
   const handleMessageDriver = () => {
-    // In a real app, this would open a messaging interface
-    alert('Opening message interface...')
+    // Redirect to current page (refresh)
+    window.location.reload()
   }
 
   const handleCancel = () => {
     // In a real app, this would cancel the ride
     if (confirm('Are you sure you want to cancel this ride?')) {
-      alert('Ride cancelled')
-      // Navigate back or to home page
-      window.history.back()
+      // Redirect to ride-request page
+      window.location.href = '/ride-request'
     }
   }
 
