@@ -15,10 +15,10 @@ function Hero() {
                 </p>
                 <div className="mt-10 flex flex-col lg:flex-row items-center gap-3">
                     <Link href="/login" className="w-40 rounded-xl bg-slate-700 px-5 py-2 text-center text-white hover:bg-slate-800">
-                        sign in
+                        Sign in
                     </Link>
                     <Link href="/register" className="w-40 rounded-xl bg-slate-700 px-5 py-2 text-center text-white hover:bg-slate-800">
-                        sign up
+                        Sign up
                     </Link>
                 </div>
 

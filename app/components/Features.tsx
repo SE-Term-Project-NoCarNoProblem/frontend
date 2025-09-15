@@ -5,7 +5,7 @@ function Features() {
     return (
         <section className="mt-12 py-15 bg-[#f8f8f8]">
             <h2 className="mb-10 text-center text-4xl font-semibold text-slate-800">
-                what we have
+                What We Have
             </h2>
             <div className="flex flex-col lg:flex-row justify-center items-center gap-6">
                 {items.map((t) => (
