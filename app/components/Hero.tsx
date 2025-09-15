@@ -7,7 +7,7 @@ function Hero() {
 
 
             <div className="lg:w-1/2 lg:flex lg:flex-col lg:items-start lg:justify-center  mt-5">
-                <h1 className="text-4xl lg:text-left font-semibold leading-tight text-slate-800 ">
+                <h1 className="text-5xl lg:text-left font-semibold leading-tight text-slate-800 ">
                     Move people.<br />Move life.
                 </h1>
                 <p className="mt-7 text-slate-600 px-10 lg:px-0 lg:text-left">
