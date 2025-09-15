@@ -35,7 +35,7 @@ export default function RideRequest() {
   useEffect(() => {
     const fetchRide = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/nearby`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/request/nearby`);
         const data = await res.json();
         setDriver(data.driver); // store driver info
       } catch (err) {
