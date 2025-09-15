@@ -12,17 +12,17 @@ export default function RegisterPage() {
     telephone: "",
     idNumber: "",
     gender: "",
+    age: "",
     role: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
     profilePic: null as File | null,
+    idPic: null as File | null,
+    licensePic: null as File | null,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, files } = e.target;
     if (type === "file") {
-      setForm({ ...form, profilePic: files ? files[0] : null });
+      setForm({ ...form, [name]: files ? files[0] : null });
       e.target.value = "";
     } else {
       setForm({ ...form, [name]: value });
@@ -32,7 +32,7 @@ export default function RegisterPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Full name validation
-    const nameRegex = /^[A-Za-z\-]+$/;
+    const nameRegex = /^[A-Za-z\- ]+$/;
     if (!form.fullName.trim() || !nameRegex.test(form.fullName)) {
       if (!form.fullName.trim()) alert("Please enter your first name.");
       else alert("First name should contain only letters and hyphen.");
@@ -59,30 +59,7 @@ export default function RegisterPage() {
       return;
     }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(form.email)) {
-      alert("Please enter a valid email address.");
-      return;
-    }
-
-    // password validation
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])/;
-    if (!passwordRegex.test(form.password)) {
-      if (form.password.length < 8)
-        alert("Password must be at least 8 characters long.");
-      else
-        alert(
-          "Password must contain at least one letter, one number, and one special character."
-        );
-      return;
-    }
-
-    // Confirm password match
-    if (form.password !== form.confirmPassword) {
-      alert("Passwords do not match.");
-      return;
-    }
+    // TODO: validate age (must be number)
 
     // for backend integration
     console.log(form);
@@ -114,19 +91,20 @@ export default function RegisterPage() {
                 type="text"
                 placeholder="Full name"
                 className="w-full p-2 border rounded-md"
-                name="firstName"
+                name="fullName"
                 value={form.fullName}
                 onChange={handleChange}
               />
-              <input
-                type="text"
-                placeholder="Last name"
-                className="w-1/2 p-2 border rounded-md"
-                name="lastName"
-                value={form.lastName}
-                onChange={handleChange}
-              />
-            </div>
+
+            {/* Age */}
+            <input
+              type="tel"
+              placeholder="Age"
+              className="w-full p-2 border rounded-md"
+              name="age"
+              value={form.age}
+              onChange={handleChange}
+            />
 
             {/* Telephone + ID */}
             <input
@@ -183,6 +161,48 @@ export default function RegisterPage() {
                   Non-binary
                 </label>
               </div>
+            </div>
+
+            {/* ID card upload */}
+            <div className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center cursor-pointer hover:bg-gray-50">
+              <input
+                type="file"
+                className="hidden"
+                id="idPic"
+                onChange={handleChange}
+                name="idPic"
+                accept="image/*"
+              />
+              <label
+                htmlFor="idPic"
+                className="cursor-pointer flex flex-col items-center"
+              >
+                {!form.idPic ? (
+                  <span className="text-[#0E4663] flex flex-col items-center">
+                    <div>
+                      <Image
+                        aria-hidden
+                        src="/upload _cloud.svg"
+                        alt="upload cloud icon"
+                        width={24}
+                        height={24}
+                      />
+                    </div>
+                    Upload your ID card (front side only).
+                  </span>
+                ) : (
+                  <div className="flex flex-col items-center">
+                    <img
+                      src={URL.createObjectURL(form.idPic)}
+                      alt="Profile preview"
+                      className="w-24 h-24 rounded-2xl object-cover border mb-2"
+                    />
+                    <span className="text-xs text-[#0E4663]">
+                      {form.idPic.name}
+                    </span>
+                  </div>
+                )}
+              </label>
             </div>
 
             {/* Profile picture upload */}
@@ -254,48 +274,50 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Email */}
-            <input
-              type="email"
-              placeholder="Email address"
-              className="w-full p-2 border rounded-md"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-            />
+            {/* Driver-specific */}
 
-            {/* Password */}
-            <div className="flex gap-4">
+            {form.role=='driver' && 
+            <div className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center cursor-pointer hover:bg-gray-50">
+              {/* Driver license upload */}
               <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                className="w-1/2 p-2 border rounded-md"
-                name="password"
-                value={form.password}
+                type="file"
+                className="hidden"
+                id="licensePic"
                 onChange={handleChange}
+                name="licensePic"
+                accept="image/*"
               />
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Confirm your password"
-                className="w-1/2 p-2 border rounded-md"
-                name="confirmPassword"
-                value={form.confirmPassword}
-                onChange={handleChange}
-              />
-            </div>
-            <p className="text-xs text-[#0E4663]">
-              Use 8 or more characters with a mix of letters, numbers & symbols
-            </p>
-
-            {/* Show password toggle */}
-            <label className="flex items-center gap-2 text-sm text-[#0E4663]">
-              <input
-                type="checkbox"
-                checked={showPassword}
-                onChange={() => setShowPassword(!showPassword)}
-              />
-              Show password
-            </label>
+              <label
+                htmlFor="licensePic"
+                className="cursor-pointer flex flex-col items-center"
+              >
+                {!form.licensePic ? (
+                  <span className="text-[#0E4663] flex flex-col items-center">
+                    <div>
+                      <Image
+                        aria-hidden
+                        src="/upload _cloud.svg"
+                        alt="upload cloud icon"
+                        width={24}
+                        height={24}
+                      />
+                    </div>
+                    Upload your driver's license.
+                  </span>
+                ) : (
+                  <div className="flex flex-col items-center">
+                    <img
+                      src={URL.createObjectURL(form.licensePic)}
+                      alt="Profile preview"
+                      className="w-24 h-24 rounded-2xl object-cover border mb-2"
+                    />
+                    <span className="text-xs text-[#0E4663]">
+                      {form.licensePic.name}
+                    </span>
+                  </div>
+                )}
+              </label>
+            </div>}
 
             {/* Submit */}
             <button
