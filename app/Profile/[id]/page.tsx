@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
 import NavBar from "../../components/NavBar";
+import {fetchWithAuth} from "../../lib/api";
 
 interface Profile {
     fullName: string;
@@ -29,7 +30,7 @@ export default function ProfilePage() {
 
         async function fetchProfile() {
             try {
-                const res = await fetch("http://localhost:8000/api/users/me");
+                const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`);
                const apiResponse = await res.json();
                console.log("Data from API:", apiResponse); 
                 const data = { // not complete
@@ -153,7 +154,7 @@ export default function ProfilePage() {
                 <div className="px-12 text-[#0E4663]"> {profile.phoneNumber}</div>
             </div>
 
-            <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 justify-center`}>
+            {/* <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 justify-center`}>
                 <div className="flex flex-1 ">
                     <Image
                         alt = "location icon"
@@ -164,7 +165,7 @@ export default function ProfilePage() {
                     <p className="flex items-center text-[#0E4663]"> Home : </p>
                 </div>
                 <div className="px-12 text-[#0E4663]"> {profile.home} </div>
-            </div>
+            </div> */}
 
             <div className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
                 <div className="flex flex-1 ">

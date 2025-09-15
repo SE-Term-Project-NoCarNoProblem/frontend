@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import NavBar from "../components/NavBar";
+import {fetchWithAuth} from "../lib/api";
+
 
 interface Profile {
     fullName: string;
@@ -11,7 +12,7 @@ interface Profile {
     role: string;
     email: string;
     phoneNumber: string;
-    home: string;
+    // home: string;
     favouriteLocation: string;
     profilePic: string;
 }
@@ -28,7 +29,7 @@ export default function ProfilePage() {
         async function fetchProfile() {
             try {
 
-               const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/me`);
+               const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`);
 
                 if (!res.ok) {
                     throw new Error('Failed to fetch profile, invalid token');
@@ -42,16 +43,17 @@ export default function ProfilePage() {
                     role: apiResponse.data.role || "User",
                     email: apiResponse.data.email,
                     phoneNumber: apiResponse.data.phone_number,
-                    home: apiResponse.data.home || "N/A",
+                    // home: apiResponse.data.home || "N/A",
                     favouriteLocation: apiResponse.data.favouriteLocation || "N/A",
                     profilePic : apiResponse.data.profile_pic,
                 }
 
                 setProfile(data);
+                console.log(data);
             }catch(err) {
                 console.error("Error fetching profile:", err);
-                localStorage.removeItem('accessToken');
-                router.push('/login');
+                localStorage.removeItem('token');
+                // router.push('/login');
             }finally {
                 setLoading(false);
             }
@@ -62,7 +64,7 @@ export default function ProfilePage() {
     }, []);
 
     function handleLogout() {
-        localStorage.removeItem('accessToken');
+        localStorage.removeItem('token');
         router.push('/login');
         alert('You have been logged out.'); 
     }
@@ -77,11 +79,11 @@ export default function ProfilePage() {
     }
 
     return (<>
-        <NavBar />
-        <div className="bg-white p-12 flex flex-col items-center text-[#000000] mt-0">
+
+        <div className="bg-white p-12 flex flex-col items-center text-[#000000] mt-0 ">
             
             {/* -------------------- Top -------------------- */}
-            <div className={`w-full max-w-5xl bg-[#0E4663] rounded-2xl shadow-md p-8 border-r-gray-400`}>
+            <div className={`w-full max-w-5xl bg-[#0E4663] rounded-2xl shadow-md p-8 border-r-gray-400 min-w-[350px]`}>
                 <div className="flex flex-col items-center justify-center space-y-4">
                     {/* -------------------- text above profile pic. -------------------- */}
                     <div className={`w-full text-2xl font-semibold flex justify-between items-center text-[#F8F8F8]`}>
@@ -134,7 +136,7 @@ export default function ProfilePage() {
 
             {/* -------------------- Middle -------------------- */}
             <button 
-                onClick={() => router.push("/EditProfile")}
+                onClick={() => router.push("/edit-profile")}
                 className=" mt-6 mb-6 bg-[#0E4663] text-[#F8F8F8] px-30 py-2 rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer"    
             >
                 Edit Profile
@@ -165,7 +167,7 @@ export default function ProfilePage() {
                 <div className="px-12 text-[#0E4663]"> {profile.phoneNumber} </div>
             </div>
 
-            <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 justify-center`}>
+            {/* <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 justify-center`}>
                 <div className="flex flex-1 ">
                     <Image
                         alt = "location icon"
@@ -176,7 +178,7 @@ export default function ProfilePage() {
                     <p className="flex items-center text-[#0E4663]"> Home : </p>
                 </div>
                 <div className="px-12 text-[#0E4663]"> {profile.home} </div>
-            </div>
+            </div> */}
 
             <div className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
                 <div className="flex flex-1 ">
