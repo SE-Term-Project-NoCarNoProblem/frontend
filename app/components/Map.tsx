@@ -1,10 +1,21 @@
 'use client'
-import { MapContainer, Marker, TileLayer, Popup, useMapEvents, useMap } from "react-leaflet"
+import { MapContainer, Marker, TileLayer, Popup, useMapEvents } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import "leaflet-defaulticon-compatibility"
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css"
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react"
 import { RecenterMap } from "@/app/hooks/RecenterMap"
+import L from "leaflet";
+
+// Red marker (drivers)
+export const driverIcon = new L.Icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
 import { useGeolocation } from '@vueuse/core'
 import { fetchWithAuth } from "../lib/api"
 
@@ -15,14 +26,14 @@ export type MapHandle = {
 type MapProps = {
   position: [number, number];
   zoom?: number;
+  drivers?: [number, number][];
 };
 
-const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 10 }, ref) => {
+const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = [] }, ref) => {
 
   const [srcMarker, setSrcMarker] = useState<[number, number]>(position);
   const [srcAddress, setSrcAddress] = useState<string>("");
   const [srcQuery, setSrcQuery] = useState("");
-
   const [destMarker, setDestMarker] = useState<[number, number] | null>(null);
   const [destAddress, setDestAddress] = useState<string>("");
   const [destQuery, setDestQuery] = useState("");
@@ -229,6 +240,15 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 10 }, ref) => {
         {lastChanged === "dest" && destMarker && <RecenterMap position={destMarker} />}
         {lastFocused === "src" && <OnMapClicked type="src" />}
         {lastFocused === "dest" && <OnMapClicked type="dest" />}
+
+
+        {/* Driver markers */}
+        {drivers.map((driverPos: [number, number], idx: number) => (
+          <Marker key={idx} position={driverPos} icon={driverIcon}>
+            <Popup>Driver #{idx+1}</Popup>
+          </Marker>
+        ))}
+
       </MapContainer>
     </div>
   );
