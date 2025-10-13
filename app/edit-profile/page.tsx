@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import NavBar from "../components/NavBar";
 import EditProfileInput from "../components/EditProfileInput"
-import { fetchWithAuth,fetchWithAuthFile} from "../lib/api";
+import { fetchWithAuth, fetchWithAuthFile } from "../lib/api";
 interface Profile {
     fullName: string;
     age: string;
@@ -36,7 +36,9 @@ function EditProfile() {
                 const result = await fetchWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`);
 
                 const apiResponse = await result.json();
+                
                 console.log("Data from API:", apiResponse);
+                console.log(apiResponse.data.profile_pic)
                 const data = { // not complete
                     fullName: apiResponse.data.fullname,
                     age: apiResponse.data.age,
@@ -76,7 +78,7 @@ function EditProfile() {
     async function onSave() {
 
         const nameNormalized = name.trim().split(/\s+/).map(w => w.split(/([-'])/).map(part => /[-']/.test(part) ? part : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()).join('')).join(' ');
-
+        
 
         setName(nameNormalized);
         // setEmail(email.trim());
@@ -91,6 +93,7 @@ function EditProfile() {
             favorite_pickup_location: favLoc,
 
         }
+
         const result = await fetchWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`, {
             method: 'PATCH',
             headers: {
@@ -108,11 +111,26 @@ function EditProfile() {
             //     body: fd,                  // don't set Content-Type yourself
             //     credentials: 'include',
             // });
-            const result2 = await fetchWithAuthFile(`${process.env.NEXT_PUBLIC_BACKEND_URL}/profile/upload`,form.profilePic,"profilePicture");
-
-            if (!result2.ok) throw new Error(`POST /profile/upload failed: ${result2.status}`);
+            if (profile != null) {
+                if (profile.profilePic != "/globe.svg") {
+                    const deleteOldProfile = await fetchWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/profile/delete`,{
+                        method:'DELETE'
+                    });
+                    console.log(deleteOldProfile);
+                    if (!deleteOldProfile.ok) throw new Error(`POST /profile/delete failed: ${deleteOldProfile.status}`);
+                }
+            }
+            try{
+                const result2 = await fetchWithAuthFile(`${process.env.NEXT_PUBLIC_BACKEND_URL}/profile/upload`, form.profilePic, "profilePicture");
+                console.log(result2);
+            }catch(err){
+                console.log(err);
+            }
+            // if (!result2.ok){
+            //     console.log("failed to upload new profile")
+            //     throw new Error(`POST /profile/upload failed: ${result2.status}`);
+            // }
         }
-
         console.log("saved");
     }
 
@@ -167,7 +185,7 @@ function EditProfile() {
                                 <img src={preview} alt="profile preview" className="w-full h-full object-cover" />
                             ) : (
                                 <Image
-                                    src={profile.profilePic}   // fallback or old avatar from DB
+                                    src={`${profile.profilePic}?ts=${Date.now()}`}   // fallback or old avatar from DB
                                     alt="default avatar"
                                     width={160}
                                     height={160}
