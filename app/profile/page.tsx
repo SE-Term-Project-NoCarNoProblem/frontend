@@ -88,7 +88,7 @@ export default function ProfilePage() {
                     {/* -------------------- text above profile pic. -------------------- */}
                     <div className={`w-full text-2xl font-semibold flex justify-between items-center text-[#F8F8F8]`}>
                         <button
-                            onClick = {() => router.push("/")}
+                            onClick = {() => router.push("/landing-page")}
                             className = "hover:cursor-pointer hover:opacity-70"
                         >
                             <Image
@@ -116,7 +116,7 @@ export default function ProfilePage() {
                     <div className="flex rounded-full bg-white w-32 h-32 items-center justify-center border-4 border-gray-300">
                         <Image
                             alt="Profile Picture"
-                            src={profile.profilePic ||`./globe.svg`}
+                            src={`${profile.profilePic}?ts=${Date.now()}` ||`./globe.svg`}
                             width={120}
                             height={120}
                             className="rounded-full"

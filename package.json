@@ -9,7 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.57.4",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.4",
+    "@mui/material": "^7.3.4",
+    "@supabase/supabase-js": "^2.75.0",
     "@vueuse/components": "^13.9.0",
     "@vueuse/core": "^13.9.0",
     "leaflet": "^1.9.4",

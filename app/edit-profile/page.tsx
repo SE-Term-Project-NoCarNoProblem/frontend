@@ -167,7 +167,7 @@ function EditProfile() {
                                 <img src={preview} alt="profile preview" className="w-full h-full object-cover" />
                             ) : (
                                 <Image
-                                    src={profile.profilePic}   // fallback or old avatar from DB
+                                    src={`${profile.profilePic}?ts=${Date.now()}`}   // fallback or old avatar from DB
                                     alt="default avatar"
                                     width={160}
                                     height={160}

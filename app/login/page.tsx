@@ -57,7 +57,7 @@ export default function LoginPage() {
             if(data.status == 'requires-setup'){
                 router.push('/setup-account');
             } else {
-                router.push('/');
+                router.push('/landing-page');
             }
 
 
