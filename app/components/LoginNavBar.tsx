@@ -3,11 +3,14 @@ import Image from "next/image";
 import Link from 'next/link';
 import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
-import { Avatar, Divider, ListItemIcon, Menu, MenuItem } from "@mui/material";
+import { Avatar, Box, Button, Divider, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
 import Logout from "@mui/icons-material/Logout";
+import InboxIcon from "@mui/icons-material/Inbox";
+import MailIcon from "@mui/icons-material/Mail";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/navigation";
 
+type Anchor = 'top';
 
 function LoginNavBar(Props: any) {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -29,6 +32,66 @@ function LoginNavBar(Props: any) {
         setAnchorEl(null);
         router.push('/profile');
     };
+    const handlers=[handleProfile,()=>{router.push("/landing-page")},()=>{router.push("/location")}];
+    const [state, setState] = React.useState({
+        top: false
+    });
+    const toggleDrawer =
+        (anchor: Anchor, open: boolean) =>
+            (event: React.KeyboardEvent | React.MouseEvent) => {
+                if (
+                    event.type === 'keydown' &&
+                    ((event as React.KeyboardEvent).key === 'Tab' ||
+                        (event as React.KeyboardEvent).key === 'Shift')
+                ) {
+                    return;
+                }
+
+                setState({ ...state, [anchor]: open });
+            };
+    const list = (anchor: Anchor) => (
+        <Box
+            sx={{ width: anchor === 'top' || anchor === 'bottom' ? 'auto' : 250 }}
+            role="presentation"
+            onClick={toggleDrawer(anchor, false)}
+            onKeyDown={toggleDrawer(anchor, false)}
+        >
+            <List>
+                {['Profile', 'Home', 'Transport'].map((text, index) => (
+                    <ListItem key={text} disablePadding>
+                        <ListItemButton onClick={handlers[index]}>
+                            <ListItemIcon>
+                                {index === 0 ? (
+                                    <Avatar src={`${Props.profilePic}?ts=${Date.now()}`} sx={{ width: 30, height: 30 }} />
+                                ) : index === 1 ? (
+                                    <Image alt="home icon" src="/icons/home.svg" width={30}
+                                height={30} />
+                                ) : index === 2 ? (
+                                    <Image alt="transport icon" src="/icons/car.svg" width={30}
+                                height={30} />
+                                ) : null}
+                            </ListItemIcon>
+                            <ListItemText primary={text} />
+                        </ListItemButton>
+                    </ListItem>
+                ))}
+            </List>
+            <Divider />
+            <List>
+                {['Log Out'].map((text) => (
+                    <ListItem key={text} disablePadding>
+                        <ListItemButton onClick={handleLogOut}>
+                            <ListItemIcon>
+                                <Image alt="log out icon" src="/icons/Blue-LogOut.svg" width={30}
+                                height={30} />
+                            </ListItemIcon>
+                            <ListItemText primary={text} />
+                        </ListItemButton>
+                    </ListItem>
+                ))}
+            </List>
+        </Box>
+    );
     return (<header className="mb-8 lg:mb-0">
         <div className="flex w-12/12 bg-[#d9d9d9] justify-between px-2  py-3">
             <div className="flex items-center gap-2">
@@ -42,13 +105,13 @@ function LoginNavBar(Props: any) {
                 <span className="font-semibold text-2xl text-slate-800">NoCarNoProblem</span>
             </div>
 
-            <div className="flex justify-between items-center md:w-4/12 lg:w-3/12">
+            <div className="md:flex hidden justify-between items-center md:w-4/12 lg:w-3/12">
                 <div className="flex w-8/12 gap-5 justify-between">
                     <Link href="/location" className="text-xl text-slate-800 px-2 py-2 rounded-xl hover:bg-amber-50">Transport</Link>
                     <Link href="/landing-page" className="text-xl text-slate-800 px-2 py-2 rounded-xl hover:bg-amber-50">Home</Link>
-                    
+
                 </div>
-                <Tooltip  title="Account settings">
+                <Tooltip title="Account settings">
                     <IconButton
                         onClick={handleClick}
                         size="small"
@@ -108,6 +171,23 @@ function LoginNavBar(Props: any) {
                         Logout
                     </MenuItem>
                 </Menu>
+            </div>
+            <div className="md:hidden flex justify-between items-center md:w-4/12 lg:w-3/12">
+                {(['top'] as const).map((anchor) => (
+                    <React.Fragment key={anchor}>
+                        <IconButton size="small" sx={{ ml: 2 }} onClick={toggleDrawer(anchor, true)}>
+                            <Image alt="hamburger icon" src="/icons/hamburgerMenu.svg" width={30}
+                                height={30} />
+                        </IconButton>
+                        <Drawer
+                            anchor={anchor}
+                            open={state[anchor]}
+                            onClose={toggleDrawer(anchor, false)}
+                        >
+                            {list(anchor)}
+                        </Drawer>
+                    </React.Fragment>
+                ))}
             </div>
         </div>
 
