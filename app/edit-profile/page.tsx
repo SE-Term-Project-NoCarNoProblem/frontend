@@ -33,7 +33,7 @@ function EditProfile() {
 
         async function fetchProfile() {
             try {
-                const res = await fetch("http://localhost:8000/api/users/me");
+                const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/me`);
                 const apiResponse = await res.json();
                 console.log("Data from API:", apiResponse);
                 const data = { // not complete
@@ -86,7 +86,7 @@ function EditProfile() {
 
         }
 
-        const res = await fetch("http://localhost:8000/api/users/me", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/me`, {
             method: "PATCH",
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),                // <-- multipart/form-data
@@ -96,7 +96,7 @@ function EditProfile() {
         if (form.profilePic != null) {
             const fd = new FormData();
             fd.append('profilePicture', form.profilePic);
-            const res2 = await fetch("http://localhost:8000/api/profile/upload", {
+            const res2 = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/profile/upload`, {
                 method: 'POST',            // or PATCH
                 body: fd,                  // don't set Content-Type yourself
                 credentials: 'include',
