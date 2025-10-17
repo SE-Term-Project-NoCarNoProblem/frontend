@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@next/swc-win32-x64-msvc": "^15.5.6",
     "@supabase/supabase-js": "^2.57.4",
     "@vueuse/components": "^13.9.0",
     "@vueuse/core": "^13.9.0",

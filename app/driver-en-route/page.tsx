@@ -16,6 +16,17 @@ const mockDriverData = {
   phone: "+66123456789"
 }
 
+// Mock backend
+async function fetchDriverLocation(): Promise<[number, number]> {
+  await new Promise(resolve => setTimeout(resolve, 500))
+
+  // Pretend this data came from backend
+  const randomLat = 13.7563 + (Math.random() - 0.5) * 0.01
+  const randomLng = 100.5018 + (Math.random() - 0.5) * 0.01
+
+  return [randomLat, randomLng]
+}
+
 export default function DriverEnRoutePage() {
   const [driverLocation, setDriverLocation] = useState<[number, number]>([13.7563, 100.5018]) // Default to Bangkok
   const [pickupLocation, setPickupLocation] = useState<[number, number]>([13.7563, 100.5018])
@@ -24,7 +35,7 @@ export default function DriverEnRoutePage() {
   // Dynamic import for the map component to avoid SSR issues
   const DriverEnRouteMap = useMemo(() => dynamic(
     () => import('@/app/components/DriverEnRouteMap'),
-    { 
+    {
       loading: () => <div className="flex-1 flex items-center justify-center bg-gray-100">
         <p className="text-gray-600">Loading map...</p>
       </div>,
@@ -32,14 +43,13 @@ export default function DriverEnRoutePage() {
     }
   ), [])
 
-  // Simulate driver movement (in a real app, this would come from real-time updates)
+  // Simulate backend updates every 3 seconds
   useEffect(() => {
-    const interval = setInterval(() => {
-      setDriverLocation(prev => [
-        prev[0] + (Math.random() - 0.5) * 0.001,
-        prev[1] + (Math.random() - 0.5) * 0.001
-      ])
-    }, 5000)
+    const interval = setInterval(async () => {
+      const newLocation = await fetchDriverLocation()
+      setDriverLocation(newLocation)
+      console.log("Mock backend sent driver location:", newLocation)
+    }, 3000)
 
     return () => clearInterval(interval)
   }, [])
