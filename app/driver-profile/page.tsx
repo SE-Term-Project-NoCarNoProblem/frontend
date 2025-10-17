@@ -39,8 +39,8 @@ export default function ProfilePage() {
           phoneNumber: "+66 xx-xxx-xxxx",
           registration: "4กก 1234",
           model: "Toyota Camry",
-          rating: 4.8,
-        //   rating: null,
+        //   rating: 4.8,
+          rating: null,
         };
         setProfile(data);
         console.log(data);
@@ -109,7 +109,7 @@ export default function ProfilePage() {
             </div>
 
             {/* -------------------- Profile Picture -------------------- */}
-            <div className="relative flex rounded-full bg-white w-32 h-32 items-center justify-center border-4 border-gray-300">
+            <div className="relative flex rounded-full bg-white w-34 h-32 items-center justify-center border-4 border-gray-300">
               <Image
                 alt="Profile Picture"
                 src={`./globe.svg`}
@@ -124,7 +124,7 @@ export default function ProfilePage() {
                     <span className="text-yellow-400">★</span>
                   </>
                 ) : (
-                  <span>No rating yet</span>
+                  <span>★ No ratings yet</span>
                 )}
               </div>
             </div>
