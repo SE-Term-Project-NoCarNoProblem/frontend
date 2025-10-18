@@ -17,6 +17,8 @@ type MapProps = {
 const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = [] }, ref) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
+  const geolocate = useRef<maplibregl.GeolocateControl | null>(null);
+
   const srcMarkerRef = useRef<maplibregl.Marker | null>(null);
   const destMarkerRef = useRef<maplibregl.Marker | null>(null);
   const driverMarkersRef = useRef<maplibregl.Marker[]>([]);
@@ -99,13 +101,14 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
 
     // Add navigation controls
     map.current.addControl(new maplibregl.NavigationControl(), 'top-left');
-    map.current.addControl(new maplibregl.GeolocateControl({
+    geolocate.current = new maplibregl.GeolocateControl({
       positionOptions: {
-        enableHighAccuracy: true
+        enableHighAccuracy: true,
       },
-      trackUserLocation: true
-    }), 'top-left');
-    map.current.addControl(new maplibregl.FullscreenControl(), 'top-left');
+      trackUserLocation: true,
+    });
+    map.current.addControl(geolocate.current, 'top-left');
+    // map.current.addControl(new maplibregl.FullscreenControl(), 'top-left');
     map.current.addControl(new maplibregl.ScaleControl(), 'bottom-left');
 
     // Handle map clicks
@@ -125,18 +128,9 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
 
   /* ### Get initial location ### */
   useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
-          setSrcMarker([latitude, longitude]);
-          map.current?.flyTo({ center: [longitude, latitude], zoom: 13 });
-        },
-        (err) => {
-          console.error("Geolocation error:", err);
-        }
-      );
-    }
+    map.current?.on('load',()=>{
+      geolocate.current?.trigger();
+    })
   }, []);
 
   /* ### Update source marker ### */
