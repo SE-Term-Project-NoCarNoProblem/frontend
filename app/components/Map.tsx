@@ -23,7 +23,7 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
   const destMarkerRef = useRef<maplibregl.Marker | null>(null);
   const driverMarkersRef = useRef<maplibregl.Marker[]>([]);
 
-  const [srcMarker, setSrcMarker] = useState<[number, number]>(position);
+  const [srcMarker, setSrcMarker] = useState<[number, number]>();
   const [srcAddress, setSrcAddress] = useState<string>("");
   const [srcQuery, setSrcQuery] = useState("");
   const [destMarker, setDestMarker] = useState<[number, number] | null>(null);
