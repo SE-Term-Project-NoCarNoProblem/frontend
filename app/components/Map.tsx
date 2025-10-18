@@ -111,15 +111,6 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
     // map.current.addControl(new maplibregl.FullscreenControl(), 'top-left');
     map.current.addControl(new maplibregl.ScaleControl(), 'bottom-left');
 
-    // Handle map clicks
-    map.current.on('click', (e) => {
-      if (lastFocused === "src") {
-        setSrcMarker([e.lngLat.lat, e.lngLat.lng]);
-      } else if (lastFocused === "dest") {
-        setDestMarker([e.lngLat.lat, e.lngLat.lng]);
-      }
-    });
-
     return () => {
       map.current?.remove();
       map.current = null;
@@ -297,55 +288,116 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
     }
   }
 
+  const handlePlacePin = () => {
+    if (!map.current) return;
+    
+    const center = map.current.getCenter();
+    if (lastFocused === "src") {
+      setSrcMarker([center.lat, center.lng]);
+    } else if (lastFocused === "dest") {
+      setDestMarker([center.lat, center.lng]);
+    }
+
+    setLastFocused(null);
+  };
+
   return (
     <div className="flex flex-col h-screen relative">
-      {/* Search Forms */}
-      <div className="flex flex-col w-full z-10">
-        <form 
-          onSubmit={(e) => handleSearch(e, "src", srcQuery)} 
-          className="flex-1 p-2 flex gap-2 bg-slate-300 border border-emerald-500 border-1 hover:border-3"
-          onFocus={() => setLastFocused("src")}
+      {/* Floating center pin */}
+      {lastFocused && 
+      <>
+        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
+          <div className="w-8 h-8 text-4xl">📍</div>
+        </div>
+
+        <button
+          onClick={handlePlacePin}
+          className="button button-primary absolute bottom-24 left-1/2 transform -translate-x-1/2 z-20"
         >
-          <div className="text-emerald-600 text-xl my-auto font-semibold">Pickup</div>
-          <input
-            type="text"
-            value={srcQuery}
-            placeholder="Enter pickup location"
-            onChange={(e) => setSrcQuery(e.target.value)}
-            className="flex-1 p-2 border rounded-xl text-black placeholder-slate-600 focus:outline-none 
-            focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          />
-          <button 
-            type="submit" 
-            className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 
-            hover:shadow-lg transition-all duration-200"
+          Place Pin
+        </button>
+      </>
+      }
+
+      {/* Floating Search Card */}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 w-[90%] max-w-2xl">
+        <div className="bg-white rounded-2xl shadow-xl p-4 space-y-3">
+          <form 
+            onSubmit={(e) => handleSearch(e, "src", srcQuery)}
+            // onFocus={() => setLastFocused(null)}
+            className="flex items-center gap-3 p-2 border-b border-gray-200"
           >
-            Search
-          </button>
-        </form>
-        
-        <form 
-          onSubmit={(e) => handleSearch(e, "dest", destQuery)} 
-          className="flex-1 p-2 flex gap-2 bg-slate-300 border border-red-500 border hover:border-3"
-          onFocus={() => setLastFocused("dest")}
-        >
-          <div className="text-red-600 text-xl my-auto font-semibold">Destination</div>
-          <input
-            type="text"
-            value={destQuery}
-            placeholder="Enter destination"
-            onChange={(e) => setDestQuery(e.target.value)}
-            className="flex-1 p-2 border rounded-xl text-black placeholder-slate-600 focus:outline-none 
-            focus:border-red-500 focus:ring-1 focus:ring-red-500"
-          />
-          <button 
-            type="submit" 
-            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 
-            hover:shadow-lg transition-all duration-200"
+            <div className="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+              <div className="text-emerald-600 text-xl">📍</div>
+            </div>
+            <div className="flex-grow">
+              <input
+                type="text"
+                value={srcQuery}
+                placeholder="Enter pickup location"
+                onChange={(e) => setSrcQuery(e.target.value)}
+                className="w-full px-3 py-2 text-gray-700 bg-gray-50 rounded-lg 
+                          focus:outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+            <button 
+              type="button"
+              onClick={() => lastFocused=="src" ? setLastFocused(null) : setLastFocused("src")}
+              className={`flex-shrink-0 px-3 py-2 rounded-lg border-2 transition-all duration-200
+                ${lastFocused === "src" 
+                  ? "bg-emerald-100 border-emerald-500 text-emerald-700" 
+                  : "border-gray-300 hover:border-emerald-500 text-gray-600 hover:text-emerald-700"}`}
+              title="Place pickup location on map"
+            >
+              📍
+            </button>
+            <button 
+              type="submit"
+              className="flex-shrink-0 bg-emerald-500 text-white px-4 py-2 rounded-lg
+                        hover:bg-emerald-600 transition-colors duration-200"
+            >
+              Search
+            </button>
+          </form>
+
+          <form
+            onSubmit={(e) => handleSearch(e, "dest", destQuery)}
+            // onFocus={() => setLastFocused(null)}
+            className="flex items-center gap-3 p-2"
           >
-            Search
-          </button>
-        </form>
+            <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+              <div className="text-red-600 text-xl">📍</div>
+            </div>
+            <div className="flex-grow">
+              <input
+                type="text"
+                value={destQuery}
+                placeholder="Enter destination"
+                onChange={(e) => setDestQuery(e.target.value)}
+                className="w-full px-3 py-2 text-gray-700 bg-gray-50 rounded-lg
+                          focus:outline-none focus:bg-white focus:ring-2 focus:ring-red-500"
+              />
+            </div>
+            <button 
+              type="button"
+              onClick={() => lastFocused=="dest" ? setLastFocused(null) : setLastFocused("dest")}
+              className={`flex-shrink-0 px-3 py-2 rounded-lg border-2 transition-all duration-200
+                ${lastFocused === "dest" 
+                  ? "bg-red-100 border-red-500 text-red-700" 
+                  : "border-gray-300 hover:border-red-500 text-gray-600 hover:text-red-700"}`}
+              title="Place destination on map"
+            >
+              📍
+            </button>
+            <button 
+              type="submit"
+              className="flex-shrink-0 bg-red-500 text-white px-4 py-2 rounded-lg
+                        hover:bg-red-600 transition-colors duration-200"
+            >
+              Search
+            </button>
+          </form>
+        </div>
       </div>
 
       {/* Map Container */}
