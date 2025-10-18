@@ -55,7 +55,7 @@ const LocationPicker = () => {
   ];
 
   return (
-    <div className="w-[393px] h-[441px] bg-white flex flex-col shadow-lg rounded-[10px] overflow-hidden">
+    <div className="w-full max-w-[393px] h-[441px] bg-white flex flex-col shadow-lg rounded-[10px] overflow-hidden">
       {/* Upper Bar */}
       <div className="flex justify-center pt-2">
         <Image

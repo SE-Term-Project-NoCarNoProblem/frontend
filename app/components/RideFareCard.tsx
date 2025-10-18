@@ -42,7 +42,7 @@ const RideRequestCard = ({
   };
 
   return (
-    <div className="w-[393px] h-[314px] bg-white flex flex-col shadow-lg rounded-[10px] overflow-hidden">
+    <div className="w-full max-w-[393px] h-[314px] bg-white flex flex-col shadow-lg rounded-[10px] overflow-hidden">
       {/* Upper Bar */}
       <div className="flex justify-center pt-2">
         <Image src="/upper bar.svg" alt="Upper bar" width={148} height={4} />

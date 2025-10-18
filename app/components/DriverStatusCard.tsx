@@ -55,7 +55,7 @@ const DriverStatusCard = ({
   };
 
   return (
-    <div className="w-[393px] h-[271px] bg-white shadow-lg rounded-t-3xl p-6 space-y-3 flex flex-col">
+    <div className="w-full max-w-[393px] h-[271px] bg-white shadow-lg rounded-t-3xl p-6 space-y-3 flex flex-col">
       {/* Upper Bar */}
       <div className="flex justify-center">
         <Image src="/upper bar.svg" alt="Upper bar" width={148} height={4} />
