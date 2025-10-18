@@ -13,6 +13,7 @@ import { fetchWithAuth } from "../lib/api";
 
 export default function Landing() {
     const [name,setName]=useState("");
+    const [id,setId]=useState("");
     const [profilePic,setProfilePic]=useState("/globe.svg");
     const [loading,setLoading]=useState(false);
     useEffect(()=>{
@@ -24,6 +25,7 @@ export default function Landing() {
                         console.log("Data from API:", apiResponse);
                         setName(apiResponse.data.fullname);
                         setProfilePic(apiResponse.data.profile_pic);
+                        setId(apiResponse.data.id);
                     } catch (err) {
                         console.error("Error fetching profile:", err);
                     } finally {
@@ -37,7 +39,7 @@ export default function Landing() {
     return (
         <main className="min-h-dvh bg-white">
             <div className="">
-                <LoginNavBar profilePic={profilePic}/>
+                <LoginNavBar profilePic={profilePic} id={id}/>
                 <section className="text-center">
                     <div className="flex flex-col lg:flex-row lg:justify-around">
 

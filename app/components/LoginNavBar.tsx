@@ -16,6 +16,9 @@ function LoginNavBar(Props: any) {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const router = useRouter();
+    const goHome=()=>{
+        router.push("/landing-page");
+    }
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
     };
@@ -30,7 +33,7 @@ function LoginNavBar(Props: any) {
     };
     const handleProfile = () => {
         setAnchorEl(null);
-        router.push('/profile');
+        router.push("/profile");
     };
     const handlers=[handleProfile,()=>{router.push("/landing-page")},()=>{router.push("/location")}];
     const [state, setState] = React.useState({
@@ -95,14 +98,20 @@ function LoginNavBar(Props: any) {
     return (<header className="mb-8 lg:mb-0">
         <div className="flex w-12/12 bg-[#d9d9d9] justify-between px-2  py-3">
             <div className="flex items-center gap-2">
-                <Image
+                <IconButton onClick={goHome}>
+                    <Image
                     aria-hidden
                     src="/directions_car.svg"
                     alt="Car icon"
                     width={30}
                     height={30}
                 />
-                <span className="font-semibold text-2xl text-slate-800">NoCarNoProblem</span>
+                </IconButton>
+                
+                <Button onClick={goHome}>
+                    <span className="font-semibold text-2xl text-slate-800">NoCarNoProblem</span>
+                </Button>
+                
             </div>
 
             <div className="md:flex hidden justify-between items-center md:w-4/12 lg:w-3/12">
