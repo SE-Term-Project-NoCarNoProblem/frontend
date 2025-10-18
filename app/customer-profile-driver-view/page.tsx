@@ -133,12 +133,6 @@ export default function ProfilePage() {
         </div>
 
         {/* -------------------- Middle -------------------- */}
-        <button
-          onClick={() => router.push("/edit-customer-profile")}
-          className=" mt-6 mb-6 bg-[#0E4663] text-[#F8F8F8] px-30 py-2 rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer"
-        >
-          Edit Profile
-        </button>
         <div
           className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 `}
         >
