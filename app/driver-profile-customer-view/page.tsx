@@ -13,8 +13,9 @@ interface Profile {
   role: string;
   email: string;
   phoneNumber: string;
-  home: string;
-  favouriteLocation: string;
+  registration: string;
+  model: string;
+  rating: number | null;
 }
 
 export default function ProfilePage() {
@@ -27,18 +28,20 @@ export default function ProfilePage() {
   useEffect(() => {
     async function fetchProfile() {
       try {
-        // const res = await fetch("http://localhost:5000/api/users/{id}");
+        // const res = await fetch("http://localhost:5000/api/drivers/{id}");
         // const data = await res.json();
         const data = {
           // mock data
-          firstName: "string",
-          lastName: "string",
-          age: 8,
-          role: "User",
-          email: "nocarnoproblem@gmail.com",
+          firstName: "Firstname",
+          lastName: "Lastname",
+          age: 23,
+          role: "Driver",
+          email: "driver@gmail.com",
           phoneNumber: "+66 xx-xxx-xxxx",
-          home: "string",
-          favouriteLocation: "string",
+          registration: "4กก 1234",
+          model: "Toyota Camry",
+        //   rating: 4.8,
+          rating: null,
         };
         setProfile(data);
         console.log(data);
@@ -107,7 +110,7 @@ export default function ProfilePage() {
             </div>
 
             {/* -------------------- Profile Picture -------------------- */}
-            <div className="flex rounded-full bg-white w-32 h-32 items-center justify-center border-4 border-gray-300">
+            <div className="relative flex rounded-full bg-white w-34 h-32 items-center justify-center border-4 border-gray-300">
               <Image
                 alt="Profile Picture"
                 src={`./globe.svg`}
@@ -115,6 +118,16 @@ export default function ProfilePage() {
                 height={120}
                 className="rounded-full"
               />
+              <div className="absolute border-2 border-white bottom-[-10px] bg-[#0E4663] rounded-full px-2 text-sm text-[#F8F8F8]">
+                {profile.rating ? (
+                  <>
+                    <span>{profile.rating}</span>
+                    <span className="text-yellow-400">★</span>
+                  </>
+                ) : (
+                  <span>★ No ratings yet</span>
+                )}
+              </div>
             </div>
 
             {/* -------------------- text under pic. -------------------- */}
@@ -172,6 +185,27 @@ export default function ProfilePage() {
           </div>
         </div>
 
+        <div
+          className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 justify-center`}
+        >
+          <div className="flex flex-1 ">
+            <Image
+              alt="location icon"
+              src="/icons/location-pin-svgrepo-com.svg"
+              width={50}
+              height={50}
+            />
+            <p className="flex items-center text-[#0E4663]">
+              {" "}
+              Model : {profile.model}
+            </p>
+          </div>
+          <div className="px-12 text-[#0E4663]">
+            Registration : {profile.registration} {/* รอใส่ตัวแปร */}
+          </div>
+        </div>
+
+        {/* -------------------- Under -------------------- */}
         {/* -------------------- Under -------------------- */}
         <Link href="/" className="mt-6 mb-6 bg-[#0E4663] text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer shadow-xl">
           <div className="flex px-20 py-2">
