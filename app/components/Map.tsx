@@ -161,7 +161,7 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
       popup.setHTML(`<div><b>Pickup:</b><br/>${display_name}</div>`);
     });
 
-    map.current.flyTo({ center: [srcMarker[1], srcMarker[0]], zoom: 15 });
+    map.current.flyTo({ center: [srcMarker[1], srcMarker[0]] });
   }, [srcMarker]);
 
   /* ### Update destination marker ### */
@@ -204,7 +204,7 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
       popup.setHTML(`<div><b>Destination:</b><br/>${display_name}</div>`);
     });
 
-    map.current.flyTo({ center: [destMarker[1], destMarker[0]], zoom: 15 });
+    map.current.flyTo({ center: [destMarker[1], destMarker[0]] });
   }, [destMarker]);
 
   /* ### Update driver markers ### */
