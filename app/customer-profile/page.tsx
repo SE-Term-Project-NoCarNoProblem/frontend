@@ -111,7 +111,7 @@ export default function ProfilePage() {
                     <div className="flex flex-col items-center text-[#F8F8F8]">  
                         Age: {profile.age}<br/>
                     </div>
-                    <div className="flex flex-col items-center text-[#F8F8F8]">  
+                    <div className="flex flex-col items-center text-[#BABABA]">  
                         {profile.role} {/* รอใส่ตัวแปร */}
                     </div>
                 </div>
@@ -174,20 +174,6 @@ export default function ProfilePage() {
                     <p className="flex items-center text-[#0E4663]"> Favourite location : </p>
                 </div>
                 <div className="px-12 text-[#0E4663]"> {profile.favouriteLocation} {/* รอใส่ตัวแปร */}</div>
-            </div>
-
-            <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}>
-                <div className="flex flex-1 ">
-                    <Image
-                        alt = "Blank icon"
-                        // src = "/icons/mail-svgrepo-com.svg"
-                        src = ""
-                        width={50}
-                        height={50}  
-                    />
-                    <p className="flex items-center text-[#0E4663]"> Blank : </p>
-                </div>
-                <div className="px-12 text-[#0E4663]"> Blank {/* รอใส่ตัวแปร */}</div>
             </div>
 
             {/* -------------------- Under -------------------- */}
