@@ -17,12 +17,27 @@ const mockDriverData = {
   phone: "+66123456789"
 }
 
+interface DriverLocations {
+  [driverId: string]: [number, number];
+}
+
 async function fetchDriverLocation(): Promise<[number, number]> {
   await new Promise(resolve => setTimeout(resolve, 500))
 
   const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/drivers/location`)
 
-  return res.json()
+  if (!res.ok) {
+    throw new Error(`Failed to fetch driver location: ${res.status}`);
+  }
+
+  const data: DriverLocations = await res.json();
+
+  const driver = Object.values(data)[0];
+  if (!driver) {
+    throw new Error("No drivers available");
+  }
+
+  return driver;
 }
 
 export default function DriverEnRoutePage() {
@@ -46,7 +61,7 @@ export default function DriverEnRoutePage() {
     const interval = setInterval(async () => {
       const newLocation = await fetchDriverLocation()
       setDriverLocation(newLocation)
-      console.log("Mock backend sent driver location:", newLocation)
+      console.log("Driver location:", newLocation)
     }, 3000)
 
     return () => clearInterval(interval)
