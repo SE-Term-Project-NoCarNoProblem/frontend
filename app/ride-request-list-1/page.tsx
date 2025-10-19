@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import RideMatchCard from "../components/RideMatchCard";
+import LocationPicker from "../components/LocationPicker";
+import { useRouter } from "next/navigation";
 
 interface Driver {
   id: string;
@@ -23,11 +26,10 @@ export default function RideRequest() {
   ), [])
 
   const [driverPosition, setDriverPosition] = useState<[number, number] | null>(null);
+  const router = useRouter();
   // Mock users/passengers
   const [users, setUsers] = useState<[number, number][]>([
     [13.7420, 100.5470], // Random
-    [13.7300, 100.5800], // Random
-    [13.7650, 100.5200]  // Random
   ]);
 
   const [driver, setDriver] = useState<Driver | null>(null);
@@ -73,32 +75,8 @@ useEffect(() => {
     )}
 
     {/* Bottom panel */}
-    <div className="absolute bottom-0 left-0 w-full z-400 bg-white p-4 shadow-lg rounded-2xl text-[#0E4663]">
-        <Image
-            src="/arrow_back.svg"
-            alt="arrow"
-            width={20}
-            height={20}
-            className="rounded-full"
-        />
-        
-        <div className="flex w-[100%] justify-between mx-2 items-center px-4">
-            <div> 
-                <div className="font-semibold">
-                    {/* {driver.name} */}
-                    Sippakorn Thunyahan 
-                </div>
-                <div className="text-sm">
-                    {/* {driver.car} : {driver.plate} */}
-                    Honda civic (Black) : กข 1234 
-                </div>      
-            </div>
-            <div>
-                <Image src="/Avatar.svg" alt="Avatar" width={50} height={50} className="rounded-full"/>
-                <Image src="/rating.svg" alt="rating" width={50} height={50} className="rounded-full"/>    
-                {/* <div className="text-sm text-center">{driver.rating}  ⭐</div> */}
-            </div>
-        </div>
+    <div className="flex flex-col items-center absolute bottom-0 left-0 w-full z-400 bg-white p-4 shadow-lg rounded-2xl text-[#0E4663]">
+        <RideMatchCard/>
     </div>
   </div>
   )
