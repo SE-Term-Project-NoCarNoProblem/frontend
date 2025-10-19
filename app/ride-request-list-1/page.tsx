@@ -37,7 +37,7 @@ export default function RideRequest() {
   useEffect(() => {
     const fetchRide = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/requests/nearby`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/requests/nearby`);
         const data = await res.json();
         setDriver(data.driver); // store driver info
       } catch (err) {
@@ -54,7 +54,7 @@ useEffect(() => {
 
       // Send to backend
       // console.log(position);
-      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/drivers/location`, {
+      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/drivers/location`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lat: position[0], lng: position[1] }),
