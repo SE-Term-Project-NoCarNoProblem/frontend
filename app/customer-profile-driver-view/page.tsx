@@ -7,15 +7,18 @@ import NavBar from "../components/NavBar";
 import Link from "next/link";
 
 interface Profile {
-  firstName: string;
-  lastName: string;
-  age: number;
-  role: string;
+  id: string;
+  fullname: string;
   email: string;
-  phoneNumber: string;
-  home: string;
-  favouriteLocation: string;
+  phone_number: string;
+  profile_pic: string;
+
+  age?: number | null;
+  role?: string | null;
+  home?: string | null;
+  favouriteLocation?: string | null;
 }
+
 
 export default function ProfilePage() {
   // const themeColor1 = "#0E4663";
@@ -27,21 +30,11 @@ export default function ProfilePage() {
   useEffect(() => {
     async function fetchProfile() {
       try {
-        // const res = await fetch("http://localhost:5000/api/users/{id}");
-        // const data = await res.json();
-        const data = {
-          // mock data
-          firstName: "string",
-          lastName: "string",
-          age: 8,
-          role: "User",
-          email: "nocarnoproblem@gmail.com",
-          phoneNumber: "+66 xx-xxx-xxxx",
-          home: "string",
-          favouriteLocation: "string",
-        };
-        setProfile(data);
-        console.log(data);
+        const userId = "5ed29ee2-3286-484e-b7a6-fe8830dd20d9";
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/${userId}`);
+        const data = await res.json();
+        setProfile(data.data);
+        // console.log(data.data);
       } catch (err) {
         console.error("Error fetching profile:", err);
       } finally {
@@ -120,7 +113,7 @@ export default function ProfilePage() {
             {/* -------------------- text under pic. -------------------- */}
             <div className="text-2xl font-semibold text-[#F8F8F8]">
               {" "}
-              {profile.firstName} {profile.lastName} {/* รอใส่ตัวแปร */}{" "}
+              {profile.fullname} {/* รอใส่ตัวแปร */}{" "}
             </div>
             <div className="flex flex-col items-center text-[#F8F8F8]">
               Age: {profile.age}
@@ -168,17 +161,23 @@ export default function ProfilePage() {
           </div>
           <div className="px-12 text-[#0E4663]">
             {" "}
-            {profile.phoneNumber} {/* รอใส่ตัวแปร */}
+            {profile.phone_number} {/* รอใส่ตัวแปร */}
           </div>
         </div>
 
         {/* -------------------- Under -------------------- */}
-        <Link href="/" className="mt-6 mb-6 bg-[#0E4663] text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer shadow-xl">
+        <Link
+          href="/"
+          className="mt-6 mb-6 bg-[#0E4663] text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer shadow-xl"
+        >
           <div className="flex px-20 py-2">
             <p className="flex items-center text-[#F8F8F8]"> Back </p>
           </div>
         </Link>
-        <Link href="/" className="mt-6 mb-6 bg-[#F8F8F8] text-[#0E4663] rounded-xl hover:bg-[#F8F8F8]/90 hover:cursor-pointer shadow-xl">
+        <Link
+          href="/"
+          className="mt-6 mb-6 bg-[#F8F8F8] text-[#0E4663] rounded-xl hover:bg-[#F8F8F8]/90 hover:cursor-pointer shadow-xl"
+        >
           <div className="flex px-20 py-2">
             <p className="flex items-center text-[#0E4663]"> Cancel </p>
           </div>

@@ -27,7 +27,7 @@ export default function ProfilePage() {
   useEffect(() => {
     async function fetchProfile() {
       try {
-        // const res = await fetch("http://localhost:5000/api/profile");
+        // const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/me`);
         // const data = await res.json();
         const data = {
           // mock data
@@ -39,7 +39,7 @@ export default function ProfilePage() {
           phoneNumber: "+66 xx-xxx-xxxx",
           registration: "4กก 1234",
           model: "Toyota Camry",
-        //   rating: 4.8,
+          //   rating: 4.8,
           rating: null,
         };
         setProfile(data);

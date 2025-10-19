@@ -7,12 +7,11 @@ import NavBar from "../components/NavBar";
 import Link from "next/link";
 
 interface Profile {
-  firstName: string;
-  lastName: string;
+  fullname: string;
   age: number;
   role: string;
   email: string;
-  phoneNumber: string;
+  phone_number: string;
   registration: string;
   model: string;
   rating: number | null;
@@ -28,23 +27,26 @@ export default function ProfilePage() {
   useEffect(() => {
     async function fetchProfile() {
       try {
-        // const res = await fetch("http://localhost:5000/api/drivers/{id}");
-        // const data = await res.json();
-        const data = {
-          // mock data
-          firstName: "Firstname",
-          lastName: "Lastname",
-          age: 23,
-          role: "Driver",
-          email: "driver@gmail.com",
-          phoneNumber: "+66 xx-xxx-xxxx",
-          registration: "4กก 1234",
-          model: "Toyota Camry",
-        //   rating: 4.8,
-          rating: null,
-        };
-        setProfile(data);
-        console.log(data);
+        const driverId = "1ad4b931-b091-4f35-8e80-a03e63e01ba6";
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/${driverId}`
+        );
+        const data = await res.json();
+        // const data = {
+        //   // mock data
+        //   firstName: "Firstname",
+        //   lastName: "Lastname",
+        //   age: 23,
+        //   role: "Driver",
+        //   email: "driver@gmail.com",
+        //   phoneNumber: "+66 xx-xxx-xxxx",
+        //   registration: "4กก 1234",
+        //   model: "Toyota Camry",
+        //   //   rating: 4.8,
+        //   rating: null,
+        // };
+        setProfile(data.data);
+        // console.log(data.data);
       } catch (err) {
         console.error("Error fetching profile:", err);
       } finally {
@@ -133,7 +135,7 @@ export default function ProfilePage() {
             {/* -------------------- text under pic. -------------------- */}
             <div className="text-2xl font-semibold text-[#F8F8F8]">
               {" "}
-              {profile.firstName} {profile.lastName} {/* รอใส่ตัวแปร */}{" "}
+              {profile.fullname} {/* รอใส่ตัวแปร */}{" "}
             </div>
             <div className="flex flex-col items-center text-[#F8F8F8]">
               Age: {profile.age}
@@ -181,7 +183,7 @@ export default function ProfilePage() {
           </div>
           <div className="px-12 text-[#0E4663]">
             {" "}
-            {profile.phoneNumber} {/* รอใส่ตัวแปร */}
+            {profile.phone_number} {/* รอใส่ตัวแปร */}
           </div>
         </div>
 
@@ -207,12 +209,18 @@ export default function ProfilePage() {
 
         {/* -------------------- Under -------------------- */}
         {/* -------------------- Under -------------------- */}
-        <Link href="/" className="mt-6 mb-6 bg-[#0E4663] text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer shadow-xl">
+        <Link
+          href="/"
+          className="mt-6 mb-6 bg-[#0E4663] text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer shadow-xl"
+        >
           <div className="flex px-20 py-2">
             <p className="flex items-center text-[#F8F8F8]"> Back </p>
           </div>
         </Link>
-        <Link href="/" className="mt-6 mb-6 bg-[#F8F8F8] text-[#0E4663] rounded-xl hover:bg-[#F8F8F8]/90 hover:cursor-pointer shadow-xl">
+        <Link
+          href="/"
+          className="mt-6 mb-6 bg-[#F8F8F8] text-[#0E4663] rounded-xl hover:bg-[#F8F8F8]/90 hover:cursor-pointer shadow-xl"
+        >
           <div className="flex px-20 py-2">
             <p className="flex items-center text-[#0E4663]"> Cancel </p>
           </div>
