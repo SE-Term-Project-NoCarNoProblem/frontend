@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import DriverInfoCard from '@/app/components/DriverInfoCard'
+import { fetchWithAuth } from '../lib/api'
 
 // Mock driver data - in a real app this would come from an API
 const mockDriverData = {
@@ -16,15 +17,12 @@ const mockDriverData = {
   phone: "+66123456789"
 }
 
-// Mock backend
 async function fetchDriverLocation(): Promise<[number, number]> {
   await new Promise(resolve => setTimeout(resolve, 500))
 
-  // Pretend this data came from backend
-  const randomLat = 13.7563 + (Math.random() - 0.5) * 0.01
-  const randomLng = 100.5018 + (Math.random() - 0.5) * 0.01
+  const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/drivers/location`)
 
-  return [randomLat, randomLng]
+  return res.json()
 }
 
 export default function DriverEnRoutePage() {
