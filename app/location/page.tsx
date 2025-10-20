@@ -11,6 +11,7 @@ import LocationPicker from "../components/LocationPicker";
 import RideRequestCard from "../components/RideFareCard";
 import DriverInfoCard from "../components/DriverInfoCard";
 import DriverStatusCard from "../components/DriverStatusCard";
+import DriverActionCard from "../components/DriverActionCard";
 
 interface Driver {
 	driver_id: string;
@@ -48,6 +49,51 @@ interface UserRideRequest {
 	status: string;
 }
 
+interface ActiveRide {
+	id: string;
+	customer_id: string;
+	driver_id: string;
+	ride_status: string;
+	ride_progress_status:
+		| "accepted"
+		| "on_the_way"
+		| "arrived"
+		| "picked_up"
+		| "completed";
+	pickup_lat: number;
+	pickup_lng: number;
+	dropoff_lat: number;
+	dropoff_lng: number;
+	price: number;
+	customer?: {
+		id: string;
+		user: {
+			fullname: string;
+			email: string;
+			phone_number: string;
+			profile_pic?: string;
+		};
+	};
+	verified_driver?: {
+		id: string;
+		driver: {
+			user: {
+				fullname: string;
+				email: string;
+				phone_number: string;
+				profile_pic?: string;
+			};
+		};
+	};
+	vehicle?: {
+		id: string;
+		registration: string;
+		model: string;
+		make: string;
+		color: string;
+	};
+}
+
 type UserMode = "customer" | "driver";
 
 export default function Home() {
@@ -78,6 +124,10 @@ export default function Home() {
 	const [userRideRequest, setUserRideRequest] =
 		useState<UserRideRequest | null>(null);
 	const [acceptedRide, setAcceptedRide] = useState<NearbyRequest | null>(null);
+	const [activeRide, setActiveRide] = useState<ActiveRide | null>(null);
+	const [rideStatus, setRideStatus] = useState<
+		"accepted" | "on_the_way" | "arrived" | "picked_up" | "completed"
+	>("accepted");
 
 	// Store socket and user ID in refs so they persist across renders
 	const socketRef = useRef<ReturnType<typeof io> | null>(null);
@@ -194,6 +244,69 @@ export default function Home() {
 			setDrivers(data.map((d) => [d.lat, d.lng]));
 		});
 
+		// Listen for any ride event using a pattern
+		socket.onAny((eventName, ...args) => {
+			// Check for ride acceptance events
+			const rideAcceptedMatch = eventName.match(/^ride:(.+):accepted$/);
+			if (rideAcceptedMatch) {
+				const rideId = rideAcceptedMatch[1];
+				const data = args[0];
+				console.log("Ride accepted event:", eventName, data);
+
+				// Fetch full ride details if this is our ride
+				setUserRideRequest((currentRequest) => {
+					if (currentRequest?.id === rideId) {
+						fetchRideDetails(rideId);
+					}
+					return currentRequest;
+				});
+			}
+
+			// Check for ride status update events
+			const statusUpdateMatch = eventName.match(/^ride:(.+):status_update$/);
+			if (statusUpdateMatch) {
+				const rideId = statusUpdateMatch[1];
+				const data = args[0];
+				console.log("Ride status update event:", eventName, data);
+
+				setRideStatus(data.progress_status);
+				setActiveRide((currentRide) => {
+					if (currentRide && currentRide.id === rideId) {
+						return {
+							...currentRide,
+							ride_progress_status: data.progress_status,
+							ride_status: data.ride_status,
+						} as ActiveRide;
+					}
+					return currentRide;
+				});
+			}
+
+			// Check for ride canceled events
+			const canceledMatch = eventName.match(/^ride:(.+):canceled$/);
+			if (canceledMatch) {
+				const rideId = canceledMatch[1];
+				const data = args[0];
+				console.log("Ride canceled event:", eventName, data);
+
+				setActiveRide((currentRide) => {
+					if (currentRide?.id === rideId) {
+						alert("This ride has been cancelled");
+						setCustomerView("select");
+						setDriverView("list");
+						setSrcMarker(null);
+						setDestMarker(null);
+						setSrcAddress("");
+						setDestAddress("");
+						setUserRideRequest(null);
+						setAcceptedRide(null);
+						return null;
+					}
+					return currentRide;
+				});
+			}
+		});
+
 		// Cleanup runs synchronously when component unmounts
 		return () => {
 			console.log("Cleaning up socket...");
@@ -213,50 +326,75 @@ export default function Home() {
 		setSrcMarker(null);
 		setDestMarker(null);
 
-		// Check for existing ride request on page load (customer mode)
+		// Check for existing ride request on page load
 		const checkExistingRide = async () => {
-			if (userMode !== "customer") return;
-
 			try {
-				const res = await fetchWithAuth(
-					`${process.env.NEXT_PUBLIC_BACKEND_URL}/requests/me/active`
-				);
+				// First check for accepted/ongoing rides
+				// We would need an API endpoint to get current user's active ride
+				// For now, check for ride requests
 
-				if (!res.ok) {
-					console.log("No active ride found");
-					// No active ride found
-					setCustomerView("select");
-					setUserRideRequest(null);
-					return;
-				}
-
-				const data = await res.json();
-
-				// If user has an active ride, show DriverInfoCard
-				// console.log(data, data.id);
-				if (data && data.length > 0 && data[0].id) {
-					setUserRideRequest(data);
-					setCustomerView("waiting");
-
-					// Set markers for the existing ride
-					setSrcMarker([data[0].pickup_lat, data[0].pickup_lng]);
-					setDestMarker([data[0].dropoff_lat, data[0].dropoff_lng]);
-					zoomOverall(
-						data[0].pickup_lat,
-						data[0].pickup_lng,
-						data[0].dropoff_lat,
-						data[0].dropoff_lng
+				if (userMode === "customer") {
+					const res = await fetchWithAuth(
+						`${process.env.NEXT_PUBLIC_BACKEND_URL}/requests/me/active`
 					);
 
-					console.log("📍 Existing ride found:", data[0]);
-				} else {
-					setCustomerView("select");
-					setUserRideRequest(null);
+					if (res.ok) {
+						const data = await res.json();
+
+						if (data && data.length > 0 && data[0].id) {
+							const rideRequest = data[0];
+							setUserRideRequest(rideRequest);
+
+							// Check if this request has been accepted (try fetching as a ride)
+							try {
+								const rideRes = await fetchWithAuth(
+									`${process.env.NEXT_PUBLIC_BACKEND_URL}/rides/${rideRequest.id}`
+								);
+
+								if (rideRes.ok) {
+									const rideData: ActiveRide = await rideRes.json();
+									setActiveRide(rideData);
+									setRideStatus(rideData.ride_progress_status);
+									console.log("📍 Existing active ride found:", rideData);
+								}
+							} catch (err) {
+								console.log("Request not yet accepted");
+							}
+
+							setCustomerView("waiting");
+
+							// Set markers for the existing ride
+							setSrcMarker([rideRequest.pickup_lat, rideRequest.pickup_lng]);
+							setDestMarker([rideRequest.dropoff_lat, rideRequest.dropoff_lng]);
+							zoomOverall(
+								rideRequest.pickup_lat,
+								rideRequest.pickup_lng,
+								rideRequest.dropoff_lat,
+								rideRequest.dropoff_lng
+							);
+
+							console.log("📍 Existing ride request found:", rideRequest);
+						} else {
+							setCustomerView("select");
+							setUserRideRequest(null);
+							setActiveRide(null);
+						}
+					} else {
+						setCustomerView("select");
+						setUserRideRequest(null);
+						setActiveRide(null);
+					}
+				} else if (userMode === "driver") {
+					// Driver mode - no need to check for existing rides on load
+					setDriverView("list");
 				}
 			} catch (err) {
 				console.error("Error checking existing ride:", err);
-				setCustomerView("select");
-				setUserRideRequest(null);
+				if (userMode === "customer") {
+					setCustomerView("select");
+					setUserRideRequest(null);
+					setActiveRide(null);
+				}
 			}
 		};
 
@@ -351,6 +489,32 @@ export default function Home() {
 
 	const mapRef = useRef<MapHandle>(null);
 
+	// Fetch full ride details
+	const fetchRideDetails = async (rideId: string) => {
+		try {
+			const res = await fetchWithAuth(
+				`${process.env.NEXT_PUBLIC_BACKEND_URL}/rides/${rideId}`
+			);
+			if (!res.ok) {
+				throw new Error("Failed to fetch ride details");
+			}
+			const rideData: ActiveRide = await res.json();
+			console.log("✅ Fetched ride details:", rideData);
+
+			setActiveRide(rideData);
+			setRideStatus(rideData.ride_progress_status);
+
+			// Update view based on user mode
+			if (userMode === "customer") {
+				setCustomerView("waiting");
+			} else if (userMode === "driver") {
+				setDriverView("accepted");
+			}
+		} catch (err) {
+			console.error("❌ Error fetching ride details:", err);
+		}
+	};
+
 	const handleSelectRequest = (request: NearbyRequest) => {
 		setSelectedRequest(request);
 		setDriverView("details");
@@ -395,9 +559,12 @@ export default function Home() {
 			const data = await res.json();
 			console.log("✅ Ride request accepted:", data);
 
-			// Store the accepted ride and progress to accepted view
+			// Store the accepted ride and fetch full ride details
 			setAcceptedRide(selectedRequest);
 			setDriverView("accepted");
+
+			// Fetch full ride details
+			await fetchRideDetails(selectedRequest.id);
 		} catch (err) {
 			console.error("❌ Error accepting ride request:", err);
 			alert("Failed to accept ride request. Please try again.");
@@ -443,28 +610,51 @@ export default function Home() {
 	};
 
 	const handleCancelRide = async () => {
-		if (!userRideRequest) return;
+		// Determine which ride to cancel
+		const rideIdToCancel = activeRide?.id || userRideRequest?.id;
+
+		if (!rideIdToCancel) return;
 
 		const confirmed = confirm("Are you sure you want to cancel this ride?");
 		if (!confirmed) return;
 
 		try {
-			const res = await fetchWithAuth(
-				`${process.env.NEXT_PUBLIC_BACKEND_URL}/requests/${userRideRequest.id}`,
-				{
-					method: "DELETE",
-				}
-			);
+			// If ride has been accepted (has activeRide), cancel via rides endpoint
+			if (activeRide) {
+				const res = await fetchWithAuth(
+					`${process.env.NEXT_PUBLIC_BACKEND_URL}/rides/${rideIdToCancel}`,
+					{
+						method: "DELETE",
+					}
+				);
 
-			if (!res.ok) {
-				throw new Error("Failed to cancel ride");
+				if (!res.ok) {
+					throw new Error("Failed to cancel ongoing ride");
+				}
+
+				console.log("✅ Ongoing ride cancelled");
+			} else if (userRideRequest) {
+				// If ride request hasn't been accepted yet, cancel via requests endpoint
+				const res = await fetchWithAuth(
+					`${process.env.NEXT_PUBLIC_BACKEND_URL}/requests/${rideIdToCancel}`,
+					{
+						method: "DELETE",
+					}
+				);
+
+				if (!res.ok) {
+					throw new Error("Failed to cancel ride request");
+				}
+
+				console.log("✅ Ride request cancelled");
 			}
 
-			console.log("✅ Ride cancelled");
-
-			// Reset to select view
+			// Reset to select/list view
 			setCustomerView("select");
+			setDriverView("list");
 			setUserRideRequest(null);
+			setActiveRide(null);
+			setAcceptedRide(null);
 			setSrcMarker(null);
 			setDestMarker(null);
 			setSrcAddress("");
@@ -472,6 +662,56 @@ export default function Home() {
 		} catch (err) {
 			console.error("❌ Error cancelling ride:", err);
 			alert("Failed to cancel ride. Please try again.");
+		}
+	};
+
+	// Handler for driver to update ride status
+	const handleDriverStatusUpdate = async (
+		newStatus: "on_the_way" | "arrived" | "picked_up" | "completed"
+	) => {
+		if (!activeRide) return;
+
+		try {
+			const res = await fetchWithAuth(
+				`${process.env.NEXT_PUBLIC_BACKEND_URL}/rides/${activeRide.id}/status`,
+				{
+					method: "PATCH",
+					body: JSON.stringify({
+						progress_status: newStatus,
+					}),
+				}
+			);
+
+			if (!res.ok) {
+				throw new Error("Failed to update ride status");
+			}
+
+			const data = await res.json();
+			console.log("✅ Ride status updated:", data);
+
+			// Update local state
+			setRideStatus(newStatus);
+			setActiveRide({
+				...activeRide,
+				ride_progress_status: newStatus,
+			});
+
+			// If completed, show success message and reset after a delay
+			if (newStatus === "completed") {
+				setTimeout(() => {
+					alert("Ride completed successfully! 🎉");
+					setDriverView("list");
+					setActiveRide(null);
+					setAcceptedRide(null);
+					setSrcMarker(null);
+					setDestMarker(null);
+					setSrcAddress("");
+					setDestAddress("");
+				}, 2000);
+			}
+		} catch (err) {
+			console.error("❌ Error updating ride status:", err);
+			alert("Failed to update ride status. Please try again.");
 		}
 	};
 
@@ -503,6 +743,7 @@ export default function Home() {
 			/>
 			{/* <BottomSheet onRequestRide={handleRequestRide}/> */}
 			<div className="absolute bottom-0 left-0 right-0 w-full z-10">
+				{/* Customer view - Select locations and request ride */}
 				{userMode == "customer" &&
 					customerView === "select" &&
 					srcAddress &&
@@ -510,19 +751,26 @@ export default function Home() {
 					fare && (
 						<ChooseRideCard price={fare} onRequestRide={handleRequestRide} />
 					)}
+
+				{/* Customer view - Waiting for driver or ride in progress */}
 				{userMode == "customer" &&
 					customerView === "waiting" &&
-					userRideRequest && (
+					(activeRide || userRideRequest) && (
 						<DriverInfoCard
 							driver={{
-								name: userRideRequest.driver_id
-									? "Driver Assigned"
-									: "Waiting for driver...",
-								vehicle: "Toyota Camry",
-								plateNumber: "ABC-1234",
+								name:
+									activeRide?.verified_driver?.driver.user.fullname ||
+									"Waiting for driver...",
+								vehicle: activeRide?.vehicle
+									? `${activeRide.vehicle.make} ${activeRide.vehicle.model} (${activeRide.vehicle.color})`
+									: "Searching...",
+								plateNumber: activeRide?.vehicle?.registration || "-",
 								rating: 4.8,
-								avatar: "D",
-								status: userRideRequest.status || "accepted",
+								avatar:
+									activeRide?.verified_driver?.driver.user.fullname?.charAt(
+										0
+									) || "D",
+								status: activeRide?.ride_progress_status || "waiting",
 								estimatedArrival: "5 minutes",
 							}}
 							onMessageDriver={() => console.log("Message driver")}
@@ -530,12 +778,16 @@ export default function Home() {
 							showBackButton={false}
 						/>
 					)}
+
+				{/* Driver view - List of nearby ride requests */}
 				{userMode == "driver" && driverView === "list" && (
 					<LocationPicker
 						nearbyRequests={nearbyRequests}
 						onSelectRequest={handleSelectRequest}
 					/>
 				)}
+
+				{/* Driver view - Request details before accepting */}
 				{userMode == "driver" &&
 					driverView === "details" &&
 					selectedRequest && (
@@ -545,20 +797,21 @@ export default function Home() {
 							onBack={handleBackToList}
 						/>
 					)}
-				{userMode == "driver" && driverView === "accepted" && acceptedRide && (
-					<DriverStatusCard
-						driver={{
-							name: "Customer",
-							vehicle: "Waiting for pickup",
-							plateNumber: "-",
-							rating: 0,
-							avatar: "C",
-							status: "accepted",
+
+				{/* Driver view - Accepted ride with action buttons */}
+				{userMode == "driver" && driverView === "accepted" && activeRide && (
+					<DriverActionCard
+						customer={{
+							name: activeRide.customer?.user.fullname || "Customer",
+							pickupAddress: srcAddress || "Pickup location",
+							dropoffAddress: destAddress || "Dropoff location",
+							avatar: activeRide.customer?.user.fullname?.charAt(0) || "C",
+							avatarImage: activeRide.customer?.user.profile_pic,
 						}}
-						isAccepted={true}
-						onMessageDriver={() => console.log("Message customer")}
-						onCancel={handleBackToList}
-						showBackButton={true}
+						rideStatus={rideStatus}
+						onStatusUpdate={handleDriverStatusUpdate}
+						onCancel={handleCancelRide}
+						onMessageCustomer={() => console.log("Message customer")}
 					/>
 				)}
 			</div>
