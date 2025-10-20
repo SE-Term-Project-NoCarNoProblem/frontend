@@ -31,7 +31,7 @@ export default function ProfilePage() {
     async function fetchProfile() {
       try {
         const userId = "5ed29ee2-3286-484e-b7a6-fe8830dd20d9";
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/${userId}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${userId}`);
         const data = await res.json();
         setProfile(data.data);
         // console.log(data.data);

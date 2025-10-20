@@ -29,7 +29,7 @@ export default function ProfilePage() {
       try {
         const driverId = "1ad4b931-b091-4f35-8e80-a03e63e01ba6";
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/${driverId}`
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${driverId}`
         );
         const data = await res.json();
         // const data = {
