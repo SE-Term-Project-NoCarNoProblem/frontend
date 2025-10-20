@@ -4,18 +4,21 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import NavBar from "../components/NavBar";
+import Link from "next/link";
 
 interface Profile {
-  firstName: string;
-  lastName: string;
-  age: number;
-  role: string;
+  id: string;
+  fullname: string;
   email: string;
-  phoneNumber: string;
-  registration: string;
-  model: string;
-  rating: number | null;
+  phone_number: string;
+  profile_pic: string;
+
+  age?: number | null;
+  role?: string | null;
+  home?: string | null;
+  favouriteLocation?: string | null;
 }
+
 
 export default function ProfilePage() {
   // const themeColor1 = "#0E4663";
@@ -27,23 +30,11 @@ export default function ProfilePage() {
   useEffect(() => {
     async function fetchProfile() {
       try {
-        // const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/me`);
-        // const data = await res.json();
-        const data = {
-          // mock data
-          firstName: "Firstname",
-          lastName: "Lastname",
-          age: 23,
-          role: "Driver",
-          email: "driver@gmail.com",
-          phoneNumber: "+66 xx-xxx-xxxx",
-          registration: "4กก 1234",
-          model: "Toyota Camry",
-          //   rating: 4.8,
-          rating: null,
-        };
-        setProfile(data);
-        console.log(data);
+        const userId = "5ed29ee2-3286-484e-b7a6-fe8830dd20d9";
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/${userId}`);
+        const data = await res.json();
+        setProfile(data.data);
+        // console.log(data.data);
       } catch (err) {
         console.error("Error fetching profile:", err);
       } finally {
@@ -109,7 +100,7 @@ export default function ProfilePage() {
             </div>
 
             {/* -------------------- Profile Picture -------------------- */}
-            <div className="relative flex rounded-full bg-white w-34 h-32 items-center justify-center border-4 border-gray-300">
+            <div className="flex rounded-full bg-white w-32 h-32 items-center justify-center border-4 border-gray-300">
               <Image
                 alt="Profile Picture"
                 src={`./globe.svg`}
@@ -117,22 +108,12 @@ export default function ProfilePage() {
                 height={120}
                 className="rounded-full"
               />
-              <div className="absolute border-2 border-white bottom-[-10px] bg-[#0E4663] rounded-full px-2 text-sm text-[#F8F8F8]">
-                {profile.rating ? (
-                  <>
-                    <span>{profile.rating}</span>
-                    <span className="text-yellow-400">★</span>
-                  </>
-                ) : (
-                  <span>★ No ratings yet</span>
-                )}
-              </div>
             </div>
 
             {/* -------------------- text under pic. -------------------- */}
             <div className="text-2xl font-semibold text-[#F8F8F8]">
               {" "}
-              {profile.firstName} {profile.lastName} {/* รอใส่ตัวแปร */}{" "}
+              {profile.fullname} {/* รอใส่ตัวแปร */}{" "}
             </div>
             <div className="flex flex-col items-center text-[#F8F8F8]">
               Age: {profile.age}
@@ -145,12 +126,6 @@ export default function ProfilePage() {
         </div>
 
         {/* -------------------- Middle -------------------- */}
-        <button
-          onClick={() => router.push("/edit-driver-profile")}
-          className=" mt-6 mb-6 bg-[#0E4663] text-[#F8F8F8] px-30 py-2 rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer"
-        >
-          Edit Profile
-        </button>
         <div
           className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 `}
         >
@@ -186,42 +161,27 @@ export default function ProfilePage() {
           </div>
           <div className="px-12 text-[#0E4663]">
             {" "}
-            {profile.phoneNumber} {/* รอใส่ตัวแปร */}
-          </div>
-        </div>
-
-        <div
-          className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 justify-center`}
-        >
-          <div className="flex flex-1 ">
-            <Image
-              alt="location icon"
-              src="/icons/location-pin-svgrepo-com.svg"
-              width={50}
-              height={50}
-            />
-            <p className="flex items-center text-[#0E4663]">
-              {" "}
-              Model : {profile.model}
-            </p>
-          </div>
-          <div className="px-12 text-[#0E4663]">
-            Registration : {profile.registration} {/* รอใส่ตัวแปร */}
+            {profile.phone_number} {/* รอใส่ตัวแปร */}
           </div>
         </div>
 
         {/* -------------------- Under -------------------- */}
-        <button className="mt-6 mb-6 bg-[#0E4663] text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer">
-          <div className="flex px-30">
-            <Image
-              alt="log out icon"
-              src="/icons/log-out-1-svgrepo-com.svg"
-              width={50}
-              height={50}
-            />
-            <p className="flex items-center text-[#F8F8F8]"> Log out </p>
+        <Link
+          href="/"
+          className="mt-6 mb-6 bg-[#0E4663] text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer shadow-xl"
+        >
+          <div className="flex px-20 py-2">
+            <p className="flex items-center text-[#F8F8F8]"> Back </p>
           </div>
-        </button>
+        </Link>
+        <Link
+          href="/"
+          className="mt-6 mb-6 bg-[#F8F8F8] text-[#0E4663] rounded-xl hover:bg-[#F8F8F8]/90 hover:cursor-pointer shadow-xl"
+        >
+          <div className="flex px-20 py-2">
+            <p className="flex items-center text-[#0E4663]"> Cancel </p>
+          </div>
+        </Link>
       </div>
     </>
   );

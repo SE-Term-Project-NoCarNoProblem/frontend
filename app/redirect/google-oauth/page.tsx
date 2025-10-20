@@ -16,7 +16,7 @@ export default function GoogleOAuthRedirectPage() {
 			if (data.status === 'requires-setup') {
 				redirect('/setup-account')
 			} else {
-				redirect('/')
+				redirect('/landing-page')
 			}
 		})
 	});

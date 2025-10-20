@@ -300,9 +300,9 @@ function EditProfile() {
             {/* <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 justify-center`}>
                 
             </div> */}
-            <button className={`bg-[#0E4663] mt-15 text-[#F5F5F5] min-w-fit max-w-56 w-1/4 p-5 rounded-xl`} onClick={onSave}>Confirm change</button>
+            <button className={`bg-[#0E4663] mt-15 text-[#F5F5F5] min-w-fit max-w-56 w-1/4 p-5 rounded-xl  hover:bg-[#0E4663]/90 hover:cursor-pointer`} onClick={onSave}>Confirm change</button>
 
-            <button className="mt-6 mb-6 bg-[#0E4663] text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer">
+            <button className="mt-6 mb-6 bg-[#0E4663]  text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer">
                 <div className="flex px-30">
                     <Image
                         alt="log out icon"
