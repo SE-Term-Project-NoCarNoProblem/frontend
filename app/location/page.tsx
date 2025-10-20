@@ -196,19 +196,49 @@ export default function Home() {
         console.error('Error disconnecting socket', e);
       }
     };
-  }, [userMode]); // Re-run when userMode changes
+    }, [userMode]); // Re-run when userMode changes
 
-  const handleModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newMode = e.target.value as UserMode;
     setUserMode(newMode);
-  };
-  
-  const mapRef = useRef<MapHandle>(null);
-  const handleRequestRide = () => {
-    mapRef.current?.requestRide();
-  };
+    };
 
-  return <div>
+    const [fare, setFare] = useState<number | null>(null);
+
+    useEffect(() => {
+    if (srcMarker && destMarker) {
+      setFare(null);
+      
+      const fetchFare = async () => {
+      try {
+        const params = new URLSearchParams({
+        pickup_lat: srcMarker[0].toString(),
+        pickup_lng: srcMarker[1].toString(),
+        dropoff_lat: destMarker[0].toString(),
+        dropoff_lng: destMarker[1].toString(),
+        });
+        
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/requests/fare?${params}`);
+        if (!res.ok) {
+        throw new Error('Failed to fetch fare');
+        }
+        const data = await res.json();
+        setFare(Math.round(data.fare_baht * 1.07));
+      } catch (err) {
+        console.error('Error fetching fare:', err);
+      }
+      };
+      
+      fetchFare();
+    }
+    }, [srcMarker, destMarker]);
+
+    const mapRef = useRef<MapHandle>(null);
+    const handleRequestRide = () => {
+    mapRef.current?.requestRide();
+    };
+
+    return <div>
     <Map 
       ref={mapRef} 
       drivers={drivers} 
@@ -233,7 +263,8 @@ export default function Home() {
     />
     {/* <BottomSheet onRequestRide={handleRequestRide}/> */}
     <div className="absolute bottom-0 left-0 right-0 w-full z-10">
-			{ userMode == "customer" && <ChooseRideCard /> }
+			{ userMode == "customer" && srcAddress && destAddress && fare && <ChooseRideCard price={fare} /> }
+      {/* <p className="text-amber-900">ok</p> */}
     </div>
   </div>
 }
