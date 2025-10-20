@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {fetchWithAuth} from "../lib/api";
+import LoginNavBar from "../components/LoginNavBar";
 
 
 interface Profile {
@@ -79,7 +80,7 @@ export default function ProfilePage() {
     }
 
     return (<>
-
+        <LoginNavBar/>
         <div className="bg-white p-12 flex flex-col items-center text-[#000000] mt-0 ">
             
             {/* -------------------- Top -------------------- */}
