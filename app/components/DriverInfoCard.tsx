@@ -96,9 +96,25 @@ export default function DriverInfoCard({
 							{/* Accepted */}
 							<div className="text-center">
 								<div className="mx-auto mb-1 flex items-center justify-center">
-									<img src="/complete.svg" alt="accepted" className="w-4 h-4" />
+									<img
+										src={
+											driver.status === "waiting"
+												? "/notcomplete.svg"
+												: "/complete.svg"
+										}
+										alt="accepted"
+										className="w-4 h-4"
+									/>
 								</div>
-								<span className="text-xs text-gray-600">accepted</span>
+								<span
+									className={`text-xs ${
+										driver.status === "waiting"
+											? "text-gray-600"
+											: "text-[#0E4663] font-medium"
+									}`}
+								>
+									accepted
+								</span>
 							</div>
 
 							{/* Timeline connecting line */}
@@ -106,12 +122,14 @@ export default function DriverInfoCard({
 								<img src="/timeline.svg" alt="timeline" className="w-16 h-1" />
 							</div>
 
-							{/* On the way */}
 							<div className="text-center">
 								<div className="mx-auto mb-1 flex items-center justify-center">
 									<img
 										src={
-											driver.status === "on the way"
+											driver.status === "on_the_way" ||
+											driver.status === "arrived" ||
+											driver.status === "picked_up" ||
+											driver.status === "completed"
 												? "/complete.svg"
 												: "/notcomplete.svg"
 										}
@@ -121,7 +139,10 @@ export default function DriverInfoCard({
 								</div>
 								<span
 									className={`text-xs font-medium ${
-										driver.status === "on the way"
+										driver.status === "on_the_way" ||
+										driver.status === "arrived" ||
+										driver.status === "picked_up" ||
+										driver.status === "completed"
 											? "text-[#0E4663]"
 											: "text-gray-600"
 									}`}
@@ -140,7 +161,9 @@ export default function DriverInfoCard({
 								<div className="mx-auto mb-1 flex items-center justify-center">
 									<img
 										src={
-											driver.status === "arrived"
+											driver.status === "arrived" ||
+											driver.status === "picked_up" ||
+											driver.status === "completed"
 												? "/complete.svg"
 												: "/notcomplete.svg"
 										}
@@ -149,7 +172,13 @@ export default function DriverInfoCard({
 									/>
 								</div>
 								<span
-									className={`text-xs ${driver.status === "arrived" ? "text-[#0E4663] font-medium" : "text-gray-600"}`}
+									className={`text-xs ${
+										driver.status === "arrived" ||
+										driver.status === "picked_up" ||
+										driver.status === "completed"
+											? "text-[#0E4663] font-medium"
+											: "text-gray-600"
+									}`}
 								>
 									pick up
 								</span>
@@ -187,14 +216,39 @@ export default function DriverInfoCard({
 						{/* Accepted */}
 						<div className="flex items-center w-full">
 							<div className="w-6 flex justify-center">
-								<img src="/complete.svg" alt="accepted" className="w-4 h-4" />
+								<img
+									src={
+										driver.status === "waiting"
+											? "/notcomplete.svg"
+											: "/complete.svg"
+									}
+									alt="accepted"
+									className="w-4 h-4"
+								/>
 							</div>
-							<span className="text-xs text-gray-600 ml-3">accepted</span>
+							<span
+								className={`text-xs ml-3 ${
+									driver.status === "waiting"
+										? "text-gray-600"
+										: "text-[#0E4663] font-medium"
+								}`}
+							>
+								accepted
+							</span>
 						</div>
 
 						{/* Vertical timeline */}
 						<div className="w-6 flex justify-center">
-							<div className="w-0.5 h-4 bg-[#0E4663]"></div>
+							<div
+								className={`w-0.5 h-4 ${
+									driver.status === "on_the_way" ||
+									driver.status === "arrived" ||
+									driver.status === "picked_up" ||
+									driver.status === "completed"
+										? "bg-[#0E4663]"
+										: "bg-gray-300"
+								}`}
+							></div>
 						</div>
 
 						{/* On the way */}
@@ -202,7 +256,10 @@ export default function DriverInfoCard({
 							<div className="w-6 flex justify-center">
 								<img
 									src={
-										driver.status === "on the way"
+										driver.status === "on_the_way" ||
+										driver.status === "arrived" ||
+										driver.status === "picked_up" ||
+										driver.status === "completed"
 											? "/complete.svg"
 											: "/notcomplete.svg"
 									}
@@ -212,7 +269,10 @@ export default function DriverInfoCard({
 							</div>
 							<span
 								className={`text-xs font-medium ml-3 ${
-									driver.status === "on the way"
+									driver.status === "on_the_way" ||
+									driver.status === "arrived" ||
+									driver.status === "picked_up" ||
+									driver.status === "completed"
 										? "text-[#0E4663]"
 										: "text-gray-600"
 								}`}
@@ -223,7 +283,15 @@ export default function DriverInfoCard({
 
 						{/* Vertical timeline */}
 						<div className="w-6 flex justify-center">
-							<div className="w-0.5 h-4 bg-[#0E4663]"></div>
+							<div
+								className={`w-0.5 h-4 ${
+									driver.status === "arrived" ||
+									driver.status === "picked_up" ||
+									driver.status === "completed"
+										? "bg-[#0E4663]"
+										: "bg-gray-300"
+								}`}
+							></div>
 						</div>
 
 						{/* Pick up */}
@@ -231,7 +299,9 @@ export default function DriverInfoCard({
 							<div className="w-6 flex justify-center">
 								<img
 									src={
-										driver.status === "arrived"
+										driver.status === "arrived" ||
+										driver.status === "picked_up" ||
+										driver.status === "completed"
 											? "/complete.svg"
 											: "/notcomplete.svg"
 									}
@@ -240,7 +310,13 @@ export default function DriverInfoCard({
 								/>
 							</div>
 							<span
-								className={`text-xs ml-3 ${driver.status === "arrived" ? "text-[#0E4663] font-medium" : "text-gray-600"}`}
+								className={`text-xs ml-3 ${
+									driver.status === "arrived" ||
+									driver.status === "picked_up" ||
+									driver.status === "completed"
+										? "text-[#0E4663] font-medium"
+										: "text-gray-600"
+								}`}
 							>
 								pick up
 							</span>
@@ -248,7 +324,13 @@ export default function DriverInfoCard({
 
 						{/* Vertical timeline */}
 						<div className="w-6 flex justify-center">
-							<div className="w-0.5 h-4 bg-[#0E4663]"></div>
+							<div
+								className={`w-0.5 h-4 ${
+									driver.status === "picked_up" || driver.status === "completed"
+										? "bg-[#0E4663]"
+										: "bg-gray-300"
+								}`}
+							></div>
 						</div>
 
 						{/* Drop off */}
