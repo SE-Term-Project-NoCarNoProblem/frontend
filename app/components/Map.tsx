@@ -40,6 +40,7 @@ type MapProps = {
 	favoritesTarget: "src" | "dest" | null;
 	onShowFavoritesChange: (show: boolean) => void;
 	onFavoritesTargetChange: (target: "src" | "dest" | null) => void;
+	onCurrentPositionChange?: (coords: [number, number] | null) => void;
 };
 
 const Map = forwardRef<MapHandle, MapProps>(
@@ -64,6 +65,7 @@ const Map = forwardRef<MapHandle, MapProps>(
 			favoritesTarget,
 			onShowFavoritesChange,
 			onFavoritesTargetChange,
+			onCurrentPositionChange,
 		},
 		ref
 	) => {
@@ -142,7 +144,7 @@ const Map = forwardRef<MapHandle, MapProps>(
 				zoom: 9,
 			});
 
-			map.current.addControl(new maplibregl.NavigationControl(), "top-left");
+			// map.current.addControl(new maplibregl.NavigationControl(), "top-left");
 			geolocate.current = new maplibregl.GeolocateControl({
 				positionOptions: {
 					enableHighAccuracy: true,
@@ -150,7 +152,7 @@ const Map = forwardRef<MapHandle, MapProps>(
 				trackUserLocation: true,
 			});
 			map.current.addControl(geolocate.current, "top-left");
-			map.current.addControl(new maplibregl.ScaleControl(), "bottom-left");
+			// map.current.addControl(new maplibregl.ScaleControl(), "bottom-left");
 
 			return () => {
 				map.current?.remove();
@@ -163,7 +165,17 @@ const Map = forwardRef<MapHandle, MapProps>(
 			map.current?.on("load", () => {
 				geolocate.current?.trigger();
 			});
-		}, []);
+
+			// Listen to geolocate events to track user position
+			geolocate.current?.on("geolocate", (e: GeolocationPosition) => {
+				const coords: [number, number] = [
+					e.coords.latitude,
+					e.coords.longitude,
+				];
+				console.log("📍 Current position updated:", coords);
+				onCurrentPositionChange?.(coords);
+			});
+		}, [onCurrentPositionChange]);
 
 		/* ### Update source marker ### */
 		useEffect(() => {

@@ -6,12 +6,27 @@ import { MapHandle } from "@/app/components/Map";
 import { io } from "socket.io-client";
 import { fetchWithAuth } from "../lib/api";
 import ChooseRideCard from "../components/ChooseRideCard";
+import LocationPicker from "../components/LocationPicker";
 
 interface Driver {
 	driver_id: string;
 	lat: number;
 	lng: number;
 	distance_m: number;
+}
+
+interface NearbyRequest {
+	id: string;
+	customer_id: string;
+	service: string;
+	fare?: number | null;
+	distance_m?: number | null;
+	requested_at: number;
+	pickup_lng: number;
+	pickup_lat: number;
+	dropoff_lng: number;
+	dropoff_lat: number;
+	distance_to_driver_m: number;
 }
 
 type UserMode = "customer" | "driver";
@@ -28,6 +43,13 @@ export default function Home() {
 
 	const [userMode, setUserMode] = useState<UserMode>("customer");
 	const [drivers, setDrivers] = useState<[number, number][]>([]);
+	const [nearbyRequests, setNearbyRequests] = useState<NearbyRequest[]>([]);
+	const [currentPosition, setCurrentPosition] = useState<
+		[number, number] | null
+	>(null);
+
+	// Store socket and user ID in refs so they persist across renders
+	const socketRef = useRef<ReturnType<typeof io> | null>(null);
 
 	// Location state
 	const [srcMarker, setSrcMarker] = useState<[number, number]>();
@@ -112,6 +134,7 @@ export default function Home() {
 		}
 	}
 
+	// Initialize socket connection and fetch user profile
 	useEffect(() => {
 		// Create socket immediately so we can clean it up synchronously in the effect cleanup
 		const socket = io(
@@ -127,87 +150,35 @@ export default function Home() {
 			}
 		);
 
-		let watchId: number | null = null;
+		socketRef.current = socket;
 
-		// Async init logic
-		(async () => {
-			try {
-				const res = await fetchWithAuth(
-					`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`
-				);
-				if (!res.ok) {
-					throw new Error("Failed to fetch profile, invalid token");
-				}
-				const user = await res.json();
+		socket.on("position:driver_positions", (data: Driver[]) => {
+			console.log("Received driver positions:", data);
+			setDrivers(data.map((d) => [d.lat, d.lng]));
+		});
 
-				socket.on("position:driver_positions", (data: Driver[]) => {
-					console.log("Received driver positions:", data);
-					setDrivers(data.map((d) => [d.lat, d.lng]));
-				});
-
-				console.log(user.data);
-
-				if (!("geolocation" in navigator)) {
-					console.log("Geolocation is not supported by this browser.");
-				}
-
-				const sendPosition = async (lat: number, lng: number) => {
-					console.log("sending position to server:", lat, lng);
-					socket.emit("position:submit_driver_position", {
-						user_id: user.data.id,
-						position: [lat, lng],
-					});
-				};
-
-				// Only send initial position if in driver mode
-				if (userMode === "driver") {
-					try {
-						console.log("Getting initial driver location...");
-						const d = await getUserLocation();
-						await sendPosition(d[0], d[1]);
-					} catch (e) {
-						console.error("Failed to get initial location", e);
-					}
-				}
-
-				// Only watch position if in driver mode
-				if (userMode === "driver") {
-					watchId = navigator.geolocation.watchPosition(
-						(position) => {
-							console.log("Latitude:", position.coords.latitude);
-							console.log("Longitude:", position.coords.longitude);
-							console.log("Accuracy:", position.coords.accuracy, "meters");
-							sendPosition(position.coords.latitude, position.coords.longitude);
-						},
-						(error) => {
-							console.error("Error getting location:", error);
-						},
-						{
-							enableHighAccuracy: true,
-							// maximumAge: 0,
-							// timeout: 1000,
-						}
-					);
-				}
-			} catch (err) {
-				console.error(err);
-			}
-		})();
-
-		// Cleanup runs synchronously when userMode changes or component unmounts
+		// Cleanup runs synchronously when component unmounts
 		return () => {
-			console.log("Cleaning up location watchers and socket...");
-			if (watchId !== null) {
-				navigator.geolocation.clearWatch(watchId);
-				watchId = null;
-			}
+			console.log("Cleaning up socket...");
 			try {
 				socket.disconnect();
+				socketRef.current = null;
 			} catch (e) {
 				console.error("Error disconnecting socket", e);
 			}
 		};
-	}, [userMode]); // Re-run when userMode changes
+	}, []); // Only run once on mount
+
+	// Send position to server when currentPosition updates (driver mode only)
+	useEffect(() => {
+		socketRef.current?.emit("position:remove_driver_position");
+		if (userMode === "driver" && currentPosition && socketRef.current) {
+			console.log("sending position to server:", currentPosition);
+			socketRef.current.emit("position:submit_driver_position", {
+				position: currentPosition,
+			});
+		}
+	}, [currentPosition, userMode]);
 
 	const handleModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		const newMode = e.target.value as UserMode;
@@ -215,6 +186,45 @@ export default function Home() {
 	};
 
 	const [fare, setFare] = useState<number | null>(null);
+
+	// Fetch nearby ride requests for drivers
+	useEffect(() => {
+		if (userMode !== "driver") {
+			setNearbyRequests([]);
+			return;
+		}
+
+		const fetchNearbyRequests = async () => {
+			try {
+				if (!currentPosition) return;
+
+				const params = new URLSearchParams({
+					lat: currentPosition[0].toString(),
+					lng: currentPosition[1].toString(),
+				});
+
+				const res = await fetchWithAuth(
+					`${process.env.NEXT_PUBLIC_BACKEND_URL}/requests/nearby?${params}`
+				);
+				if (!res.ok) {
+					throw new Error("Failed to fetch nearby requests");
+				}
+				const data = await res.json();
+				setNearbyRequests(data);
+				console.log("📍 Nearby requests:", data);
+			} catch (err) {
+				console.error("Error fetching nearby requests:", err);
+				setNearbyRequests([]);
+			}
+		};
+
+		fetchNearbyRequests();
+
+		// Optionally, set up polling to refresh nearby requests periodically
+		const interval = setInterval(fetchNearbyRequests, 10000); // Refresh every 10 seconds
+
+		return () => clearInterval(interval);
+	}, [userMode]);
 
 	useEffect(() => {
 		if (srcMarker && destMarker) {
@@ -247,8 +257,40 @@ export default function Home() {
 	}, [srcMarker, destMarker]);
 
 	const mapRef = useRef<MapHandle>(null);
-	const handleRequestRide = () => {
-		mapRef.current?.requestRide();
+	const handleRequestRide = async () => {
+		if (!srcMarker || !destMarker) {
+			alert("Please select both pickup and destination!");
+			return;
+		}
+
+		try {
+			const res = await fetchWithAuth(
+				`${process.env.NEXT_PUBLIC_BACKEND_URL}/requests/`,
+				{
+					method: "POST",
+					body: JSON.stringify({
+						service: "car",
+						note_to_driver: "",
+						pickup_lat: srcMarker[0],
+						pickup_lng: srcMarker[1],
+						dropoff_lat: destMarker[0],
+						dropoff_lng: destMarker[1],
+					}),
+				}
+			);
+
+			if (!res.ok) {
+				throw new Error("Failed to create ride request");
+			}
+
+			const data = await res.json();
+			console.log("✅ Ride requested:", data);
+			alert("Ride requested successfully!");
+			// Optionally navigate to another page or clear the selections
+		} catch (err) {
+			console.error("❌ Error requesting ride:", err);
+			alert("Failed to request ride. Please try again.");
+		}
 	};
 
 	return (
@@ -274,27 +316,31 @@ export default function Home() {
 				favoritesTarget={favoritesTarget}
 				onShowFavoritesChange={setShowFavorites}
 				onFavoritesTargetChange={setFavoritesTarget}
+				onCurrentPositionChange={setCurrentPosition}
 			/>
 			{/* <BottomSheet onRequestRide={handleRequestRide}/> */}
 			<div className="absolute bottom-0 left-0 right-0 w-full z-10">
 				{userMode == "customer" && srcAddress && destAddress && fare && (
-					<ChooseRideCard price={fare} />
+					<ChooseRideCard price={fare} onRequestRide={handleRequestRide} />
 				)}
-				{/* <p className="text-amber-900">ok</p> */}
+				{userMode == "driver" && (
+					<LocationPicker nearbyRequests={nearbyRequests} />
+				)}
 			</div>
 		</div>
 	);
 }
 
-function getUserLocation(): Promise<[number, number]> {
-	return new Promise((resolve, reject) => {
-		navigator.geolocation.getCurrentPosition(
-			(position) => {
-				resolve([position.coords.latitude, position.coords.longitude]);
-			},
-			(error) => {
-				reject(error);
-			}
-		);
-	});
-}
+//! use Map's geolocate event instead
+// function getUserLocation(): Promise<[number, number]> {
+// 	return new Promise((resolve, reject) => {
+// 		navigator.geolocation.getCurrentPosition(
+// 			(position) => {
+// 				resolve([position.coords.latitude, position.coords.longitude]);
+// 			},
+// 			(error) => {
+// 				reject(error);
+// 			}
+// 		);
+// 	});
+// }
