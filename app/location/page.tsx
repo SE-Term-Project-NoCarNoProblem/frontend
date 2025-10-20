@@ -330,17 +330,3 @@ export default function Home() {
 		</div>
 	);
 }
-
-//! use Map's geolocate event instead
-// function getUserLocation(): Promise<[number, number]> {
-// 	return new Promise((resolve, reject) => {
-// 		navigator.geolocation.getCurrentPosition(
-// 			(position) => {
-// 				resolve([position.coords.latitude, position.coords.longitude]);
-// 			},
-// 			(error) => {
-// 				reject(error);
-// 			}
-// 		);
-// 	});
-// }
