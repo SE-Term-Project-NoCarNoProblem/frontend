@@ -25,7 +25,7 @@ type MapProps = {
 	drivers?: [number, number][];
 	userMode?: UserMode;
 	onModeChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-	srcMarker?: [number, number];
+	srcMarker?: [number, number] | null;
 	srcAddress?: string;
 	destMarker?: [number, number] | null;
 	destAddress?: string;
@@ -35,7 +35,7 @@ type MapProps = {
 	onDestQueryChange: (query: string) => void;
 	onSrcSearch: () => void;
 	onDestSearch: () => void;
-	onSrcMarkerSet: (coords: [number, number]) => void;
+	onSrcMarkerSet: (coords: [number, number] | null) => void;
 	onDestMarkerSet: (coords: [number, number] | null) => void;
 	showFavorites: boolean;
 	favoritesTarget: "src" | "dest" | null;
@@ -196,11 +196,14 @@ const Map = forwardRef<MapHandle, MapProps>(
 
 		/* ### Update source marker ### */
 		useEffect(() => {
-			if (!map.current || !srcMarker) return;
+			if (!map.current) return;
 
 			if (srcMarkerRef.current) {
 				srcMarkerRef.current.remove();
+				srcMarkerRef.current = null;
 			}
+
+			if (!srcMarker) return;
 
 			const el = document.createElement("div");
 			el.className = "src-marker";

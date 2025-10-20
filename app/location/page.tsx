@@ -8,6 +8,7 @@ import { fetchWithAuth } from "../lib/api";
 import ChooseRideCard from "../components/ChooseRideCard";
 import LocationPicker from "../components/LocationPicker";
 import RideRequestCard from "../components/RideFareCard";
+import DriverInfoCard from "../components/DriverInfoCard";
 
 interface Driver {
 	driver_id: string;
@@ -28,6 +29,21 @@ interface NearbyRequest {
 	dropoff_lng: number;
 	dropoff_lat: number;
 	distance_to_driver_m: number;
+}
+
+interface UserRideRequest {
+	id: string;
+	customer_id: string;
+	driver_id?: string | null;
+	service: string;
+	fare?: number | null;
+	distance_m?: number | null;
+	requested_at: number;
+	pickup_lng: number;
+	pickup_lat: number;
+	dropoff_lng: number;
+	dropoff_lat: number;
+	status: string;
 }
 
 type UserMode = "customer" | "driver";
@@ -52,12 +68,17 @@ export default function Home() {
 		null
 	);
 	const [driverView, setDriverView] = useState<"list" | "details">("list");
+	const [customerView, setCustomerView] = useState<"select" | "waiting">(
+		"select"
+	);
+	const [userRideRequest, setUserRideRequest] =
+		useState<UserRideRequest | null>(null);
 
 	// Store socket and user ID in refs so they persist across renders
 	const socketRef = useRef<ReturnType<typeof io> | null>(null);
 
 	// Location state
-	const [srcMarker, setSrcMarker] = useState<[number, number]>();
+	const [srcMarker, setSrcMarker] = useState<[number, number] | null>(null);
 	const [srcAddress, setSrcAddress] = useState<string>("");
 	const [srcQuery, setSrcQuery] = useState("");
 	const [destMarker, setDestMarker] = useState<[number, number] | null>(null);
@@ -139,6 +160,26 @@ export default function Home() {
 		}
 	}
 
+	function zoomOverall(lat1: number, lng1: number, lat2: number, lng2: number) {
+		// Zoom map to encompass both locations
+		if (mapRef.current) {
+			// Calculate bounds
+			const minLat = Math.min(lat1, lat2);
+			const maxLat = Math.max(lat1, lat2);
+			const minLng = Math.min(lng1, lng2);
+			const maxLng = Math.max(lng1, lng2);
+
+			// Add some padding (10%)
+			const latPadding = (maxLat - minLat) * 0.1;
+			const lngPadding = (maxLng - minLng) * 0.1;
+
+			mapRef.current.fitBounds?.([
+				[minLat - latPadding, minLng - lngPadding],
+				[maxLat + latPadding, maxLng + lngPadding],
+			]);
+		}
+	}
+
 	// Initialize socket connection and fetch user profile
 	useEffect(() => {
 		// Create socket immediately so we can clean it up synchronously in the effect cleanup
@@ -174,9 +215,65 @@ export default function Home() {
 		};
 	}, []); // Only run once on mount
 
+	useEffect(() => {
+		if (userMode == "customer") {
+			socketRef.current?.emit("position:remove_driver_position");
+		}
+		setSrcMarker(null);
+		setDestMarker(null);
+
+		// Check for existing ride request on page load (customer mode)
+		const checkExistingRide = async () => {
+			if (userMode !== "customer") return;
+
+			try {
+				const res = await fetchWithAuth(
+					`${process.env.NEXT_PUBLIC_BACKEND_URL}/requests/me/pending`
+				);
+
+				if (!res.ok) {
+					console.log("No active ride found");
+					// No active ride found
+					setCustomerView("select");
+					setUserRideRequest(null);
+					return;
+				}
+
+				const data = await res.json();
+
+				// If user has an active ride, show DriverInfoCard
+				console.log(data, data.id);
+				if (data && data.id) {
+					setUserRideRequest(data);
+					setCustomerView("waiting");
+
+					// Set markers for the existing ride
+					setSrcMarker([data.pickup_lat, data.pickup_lng]);
+					setDestMarker([data.dropoff_lat, data.dropoff_lng]);
+					zoomOverall(
+						data.pickup_lat,
+						data.pickup_lng,
+						data.dropoff_lat,
+						data.dropoff_lng
+					);
+
+					console.log("📍 Existing ride found:", data);
+				} else {
+					setCustomerView("select");
+					setUserRideRequest(null);
+				}
+			} catch (err) {
+				console.error("Error checking existing ride:", err);
+				setCustomerView("select");
+				setUserRideRequest(null);
+			}
+		};
+
+		checkExistingRide();
+	}, [userMode]);
+
 	// Send position to server when currentPosition updates (driver mode only)
 	useEffect(() => {
-		socketRef.current?.emit("position:remove_driver_position");
 		if (userMode === "driver" && currentPosition && socketRef.current) {
 			console.log("sending position to server:", currentPosition);
 			socketRef.current.emit("position:submit_driver_position", {
@@ -271,29 +368,18 @@ export default function Home() {
 		setSrcMarker([request.pickup_lat, request.pickup_lng]);
 		setDestMarker([request.dropoff_lat, request.dropoff_lng]);
 
-		// Zoom map to encompass both locations
-		if (mapRef.current) {
-			// Calculate bounds
-			const minLat = Math.min(request.pickup_lat, request.dropoff_lat);
-			const maxLat = Math.max(request.pickup_lat, request.dropoff_lat);
-			const minLng = Math.min(request.pickup_lng, request.dropoff_lng);
-			const maxLng = Math.max(request.pickup_lng, request.dropoff_lng);
-
-			// Add some padding (10%)
-			const latPadding = (maxLat - minLat) * 0.1;
-			const lngPadding = (maxLng - minLng) * 0.1;
-
-			mapRef.current.fitBounds?.([
-				[minLat - latPadding, minLng - lngPadding],
-				[maxLat + latPadding, maxLng + lngPadding],
-			]);
-		}
+		zoomOverall(
+			request.pickup_lat,
+			request.pickup_lng,
+			request.dropoff_lat,
+			request.dropoff_lng
+		);
 	};
 
 	const handleBackToList = () => {
 		setDriverView("list");
 		setSelectedRequest(null);
-		setSrcMarker(undefined);
+		setSrcMarker(null);
 		setDestMarker(null);
 		setSrcAddress("");
 		setDestAddress("");
@@ -327,11 +413,46 @@ export default function Home() {
 
 			const data = await res.json();
 			console.log("✅ Ride requested:", data);
-			alert("Ride requested successfully!");
-			// Optionally navigate to another page or clear the selections
+
+			// Store the ride request and switch to waiting view
+			setUserRideRequest(data);
+			setCustomerView("waiting");
 		} catch (err) {
 			console.error("❌ Error requesting ride:", err);
 			alert("Failed to request ride. Please try again.");
+		}
+	};
+
+	const handleCancelRide = async () => {
+		if (!userRideRequest) return;
+
+		const confirmed = confirm("Are you sure you want to cancel this ride?");
+		if (!confirmed) return;
+
+		try {
+			const res = await fetchWithAuth(
+				`${process.env.NEXT_PUBLIC_BACKEND_URL}/requests/${userRideRequest.id}`,
+				{
+					method: "DELETE",
+				}
+			);
+
+			if (!res.ok) {
+				throw new Error("Failed to cancel ride");
+			}
+
+			console.log("✅ Ride cancelled");
+
+			// Reset to select view
+			setCustomerView("select");
+			setUserRideRequest(null);
+			setSrcMarker(null);
+			setDestMarker(null);
+			setSrcAddress("");
+			setDestAddress("");
+		} catch (err) {
+			console.error("❌ Error cancelling ride:", err);
+			alert("Failed to cancel ride. Please try again.");
 		}
 	};
 
@@ -362,9 +483,33 @@ export default function Home() {
 			/>
 			{/* <BottomSheet onRequestRide={handleRequestRide}/> */}
 			<div className="absolute bottom-0 left-0 right-0 w-full z-10">
-				{userMode == "customer" && srcAddress && destAddress && fare && (
-					<ChooseRideCard price={fare} onRequestRide={handleRequestRide} />
-				)}
+				{userMode == "customer" &&
+					customerView === "select" &&
+					srcAddress &&
+					destAddress &&
+					fare && (
+						<ChooseRideCard price={fare} onRequestRide={handleRequestRide} />
+					)}
+				{userMode == "customer" &&
+					customerView === "waiting" &&
+					userRideRequest && (
+						<DriverInfoCard
+							driver={{
+								name: userRideRequest.driver_id
+									? "Driver Assigned"
+									: "Waiting for driver...",
+								vehicle: "Toyota Camry",
+								plateNumber: "ABC-1234",
+								rating: 4.8,
+								avatar: "D",
+								status: userRideRequest.status || "accepted",
+								estimatedArrival: "5 minutes",
+							}}
+							onMessageDriver={() => console.log("Message driver")}
+							onCancel={handleCancelRide}
+							showBackButton={false}
+						/>
+					)}
 				{userMode == "driver" && driverView === "list" && (
 					<LocationPicker
 						nearbyRequests={nearbyRequests}
