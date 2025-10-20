@@ -16,7 +16,7 @@ function LoginNavBar(Props: any) {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const router = useRouter();
-    const goHome=()=>{
+    const goHome = () => {
         router.push("/landing-page");
     }
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -35,7 +35,7 @@ function LoginNavBar(Props: any) {
         setAnchorEl(null);
         router.push("/profile");
     };
-    const handlers=[handleProfile,()=>{router.push("/landing-page")},()=>{router.push("/location")}];
+    const handlers = [handleProfile, () => { router.push("/landing-page") }, () => { router.push("/location") }];
     const [state, setState] = React.useState({
         top: false
     });
@@ -68,10 +68,10 @@ function LoginNavBar(Props: any) {
                                     <Avatar src={`${Props.profilePic}?ts=${Date.now()}`} sx={{ width: 30, height: 30 }} />
                                 ) : index === 1 ? (
                                     <Image alt="home icon" src="/icons/home.svg" width={30}
-                                height={30} />
+                                        height={30} />
                                 ) : index === 2 ? (
                                     <Image alt="transport icon" src="/icons/car.svg" width={30}
-                                height={30} />
+                                        height={30} />
                                 ) : null}
                             </ListItemIcon>
                             <ListItemText primary={text} />
@@ -86,7 +86,7 @@ function LoginNavBar(Props: any) {
                         <ListItemButton onClick={handleLogOut}>
                             <ListItemIcon>
                                 <Image alt="log out icon" src="/icons/Blue-LogOut.svg" width={30}
-                                height={30} />
+                                    height={30} />
                             </ListItemIcon>
                             <ListItemText primary={text} />
                         </ListItemButton>
@@ -98,26 +98,26 @@ function LoginNavBar(Props: any) {
     return (<header className="mb-8 lg:mb-0">
         <div className="flex w-12/12 bg-[#d9d9d9] justify-between px-2  py-3">
             <div className="flex items-center gap-2">
-                <IconButton onClick={goHome}>
+                <button onClick={goHome}>
                     <Image
-                    aria-hidden
-                    src="/directions_car.svg"
-                    alt="Car icon"
-                    width={30}
-                    height={30}
-                />
-                </IconButton>
-                
-                <Button onClick={goHome}>
+                        aria-hidden
+                        src="/directions_car.svg"
+                        alt="Car icon"
+                        width={30}
+                        height={30}
+                    />
+                </button>
+
+                <button onClick={goHome}>
                     <span className="font-semibold text-2xl text-slate-800">NoCarNoProblem</span>
-                </Button>
-                
+                </button>
+
             </div>
 
             <div className="md:flex hidden justify-between items-center md:w-4/12 lg:w-3/12">
                 <div className="flex w-8/12 gap-5 justify-between">
-                    <Link href="/location" className="text-xl text-slate-800 px-2 py-2 rounded-xl hover:bg-amber-50">Transport</Link>
                     <Link href="/landing-page" className="text-xl text-slate-800 px-2 py-2 rounded-xl hover:bg-amber-50">Home</Link>
+                    <Link href="/location" className="text-xl text-slate-800 px-2 py-2 rounded-xl hover:bg-amber-50">Transport</Link>
 
                 </div>
                 <Tooltip title="Account settings">

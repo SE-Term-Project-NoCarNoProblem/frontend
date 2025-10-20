@@ -3,7 +3,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import NavBar from "../components/NavBar";
+import LoginNavBar from "../components/LoginNavBar";
 import EditProfileInput from "../components/EditProfileInput"
 import { fetchWithAuth, fetchWithAuthFile } from "../lib/api";
 interface Profile {
@@ -142,7 +142,7 @@ function EditProfile() {
     };
 
     return (<>
-        <NavBar />
+        <LoginNavBar />
         <div className="bg-white p-12 flex flex-col items-center text-[#000000] mt-0">
 
             {/* -------------------- Top -------------------- */}

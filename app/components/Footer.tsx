@@ -10,9 +10,9 @@ function Footer() {
 
         <div className="mb-4 flex flex-col gap-3 justify-center">
           <p className="text-sm text-slate-600">
-            email: <a className="underline" href="mailto:nocarnoproblem@gmail.com">nocarnoproblem@gmail.com</a>
+            Email: <a className="text-decoration-line: none;" href="mailto:nocarnoproblem@gmail.com">nocarnoproblem@gmail.com</a>
           </p>
-          <p className="text-sm text-slate-600">phone: 02-244-5555</p>
+          <p className="text-sm text-slate-600">Phone number: +66 89-244-5555</p>
 
         </div>
 
