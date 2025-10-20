@@ -6,6 +6,7 @@ import { MapHandle } from "@/app/components/Map";
 import { io } from "socket.io-client";
 import { fetchWithAuth } from "../lib/api";
 import { reverseGeocode } from "../lib/geocoding";
+import { haversineM } from "../lib/geo";
 import ChooseRideCard from "../components/ChooseRideCard";
 import LocationPicker from "../components/LocationPicker";
 import RideRequestCard from "../components/RideFareCard";
@@ -320,6 +321,109 @@ export default function Home() {
 	}, []); // Only run once on mount
 
 	useEffect(() => {
+		const socket = socketRef.current;
+		if (!socket) return;
+
+		const handleRequestCreated = (data: any) => {
+			console.log("New ride request created:", data);
+
+			if (userMode !== "driver" || !currentPosition) return;
+
+			setNearbyRequests((prevRequests) => {
+				if (prevRequests.some((r) => r.id === data.id)) {
+					return prevRequests;
+				}
+
+				const distanceToDriver = haversineM(
+					currentPosition[0],
+					currentPosition[1],
+					data.pickup_lat,
+					data.pickup_lng
+				);
+
+				if (distanceToDriver <= 3000) {
+					// hardcode, grab from backend by Pun
+					const newRequest: NearbyRequest = {
+						id: data.id,
+						customer_id: data.customer_id,
+						service: data.service,
+						fare: data.fare,
+						distance_m: data.distance_m,
+						requested_at: data.requested_at,
+						pickup_lng: data.pickup_lng,
+						pickup_lat: data.pickup_lat,
+						dropoff_lng: data.dropoff_lng,
+						dropoff_lat: data.dropoff_lat,
+						distance_to_driver_m: Math.round(distanceToDriver),
+					};
+
+					const updated = [...prevRequests, newRequest].sort(
+						(a, b) => a.distance_to_driver_m - b.distance_to_driver_m
+					);
+					return updated;
+				}
+				return prevRequests;
+			});
+		};
+
+		const handleRequestCanceled = (data: {
+			id: string;
+			customer_id: string;
+		}) => {
+			console.log("Ride request canceled:", data);
+
+			if (userMode !== "driver") return;
+
+			setNearbyRequests((prevRequests) =>
+				prevRequests.filter((r) => r.id !== data.id)
+			);
+
+			// If the canceled request was the one being viewed, go back to list
+			setSelectedRequest((current) => {
+				if (current?.id === data.id) {
+					setDriverView("list");
+					setSrcMarker(null);
+					setDestMarker(null);
+					return null;
+				}
+				return current;
+			});
+		};
+
+		const handleRequestAccepted = (data: { id: string; driver_id: string }) => {
+			console.log("Ride request accepted:", data);
+
+			if (userMode !== "driver") return;
+
+			setNearbyRequests((prevRequests) =>
+				prevRequests.filter((r) => r.id !== data.id)
+			);
+
+			// If the accepted request was the one being viewed, go back to list
+			setSelectedRequest((current) => {
+				if (current?.id === data.id) {
+					setDriverView("list");
+					setSrcMarker(null);
+					setDestMarker(null);
+					return null;
+				}
+				return current;
+			});
+		};
+
+		socket.on("request:created", handleRequestCreated);
+		socket.on("request:canceled", handleRequestCanceled);
+		socket.on("request:accepted", handleRequestAccepted);
+
+		// Cleanup
+		return () => {
+			socket.off("request:created", handleRequestCreated);
+			socket.off("request:canceled", handleRequestCanceled);
+			socket.off("request:accepted", handleRequestAccepted);
+		};
+	}, [userMode, currentPosition]);
+
+	useEffect(() => {
 		if (userMode == "customer") {
 			socketRef.current?.emit("position:remove_driver_position");
 		}
@@ -418,7 +522,7 @@ export default function Home() {
 
 	const [fare, setFare] = useState<number | null>(null);
 
-	// Fetch nearby ride requests for drivers
+	// Fetch nearby ride requests for drivers (initial load only, updates via Socket.IO)
 	useEffect(() => {
 		if (userMode !== "driver") {
 			setNearbyRequests([]);
@@ -451,11 +555,8 @@ export default function Home() {
 
 		fetchNearbyRequests();
 
-		// Optionally, set up polling to refresh nearby requests periodically
-		const interval = setInterval(fetchNearbyRequests, 10000); // Refresh every 10 seconds
-
-		return () => clearInterval(interval);
-	}, [userMode]);
+		// No polling needed - Socket.IO will handle real-time updates
+	}, [userMode, currentPosition]);
 
 	useEffect(() => {
 		if (srcMarker && destMarker) {
