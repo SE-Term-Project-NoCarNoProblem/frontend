@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { reverseGeocode } from "../lib/geocoding";
 
 interface NearbyRequest {
 	id: string;
@@ -43,20 +44,6 @@ const LocationPicker = ({
 		null
 	);
 	const [locations, setLocations] = useState<LocationOption[]>([]);
-
-	// Reverse geocoding function
-	const reverseGeocode = async (lat: number, lng: number): Promise<string> => {
-		try {
-			const res = await fetch(
-				`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
-			);
-			const data = await res.json();
-			return data.display_name || "Unknown location";
-		} catch (err) {
-			console.error("Reverse geocode error:", err);
-			return "Unknown location";
-		}
-	};
 
 	// Convert nearby requests to location options
 	useEffect(() => {
@@ -179,8 +166,34 @@ const LocationPicker = ({
 										: "bg-[#F8F8F8] hover:bg-[#E8E8E8] active:bg-[#D8D8D8]"
 								}`}
 							>
+								{/* Pickup Point */}
+								<div className="flex items-start gap-3">
+									<div className="mt-1 relative">
+										<svg
+											width="20"
+											height="20"
+											viewBox="0 0 24 24"
+											fill="#059669"
+											stroke="#059669"
+											strokeWidth="0"
+										>
+											<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+										</svg>
+										{/* Dashed Line */}
+										<div className="absolute left-1/2 -translate-x-1/2 top-[20px] w-0 h-[28px] border-l-2 border-dashed border-[#0E4663] opacity-30"></div>
+									</div>
+									<div className="flex-1 mb-2">
+										<h3 className="font-bold text-[#0E4663] text-sm mb-1">
+											{location.pickupPoint}
+										</h3>
+										<p className="text-xs text-[#0E4663]">
+											{location.distanceFromUser} ({location.timeFromUser})
+										</p>
+									</div>
+								</div>
+
 								{/* Destination */}
-								<div className="flex items-start gap-3 mb-2">
+								<div className="flex items-start gap-3">
 									<div className="mt-1">
 										<svg
 											width="20"
@@ -198,32 +211,7 @@ const LocationPicker = ({
 											{location.name}
 										</h3>
 										<p className="text-xs text-[#0E4663]">
-											{location.distanceFromUser} ( {location.timeFromUser} )
-										</p>
-									</div>
-								</div>
-
-								{/* Pickup Point */}
-								<div className="flex items-start gap-3">
-									<div className="mt-1">
-										<svg
-											width="20"
-											height="20"
-											viewBox="0 0 24 24"
-											fill="#059669"
-											stroke="#059669"
-											strokeWidth="0"
-										>
-											<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-										</svg>
-									</div>
-									<div className="flex-1">
-										<h3 className="font-bold text-[#0E4663] text-sm mb-1">
-											{location.pickupPoint}
-										</h3>
-										<p className="text-xs text-[#0E4663]">
-											{location.distanceFromPickup} ( {location.timeFromPickup}{" "}
-											)
+											{location.distanceFromPickup} ({location.timeFromPickup})
 										</p>
 									</div>
 								</div>

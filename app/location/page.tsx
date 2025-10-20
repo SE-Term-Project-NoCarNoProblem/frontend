@@ -5,6 +5,7 @@ import BottomSheet from "../components/BottomSheet";
 import { MapHandle } from "@/app/components/Map";
 import { io } from "socket.io-client";
 import { fetchWithAuth } from "../lib/api";
+import { reverseGeocode } from "../lib/geocoding";
 import ChooseRideCard from "../components/ChooseRideCard";
 import LocationPicker from "../components/LocationPicker";
 import RideRequestCard from "../components/RideFareCard";
@@ -107,20 +108,6 @@ export default function Home() {
 			});
 		}
 	}, [destMarker]);
-
-	/* ### Reverse geocoding ### */
-	async function reverseGeocode(lat: number, lng: number): Promise<string> {
-		try {
-			const res = await fetch(
-				`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
-			);
-			const data = await res.json();
-			return data.display_name;
-		} catch (err) {
-			console.error("Reverse geocode error:", err);
-			return "Address not found";
-		}
-	}
 
 	/* ### Forward geocoding / Search ### */
 	async function handleSearch(type: "src" | "dest", query: string) {
@@ -520,9 +507,7 @@ export default function Home() {
 					driverView === "details" &&
 					selectedRequest && (
 						<RideRequestCard
-							destination={destAddress}
-							pickupPoint={srcAddress}
-							estimatedFare={selectedRequest.fare || 0}
+							request={selectedRequest}
 							onAccept={() => {
 								console.log("Accepted request:", selectedRequest.id);
 								// Handle accept logic here
