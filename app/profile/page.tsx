@@ -45,7 +45,7 @@ export default function ProfilePage() {
                     phoneNumber: apiResponse.data.phone_number,
                     // home: apiResponse.data.home || "N/A",
                     favouriteLocation: apiResponse.data.favouriteLocation || "N/A",
-                    profilePic : apiResponse.data.profile_pic,
+                    profilePic : apiResponse.data.profile_pic || '/default_profile.webp',
                 }
 
                 setProfile(data);
