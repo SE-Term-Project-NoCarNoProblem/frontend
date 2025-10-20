@@ -88,7 +88,7 @@ export default function ProfilePage() {
                     {/* -------------------- text above profile pic. -------------------- */}
                     <div className={`w-full text-2xl font-semibold flex justify-between items-center text-[#F8F8F8]`}>
                         <button
-                            onClick = {() => router.push("/")}
+                            onClick = {() => router.push("/landing-page")}
                             className = "hover:cursor-pointer hover:opacity-70"
                         >
                             <Image
