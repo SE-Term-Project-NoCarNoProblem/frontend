@@ -43,7 +43,7 @@ const ChooseRideCard = ({
   };
 
   return (
-    <div className="w-full max-w-[393px] h-[215px] bg-white rounded-3xl shadow-lg p-4 flex flex-col">
+    <div className="w-full mx-auto max-w-[393px] h-[215px] bg-white rounded-t-3xl shadow-lg p-4 flex flex-col">
       {/* Upper Bar */}
       <div className="flex justify-center mb-2">
         <Image src="/upper bar.svg" alt="Upper bar" width={148} height={4} />

@@ -5,19 +5,57 @@ import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { fetchWithAuth } from "../lib/api"
 import FavoritesSheet from "./FavoritesSheet";
-
+import ChooseRideCard from "./ChooseRideCard";
 
 export type MapHandle = {
 	requestRide: () => void;
 };
 
+type UserMode = 'customer' | 'driver';
+
 type MapProps = {
-	position: [number, number];
-	zoom?: number;
 	drivers?: [number, number][];
+	userMode?: UserMode;
+	onModeChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+	srcMarker?: [number, number];
+	srcAddress?: string;
+	destMarker?: [number, number] | null;
+	destAddress?: string;
+	srcQuery: string;
+	destQuery: string;
+	onSrcQueryChange: (query: string) => void;
+	onDestQueryChange: (query: string) => void;
+	onSrcSearch: () => void;
+	onDestSearch: () => void;
+	onSrcMarkerSet: (coords: [number, number]) => void;
+	onDestMarkerSet: (coords: [number, number] | null) => void;
+	showFavorites: boolean;
+	favoritesTarget: "src" | "dest" | null;
+	onShowFavoritesChange: (show: boolean) => void;
+	onFavoritesTargetChange: (target: "src" | "dest" | null) => void;
 };
 
-const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = [] }, ref) => {
+const Map = forwardRef<MapHandle, MapProps>(({ 
+	drivers = [], 
+	userMode = 'customer', 
+	onModeChange,
+	srcMarker,
+	srcAddress,
+	destMarker,
+	destAddress,
+	srcQuery,
+	destQuery,
+	onSrcQueryChange,
+	onDestQueryChange,
+	onSrcSearch,
+	onDestSearch,
+	onSrcMarkerSet,
+	onDestMarkerSet,
+	showFavorites,
+	favoritesTarget,
+	onShowFavoritesChange,
+	onFavoritesTargetChange
+}, ref) => {
 	const mapContainer = useRef<HTMLDivElement>(null);
 	const map = useRef<maplibregl.Map | null>(null);
 	const geolocate = useRef<maplibregl.GeolocateControl | null>(null);
@@ -26,15 +64,7 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
 	const destMarkerRef = useRef<maplibregl.Marker | null>(null);
 	const driverMarkersRef = useRef<maplibregl.Marker[]>([]);
 
-	const [srcMarker, setSrcMarker] = useState<[number, number]>();
-	const [srcAddress, setSrcAddress] = useState<string>("");
-	const [srcQuery, setSrcQuery] = useState("");
-	const [destMarker, setDestMarker] = useState<[number, number] | null>(null);
-	const [destAddress, setDestAddress] = useState<string>("");
-	const [destQuery, setDestQuery] = useState("");
 	const [lastFocused, setLastFocused] = useState<"src" | "dest" | null>(null);
-	const [showFavorites, setShowFavorites] = useState(false);
-	const [favoritesTarget, setFavoritesTarget] = useState<"src" | "dest" | null>(null);
 
 	const searchRef = useRef<HTMLDivElement>(null);
 	const [searchH, setSearchH] = useState(0);
@@ -43,7 +73,7 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
 		if (!searchRef.current) return;
 		const el = searchRef.current;
 
-		const setH = () => setSearchH(el.offsetHeight + 50); // +12 for spacing
+		const setH = () => setSearchH(el.offsetHeight + 50);
 		setH();
 
 		const ro = new ResizeObserver(() => setH());
@@ -55,8 +85,6 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
 			window.removeEventListener("resize", setH);
 		};
 	}, []);
-
-
 
 	/* === requestRide exposed to parent === */
 	useImperativeHandle(ref, () => ({
@@ -82,42 +110,17 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
 			})
 				.then((res) => res.json())
 				.then((data) => {
-					console.log("✅ Ride requested:", data);
-				})
-				.catch((err) => {
-					console.error("❌ Backend error:", err);
-				});
+				console.log("✅ Ride requested:", data);
+			})
+			.catch((err) => {
+				console.error("❌ Backend error:", err);
+			});
 		},
 	}));
 
 	/* ### Initialize map ### */
 	useEffect(() => {
 		if (!mapContainer.current || map.current) return;
-
-		// map.current = new maplibregl.Map({
-		//   container: mapContainer.current,
-		//   style: {
-		//     version: 8,
-		//     sources: {
-		//       osm: {
-		//         type: 'raster',
-		//         tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-		//         tileSize: 256,
-		//         attribution: '&copy; OpenStreetMap Contributors',
-		//         maxzoom: 19
-		//       }
-		//     },
-		//     layers: [
-		//       {
-		//         id: 'osm',
-		//         type: 'raster',
-		//         source: 'osm'
-		//       }
-		//     ]
-		//   },
-		//   center: [position[1], position[0]], // [lng, lat]
-		//   zoom: zoom,
-		// });
 
 		map.current = new maplibregl.Map({
 			container: mapContainer.current,
@@ -126,7 +129,6 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
 			zoom: 9
 		});
 
-		// Add navigation controls
 		map.current.addControl(new maplibregl.NavigationControl(), 'top-left');
 		geolocate.current = new maplibregl.GeolocateControl({
 			positionOptions: {
@@ -135,7 +137,6 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
 			trackUserLocation: true,
 		});
 		map.current.addControl(geolocate.current, 'top-left');
-		// map.current.addControl(new maplibregl.FullscreenControl(), 'top-left');
 		map.current.addControl(new maplibregl.ScaleControl(), 'bottom-left');
 
 		return () => {
@@ -155,12 +156,10 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
 	useEffect(() => {
 		if (!map.current || !srcMarker) return;
 
-		// Remove old marker
 		if (srcMarkerRef.current) {
 			srcMarkerRef.current.remove();
 		}
 
-		// Create custom green marker element
 		const el = document.createElement('div');
 		el.className = 'src-marker';
 		el.style.width = '30px';
@@ -171,31 +170,22 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
 		el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
 		el.style.cursor = 'pointer';
 
-		// Create popup
 		const popup = new maplibregl.Popup({ offset: 25 })
 			.setHTML(`<div><b>Pickup:</b><br/>${srcAddress || 'Loading...'}</div>`);
 
-		// Add new marker
 		srcMarkerRef.current = new maplibregl.Marker({ element: el })
 			.setLngLat([srcMarker[1], srcMarker[0]])
 			.setPopup(popup)
 			.addTo(map.current);
 
-		// Reverse geocode
-		reverseGeocode(srcMarker[0], srcMarker[1]).then((display_name) => {
-			setSrcAddress(display_name);
-			setSrcQuery(display_name);
-			popup.setHTML(`<div><b>Pickup:</b><br/>${display_name}</div>`);
-		});
-
+		popup.setHTML(`<div><b>Pickup:</b><br/>${srcAddress}</div>`);
 		map.current.flyTo({ center: [srcMarker[1], srcMarker[0]] });
-	}, [srcMarker]);
+	}, [srcMarker, srcAddress]);
 
 	/* ### Update destination marker ### */
 	useEffect(() => {
 		if (!map.current) return;
 
-		// Remove old marker
 		if (destMarkerRef.current) {
 			destMarkerRef.current.remove();
 			destMarkerRef.current = null;
@@ -203,7 +193,6 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
 
 		if (!destMarker) return;
 
-		// Create custom red marker element
 		const el = document.createElement('div');
 		el.className = 'dest-marker';
 		el.style.width = '30px';
@@ -214,37 +203,26 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
 		el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
 		el.style.cursor = 'pointer';
 
-		// Create popup
 		const popup = new maplibregl.Popup({ offset: 25 })
 			.setHTML(`<div><b>Destination:</b><br/>${destAddress || 'Loading...'}</div>`);
 
-		// Add new marker
 		destMarkerRef.current = new maplibregl.Marker({ element: el })
 			.setLngLat([destMarker[1], destMarker[0]])
 			.setPopup(popup)
 			.addTo(map.current);
 
-		// Reverse geocode
-		reverseGeocode(destMarker[0], destMarker[1]).then((display_name) => {
-			setDestAddress(display_name);
-			setDestQuery(display_name);
-			popup.setHTML(`<div><b>Destination:</b><br/>${display_name}</div>`);
-		});
-
+		popup.setHTML(`<div><b>Destination:</b><br/>${destAddress}</div>`);
 		map.current.flyTo({ center: [destMarker[1], destMarker[0]] });
-	}, [destMarker]);
+	}, [destMarker, destAddress]);
 
 	/* ### Update driver markers ### */
 	useEffect(() => {
 		if (!map.current) return;
 
-		// Remove old driver markers
 		driverMarkersRef.current.forEach(marker => marker.remove());
 		driverMarkersRef.current = [];
 
-		// Add new driver markers
 		drivers.forEach((driverPos, idx) => {
-			// Create custom driver marker element (car icon style)
 			const el = document.createElement('div');
 			el.innerHTML = '🚗';
 			el.style.fontSize = '24px';
@@ -262,76 +240,23 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
 		});
 	}, [drivers]);
 
-	/* ### Reverse geocoding ### */
-	async function reverseGeocode(lat: number, lng: number): Promise<string> {
-		try {
-			const res = await fetch(
-				`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
-			);
-			const data = await res.json();
-			return data.display_name;
-		} catch (err) {
-			console.error("Reverse geocode error:", err);
-			return "Address not found";
-		}
-	}
 
-	/* ### Forward geocoding / Search ### */
-	async function handleSearch(e: React.FormEvent, type: "src" | "dest", query: string) {
-		e.preventDefault();
-		if (!query) return;
-
-		try {
-			const res = await fetch(
-				`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`
-			);
-			const data = await res.json();
-
-			if (data.length > 0) {
-				const { lat, lon, display_name } = data[0];
-				const coords: [number, number] = [parseFloat(lat), parseFloat(lon)];
-
-				if (type === "src") {
-					setSrcMarker(coords);
-					setSrcAddress(display_name);
-				} else if (type === "dest") {
-					setDestMarker(coords);
-					setDestAddress(display_name);
-				}
-			} else {
-				if (type === "src") {
-					setSrcAddress("Location not found");
-				} else if (type === "dest") {
-					setDestAddress("Location not found");
-				}
-			}
-		} catch (err) {
-			console.error("Search error:", err);
-			if (type === "src") {
-				setSrcAddress("Error searching location");
-			} else if (type === "dest") {
-				setDestAddress("Error searching location");
-			}
-		}
-	}
 
 	const handlePlacePin = () => {
 		if (!map.current) return;
 
 		const center = map.current.getCenter();
 		if (lastFocused === "src") {
-			setSrcMarker([center.lat, center.lng]);
+			onSrcMarkerSet([center.lat, center.lng]);
 		} else if (lastFocused === "dest") {
-			setDestMarker([center.lat, center.lng]);
+			onDestMarkerSet([center.lat, center.lng]);
 		}
 
 		setLastFocused(null);
 	};
 
 	return (
-
 		<div className="flex flex-col h-screen relative">
-			{/* Floating center pin */}
 			{lastFocused &&
 				<>
 					<div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[3000] w-[90%] max-w-2xl">
@@ -347,39 +272,39 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
 				</>
 			}
 
-			{/* Floating Search Card */}
 			<div
 				ref={searchRef}
 				className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[3000] w-[90%] max-w-2xl"
 			>
-
-
-
-				<div className="bg-white rounded-2xl shadow-xl p-4 space-y-3">
-					<form
-						onSubmit={(e) => handleSearch(e, "src", srcQuery)}
-						// onFocus={() => setLastFocused(null)}
-						className="flex items-center gap-3 p-2 border-b border-gray-200"
-					>
-						<div className="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-							<div className="text-emerald-600 text-xl">📍</div>
+				<div className="bg-white rounded-2xl shadow-xl p-3 sm:p-4 space-y-3">
+					{/* Pickup Location */}
+					{ userMode == "customer" &&
+					<div className="flex items-center gap-2 sm:gap-3 p-2 border-b border-gray-200">
+						<div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+							<div className="text-emerald-600 text-lg sm:text-xl">📍</div>
 						</div>
-						<div className="flex-grow">
+						<div className="flex-grow min-w-0">
 							<input
 								type="text"
 								value={srcQuery}
 								placeholder="Enter pickup location"
-								onChange={(e) => setSrcQuery(e.target.value)}
-								onFocus={() => { setFavoritesTarget("src"); setShowFavorites(true); }}
-								onClick={() => { setFavoritesTarget("src"); setShowFavorites(true); }}  // for desktop clicks
-								className="w-full px-3 py-2 text-gray-700 bg-gray-50 rounded-lg 
+								onChange={(e) => onSrcQueryChange(e.target.value)}
+								onFocus={() => { onFavoritesTargetChange("src"); onShowFavoritesChange(true); }}
+								onClick={() => { onFavoritesTargetChange("src"); onShowFavoritesChange(true); }}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter') {
+										e.preventDefault();
+										onSrcSearch();
+									}
+								}}
+								className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base text-gray-700 bg-gray-50 rounded-lg 
                           focus:outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500"
 							/>
 						</div>
 						<button
 							type="button"
 							onClick={() => lastFocused == "src" ? setLastFocused(null) : setLastFocused("src")}
-							className={`flex-shrink-0 px-3 py-2 rounded-lg border-2 transition-all duration-200
+							className={`flex-shrink-0 px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base rounded-lg border-2 transition-all duration-200
                 ${lastFocused === "src"
 									? "bg-emerald-100 border-emerald-500 text-emerald-700"
 									: "border-gray-300 hover:border-emerald-500 text-gray-600 hover:text-emerald-700"}`}
@@ -388,38 +313,43 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
 							📍
 						</button>
 						<button
-							type="submit"
-							className="flex-shrink-0 bg-emerald-500 text-white px-4 py-2 rounded-lg
+							type="button"
+							onClick={() => onSrcSearch()}
+							className="hidden sm:flex flex-shrink-0 bg-emerald-500 text-white px-4 py-2 text-base rounded-lg
                         hover:bg-emerald-600 transition-colors duration-200"
 						>
 							Search
 						</button>
-					</form>
+					</div>
+					}
 
-					<form
-						onSubmit={(e) => handleSearch(e, "dest", destQuery)}
-						// onFocus={() => setLastFocused(null)}
-						className="flex items-center gap-3 p-2"
-					>
-						<div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-							<div className="text-red-600 text-xl">📍</div>
+					{/* Destination */}
+					{ userMode == 'customer' && <div className="flex items-center gap-2 sm:gap-3 p-2 border-b border-gray-200">
+						<div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-red-100 rounded-full flex items-center justify-center">
+							<div className="text-red-600 text-lg sm:text-xl">📍</div>
 						</div>
-						<div className="flex-grow">
+						<div className="flex-grow min-w-0">
 							<input
 								type="text"
 								value={destQuery}
 								placeholder="Enter destination"
-								onChange={(e) => setDestQuery(e.target.value)}
-								onFocus={() => { setFavoritesTarget("src"); setShowFavorites(true); }}
-								onClick={() => { setFavoritesTarget("src"); setShowFavorites(true); }}  // for desktop clicks
-								className="w-full px-3 py-2 text-gray-700 bg-gray-50 rounded-lg
+								onChange={(e) => onDestQueryChange(e.target.value)}
+								onFocus={() => { onFavoritesTargetChange("dest"); onShowFavoritesChange(true); }}
+								onClick={() => { onFavoritesTargetChange("dest"); onShowFavoritesChange(true); }}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter') {
+										e.preventDefault();
+										onDestSearch();
+									}
+								}}
+								className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base text-gray-700 bg-gray-50 rounded-lg
                           focus:outline-none focus:bg-white focus:ring-2 focus:ring-red-500"
 							/>
 						</div>
 						<button
 							type="button"
 							onClick={() => lastFocused == "dest" ? setLastFocused(null) : setLastFocused("dest")}
-							className={`flex-shrink-0 px-3 py-2 rounded-lg border-2 transition-all duration-200
+							className={`flex-shrink-0 px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base rounded-lg border-2 transition-all duration-200
                 ${lastFocused === "dest"
 									? "bg-red-100 border-red-500 text-red-700"
 									: "border-gray-300 hover:border-red-500 text-gray-600 hover:text-red-700"}`}
@@ -428,48 +358,61 @@ const Map = forwardRef<MapHandle, MapProps>(({ position, zoom = 13, drivers = []
 							📍
 						</button>
 						<button
-							type="submit"
-							className="flex-shrink-0 bg-red-500 text-white px-4 py-2 rounded-lg
+							type="button"
+							onClick={() => onDestSearch()}
+							className="hidden sm:flex flex-shrink-0 bg-red-500 text-white px-4 py-2 text-base rounded-lg
                         hover:bg-red-600 transition-colors duration-200"
 						>
 							Search
 						</button>
-					</form>
+					</div>
+}
+
+					{/* Mode Selector */}
+					<div className="flex items-center gap-2 sm:gap-3 px-2 pt-1">
+						<div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center">
+							<div className="text-blue-600 text-lg sm:text-xl">
+								{userMode === 'customer' ? '👤' : '🚗'}
+							</div>
+						</div>
+						<div className="flex-grow">
+							<select 
+								value={userMode} 
+								onChange={onModeChange}
+								className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base text-gray-700 bg-gray-50 rounded-lg
+									border border-gray-200 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 cursor-pointer"
+							>
+								<option value="customer">👤 Customer</option>
+								<option value="driver">🚗 Driver</option>
+							</select>
+						</div>
+					</div>
 				</div>
 			</div>
 
-			{/* Map Container */}
 			<div ref={mapContainer} className="flex-1 w-full" />
 
-			{/* Favorites sheet overlay */}
 			<FavoritesSheet
 				open={showFavorites}
 				target={favoritesTarget}
 				topOffset={searchH}
-				onClose={() => setShowFavorites(false)}
-				onSelect={(place, which) => {                 // ← accept optional `which`
+				onClose={() => onShowFavoritesChange(false)}
+				onSelect={(place, which) => {
 					const coords: [number, number] = [place.lat, place.lng];
-					const applyTo = which ?? favoritesTarget;   // ← use tab choice if provided
+					const applyTo = which ?? favoritesTarget;
 
 					if (applyTo === "src") {
-						setSrcMarker(coords);
-						setSrcAddress(place.name);
-						setSrcQuery(place.name);
+						onSrcMarkerSet(coords);
+						onSrcQueryChange(place.name);
 					} else if (applyTo === "dest") {
-						setDestMarker(coords);
-						setDestAddress(place.name);
-						setDestQuery(place.name);
+						onDestMarkerSet(coords);
+						onDestQueryChange(place.name);
 					}
 
-					setShowFavorites(false);
-					setFavoritesTarget(null);
+					onShowFavoritesChange(false);
+					onFavoritesTargetChange(null);
 				}}
 			/>
-
-
-
-
-
 		</div>
 	);
 });
