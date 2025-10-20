@@ -3,20 +3,20 @@ import Image from "next/image";
 import "../globals.css";
 
 export const metadata: Metadata = {
-  title: "NoCarNoProblem",
-  description: "Carpooling app profile page",
+	title: "NoCarNoProblem",
+	description: "Carpooling app profile page",
 };
 
 export default function RootLayout({
-  children,
+	children,
 }: {
-    children: React.ReactNode;
+	children: React.ReactNode;
 }) {
-    return (
-    <html lang="en">
-        <body>
-            <main className="">{children}</main>
-        </body>
-    </html>
-    );
+	return (
+		<html lang="en">
+			<body>
+				<main className="">{children}</main>
+			</body>
+		</html>
+	);
 }
