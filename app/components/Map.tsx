@@ -259,13 +259,13 @@ const Map = forwardRef<MapHandle, MapProps>(({
 		<div className="flex flex-col h-screen relative">
 			{lastFocused &&
 				<>
-					<div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[3000] w-[90%] max-w-2xl">
+					<div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
 						<div className="w-8 h-8 text-4xl">📍</div>
 					</div>
 
 					<button
 						onClick={handlePlacePin}
-						className="button button-primary absolute bottom-24 left-1/2 transform -translate-x-1/2 z-20"
+						className="button button-primary absolute bottom-1/3 left-1/2 transform -translate-x-1/2 z-20"
 					>
 						Place Pin
 					</button>
