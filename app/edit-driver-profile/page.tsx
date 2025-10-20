@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import NavBar from "../components/NavBar";
 import EditProfileInput from "../components/EditProfileInput";
+import { fetchWithAuth } from "../lib/api";
 interface Profile {
 	fullName: string;
 	age: number;
@@ -32,7 +33,7 @@ function EditProfile() {
 	useEffect(() => {
 		async function fetchProfile() {
 			try {
-				const res = await fetch(
+				const res = await fetchWithAuth(
 					`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`
 				);
 				const apiResponse = await res.json();

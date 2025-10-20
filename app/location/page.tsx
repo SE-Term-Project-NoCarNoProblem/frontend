@@ -10,6 +10,7 @@ import ChooseRideCard from "../components/ChooseRideCard";
 import LocationPicker from "../components/LocationPicker";
 import RideRequestCard from "../components/RideFareCard";
 import DriverInfoCard from "../components/DriverInfoCard";
+import DriverStatusCard from "../components/DriverStatusCard";
 
 interface Driver {
 	driver_id: string;
@@ -68,12 +69,15 @@ export default function Home() {
 	const [selectedRequest, setSelectedRequest] = useState<NearbyRequest | null>(
 		null
 	);
-	const [driverView, setDriverView] = useState<"list" | "details">("list");
+	const [driverView, setDriverView] = useState<"list" | "details" | "accepted">(
+		"list"
+	);
 	const [customerView, setCustomerView] = useState<"select" | "waiting">(
 		"select"
 	);
 	const [userRideRequest, setUserRideRequest] =
 		useState<UserRideRequest | null>(null);
+	const [acceptedRide, setAcceptedRide] = useState<NearbyRequest | null>(null);
 
 	// Store socket and user ID in refs so they persist across renders
 	const socketRef = useRef<ReturnType<typeof io> | null>(null);
@@ -215,7 +219,7 @@ export default function Home() {
 
 			try {
 				const res = await fetchWithAuth(
-					`${process.env.NEXT_PUBLIC_BACKEND_URL}/requests/me/pending`
+					`${process.env.NEXT_PUBLIC_BACKEND_URL}/requests/me/active`
 				);
 
 				if (!res.ok) {
@@ -229,22 +233,22 @@ export default function Home() {
 				const data = await res.json();
 
 				// If user has an active ride, show DriverInfoCard
-				console.log(data, data.id);
-				if (data && data.id) {
+				// console.log(data, data.id);
+				if (data && data.length > 0 && data[0].id) {
 					setUserRideRequest(data);
 					setCustomerView("waiting");
 
 					// Set markers for the existing ride
-					setSrcMarker([data.pickup_lat, data.pickup_lng]);
-					setDestMarker([data.dropoff_lat, data.dropoff_lng]);
+					setSrcMarker([data[0].pickup_lat, data[0].pickup_lng]);
+					setDestMarker([data[0].dropoff_lat, data[0].dropoff_lng]);
 					zoomOverall(
-						data.pickup_lat,
-						data.pickup_lng,
-						data.dropoff_lat,
-						data.dropoff_lng
+						data[0].pickup_lat,
+						data[0].pickup_lng,
+						data[0].dropoff_lat,
+						data[0].dropoff_lng
 					);
 
-					console.log("📍 Existing ride found:", data);
+					console.log("📍 Existing ride found:", data[0]);
 				} else {
 					setCustomerView("select");
 					setUserRideRequest(null);
@@ -366,10 +370,38 @@ export default function Home() {
 	const handleBackToList = () => {
 		setDriverView("list");
 		setSelectedRequest(null);
+		setAcceptedRide(null);
 		setSrcMarker(null);
 		setDestMarker(null);
 		setSrcAddress("");
 		setDestAddress("");
+	};
+
+	const handleAcceptRequest = async () => {
+		if (!selectedRequest) return;
+
+		try {
+			const res = await fetchWithAuth(
+				`${process.env.NEXT_PUBLIC_BACKEND_URL}/rides/${selectedRequest.id}/accept`,
+				{
+					method: "POST",
+				}
+			);
+
+			if (!res.ok) {
+				throw new Error("Failed to accept ride request");
+			}
+
+			const data = await res.json();
+			console.log("✅ Ride request accepted:", data);
+
+			// Store the accepted ride and progress to accepted view
+			setAcceptedRide(selectedRequest);
+			setDriverView("accepted");
+		} catch (err) {
+			console.error("❌ Error accepting ride request:", err);
+			alert("Failed to accept ride request. Please try again.");
+		}
 	};
 
 	const handleRequestRide = async () => {
@@ -467,6 +499,7 @@ export default function Home() {
 				onShowFavoritesChange={setShowFavorites}
 				onFavoritesTargetChange={setFavoritesTarget}
 				onCurrentPositionChange={setCurrentPosition}
+				shouldShowInput={userMode === "customer" && customerView === "select"}
 			/>
 			{/* <BottomSheet onRequestRide={handleRequestRide}/> */}
 			<div className="absolute bottom-0 left-0 right-0 w-full z-10">
@@ -508,13 +541,26 @@ export default function Home() {
 					selectedRequest && (
 						<RideRequestCard
 							request={selectedRequest}
-							onAccept={() => {
-								console.log("Accepted request:", selectedRequest.id);
-								// Handle accept logic here
-							}}
+							onAccept={handleAcceptRequest}
 							onBack={handleBackToList}
 						/>
 					)}
+				{userMode == "driver" && driverView === "accepted" && acceptedRide && (
+					<DriverStatusCard
+						driver={{
+							name: "Customer",
+							vehicle: "Waiting for pickup",
+							plateNumber: "-",
+							rating: 0,
+							avatar: "C",
+							status: "accepted",
+						}}
+						isAccepted={true}
+						onMessageDriver={() => console.log("Message customer")}
+						onCancel={handleBackToList}
+						showBackButton={true}
+					/>
+				)}
 			</div>
 		</div>
 	);

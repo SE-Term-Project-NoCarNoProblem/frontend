@@ -42,6 +42,7 @@ type MapProps = {
 	onShowFavoritesChange: (show: boolean) => void;
 	onFavoritesTargetChange: (target: "src" | "dest" | null) => void;
 	onCurrentPositionChange?: (coords: [number, number] | null) => void;
+	shouldShowInput?: boolean;
 };
 
 const Map = forwardRef<MapHandle, MapProps>(
@@ -67,6 +68,7 @@ const Map = forwardRef<MapHandle, MapProps>(
 			onShowFavoritesChange,
 			onFavoritesTargetChange,
 			onCurrentPositionChange,
+			shouldShowInput,
 		},
 		ref
 	) => {
@@ -324,7 +326,7 @@ const Map = forwardRef<MapHandle, MapProps>(
 				>
 					<div className="bg-white rounded-2xl shadow-xl p-3 sm:p-4 space-y-3">
 						{/* Pickup Location */}
-						{userMode == "customer" && (
+						{shouldShowInput && (
 							<div className="flex items-center gap-2 sm:gap-3 p-2 border-b border-gray-200">
 								<div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-emerald-100 rounded-full flex items-center justify-center">
 									<div className="text-emerald-600 text-lg sm:text-xl">📍</div>
@@ -382,7 +384,7 @@ const Map = forwardRef<MapHandle, MapProps>(
 						)}
 
 						{/* Destination */}
-						{userMode == "customer" && (
+						{shouldShowInput && (
 							<div className="flex items-center gap-2 sm:gap-3 p-2 border-b border-gray-200">
 								<div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-red-100 rounded-full flex items-center justify-center">
 									<div className="text-red-600 text-lg sm:text-xl">📍</div>
