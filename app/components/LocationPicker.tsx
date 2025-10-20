@@ -30,9 +30,13 @@ interface LocationOption {
 
 interface LocationPickerProps {
 	nearbyRequests?: NearbyRequest[];
+	onSelectRequest?: (request: NearbyRequest) => void;
 }
 
-const LocationPicker = ({ nearbyRequests = [] }: LocationPickerProps) => {
+const LocationPicker = ({
+	nearbyRequests = [],
+	onSelectRequest,
+}: LocationPickerProps) => {
 	const router = useRouter();
 	const [selectedSort, setSelectedSort] = useState("Nearest pick-up");
 	const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
@@ -158,69 +162,77 @@ const LocationPicker = ({ nearbyRequests = [] }: LocationPickerProps) => {
 						<p className="text-sm">No nearby ride requests available</p>
 					</div>
 				) : (
-					locations.map((location, index) => (
-						<button
-							key={location.id}
-							onClick={() => setSelectedLocationId(location.id)}
-							className={`w-full max-w-[345px] rounded-lg p-4 text-left transition-colors ${
-								selectedLocationId === location.id
-									? "bg-[#D8D8D8]"
-									: "bg-[#F8F8F8] hover:bg-[#E8E8E8] active:bg-[#D8D8D8]"
-							}`}
-						>
-							{/* Destination */}
-							<div className="flex items-start gap-3 mb-2">
-								<div className="mt-1">
-									<svg
-										width="20"
-										height="20"
-										viewBox="0 0 24 24"
-										fill="#DC2626"
-										stroke="#DC2626"
-										strokeWidth="0"
-									>
-										<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-									</svg>
+					locations.map((location, index) => {
+						const request = nearbyRequests.find((r) => r.id === location.id);
+						return (
+							<button
+								key={location.id}
+								onClick={() => {
+									setSelectedLocationId(location.id);
+									if (request && onSelectRequest) {
+										onSelectRequest(request);
+									}
+								}}
+								className={`w-full max-w-[345px] rounded-lg p-4 text-left transition-colors ${
+									selectedLocationId === location.id
+										? "bg-[#D8D8D8]"
+										: "bg-[#F8F8F8] hover:bg-[#E8E8E8] active:bg-[#D8D8D8]"
+								}`}
+							>
+								{/* Destination */}
+								<div className="flex items-start gap-3 mb-2">
+									<div className="mt-1">
+										<svg
+											width="20"
+											height="20"
+											viewBox="0 0 24 24"
+											fill="#DC2626"
+											stroke="#DC2626"
+											strokeWidth="0"
+										>
+											<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+										</svg>
+									</div>
+									<div className="flex-1">
+										<h3 className="font-bold text-[#0E4663] text-sm mb-1">
+											{location.name}
+										</h3>
+										<p className="text-xs text-[#0E4663]">
+											{location.distanceFromUser} ( {location.timeFromUser} )
+										</p>
+									</div>
 								</div>
-								<div className="flex-1">
-									<h3 className="font-bold text-[#0E4663] text-sm mb-1">
-										{location.name}
-									</h3>
-									<p className="text-xs text-[#0E4663]">
-										{location.distanceFromUser} ( {location.timeFromUser} )
-									</p>
-								</div>
-							</div>
 
-							{/* Pickup Point */}
-							<div className="flex items-start gap-3">
-								<div className="mt-1">
-									<svg
-										width="20"
-										height="20"
-										viewBox="0 0 24 24"
-										fill="#059669"
-										stroke="#059669"
-										strokeWidth="0"
-									>
-										<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-									</svg>
+								{/* Pickup Point */}
+								<div className="flex items-start gap-3">
+									<div className="mt-1">
+										<svg
+											width="20"
+											height="20"
+											viewBox="0 0 24 24"
+											fill="#059669"
+											stroke="#059669"
+											strokeWidth="0"
+										>
+											<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+										</svg>
+									</div>
+									<div className="flex-1">
+										<h3 className="font-bold text-[#0E4663] text-sm mb-1">
+											{location.pickupPoint}
+										</h3>
+										<p className="text-xs text-[#0E4663]">
+											{location.distanceFromPickup} ( {location.timeFromPickup}{" "}
+											)
+										</p>
+									</div>
 								</div>
-								<div className="flex-1">
-									<h3 className="font-bold text-[#0E4663] text-sm mb-1">
-										{location.pickupPoint}
-									</h3>
-									<p className="text-xs text-[#0E4663]">
-										{location.distanceFromPickup} ( {location.timeFromPickup} )
-									</p>
-								</div>
-							</div>
-						</button>
-					))
+							</button>
+						);
+					})
 				)}
 			</div>
 		</div>
 	);
 };
-
 export default LocationPicker;

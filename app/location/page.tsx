@@ -7,6 +7,7 @@ import { io } from "socket.io-client";
 import { fetchWithAuth } from "../lib/api";
 import ChooseRideCard from "../components/ChooseRideCard";
 import LocationPicker from "../components/LocationPicker";
+import RideRequestCard from "../components/RideFareCard";
 
 interface Driver {
 	driver_id: string;
@@ -47,6 +48,10 @@ export default function Home() {
 	const [currentPosition, setCurrentPosition] = useState<
 		[number, number] | null
 	>(null);
+	const [selectedRequest, setSelectedRequest] = useState<NearbyRequest | null>(
+		null
+	);
+	const [driverView, setDriverView] = useState<"list" | "details">("list");
 
 	// Store socket and user ID in refs so they persist across renders
 	const socketRef = useRef<ReturnType<typeof io> | null>(null);
@@ -257,6 +262,43 @@ export default function Home() {
 	}, [srcMarker, destMarker]);
 
 	const mapRef = useRef<MapHandle>(null);
+
+	const handleSelectRequest = (request: NearbyRequest) => {
+		setSelectedRequest(request);
+		setDriverView("details");
+
+		// Set markers for pickup and dropoff
+		setSrcMarker([request.pickup_lat, request.pickup_lng]);
+		setDestMarker([request.dropoff_lat, request.dropoff_lng]);
+
+		// Zoom map to encompass both locations
+		if (mapRef.current) {
+			// Calculate bounds
+			const minLat = Math.min(request.pickup_lat, request.dropoff_lat);
+			const maxLat = Math.max(request.pickup_lat, request.dropoff_lat);
+			const minLng = Math.min(request.pickup_lng, request.dropoff_lng);
+			const maxLng = Math.max(request.pickup_lng, request.dropoff_lng);
+
+			// Add some padding (10%)
+			const latPadding = (maxLat - minLat) * 0.1;
+			const lngPadding = (maxLng - minLng) * 0.1;
+
+			mapRef.current.fitBounds?.([
+				[minLat - latPadding, minLng - lngPadding],
+				[maxLat + latPadding, maxLng + lngPadding],
+			]);
+		}
+	};
+
+	const handleBackToList = () => {
+		setDriverView("list");
+		setSelectedRequest(null);
+		setSrcMarker(undefined);
+		setDestMarker(null);
+		setSrcAddress("");
+		setDestAddress("");
+	};
+
 	const handleRequestRide = async () => {
 		if (!srcMarker || !destMarker) {
 			alert("Please select both pickup and destination!");
@@ -323,9 +365,26 @@ export default function Home() {
 				{userMode == "customer" && srcAddress && destAddress && fare && (
 					<ChooseRideCard price={fare} onRequestRide={handleRequestRide} />
 				)}
-				{userMode == "driver" && (
-					<LocationPicker nearbyRequests={nearbyRequests} />
+				{userMode == "driver" && driverView === "list" && (
+					<LocationPicker
+						nearbyRequests={nearbyRequests}
+						onSelectRequest={handleSelectRequest}
+					/>
 				)}
+				{userMode == "driver" &&
+					driverView === "details" &&
+					selectedRequest && (
+						<RideRequestCard
+							destination={destAddress}
+							pickupPoint={srcAddress}
+							estimatedFare={selectedRequest.fare || 0}
+							onAccept={() => {
+								console.log("Accepted request:", selectedRequest.id);
+								// Handle accept logic here
+							}}
+							onBack={handleBackToList}
+						/>
+					)}
 			</div>
 		</div>
 	);

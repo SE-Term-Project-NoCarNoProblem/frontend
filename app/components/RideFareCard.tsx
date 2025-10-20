@@ -14,6 +14,7 @@ interface RideRequestCardProps {
 	estimatedFare?: number;
 	passengerInitial?: string;
 	onAccept?: () => void;
+	onBack?: () => void;
 }
 
 const RideRequestCard = ({
@@ -26,11 +27,16 @@ const RideRequestCard = ({
 	estimatedFare = 60,
 	passengerInitial = "K",
 	onAccept,
+	onBack,
 }: RideRequestCardProps) => {
 	const router = useRouter();
 
 	const handleBackClick = () => {
-		router.back();
+		if (onBack) {
+			onBack();
+		} else {
+			router.back();
+		}
 	};
 
 	const handleAccept = () => {
@@ -42,7 +48,7 @@ const RideRequestCard = ({
 	};
 
 	return (
-		<div className="w-full max-w-[393px] h-[314px] bg-white flex flex-col shadow-lg rounded-[10px] overflow-hidden">
+		<div className="w-full mx-auto max-w-[393px] bg-white flex flex-col shadow-lg rounded-[10px] overflow-hidden">
 			{/* Upper Bar */}
 			<div className="flex justify-center pt-2">
 				<Image src="/upper bar.svg" alt="Upper bar" width={148} height={4} />

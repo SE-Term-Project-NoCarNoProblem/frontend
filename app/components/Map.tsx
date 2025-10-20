@@ -16,6 +16,7 @@ import ChooseRideCard from "./ChooseRideCard";
 
 export type MapHandle = {
 	requestRide: () => void;
+	fitBounds?: (bounds: [[number, number], [number, number]]) => void;
 };
 
 type UserMode = "customer" | "driver";
@@ -131,6 +132,22 @@ const Map = forwardRef<MapHandle, MapProps>(
 						console.error("❌ Backend error:", err);
 					});
 			},
+			fitBounds(bounds: [[number, number], [number, number]]) {
+				if (!map.current) return;
+
+				const [[minLat, minLng], [maxLat, maxLng]] = bounds;
+
+				map.current.fitBounds(
+					[
+						[minLng, minLat],
+						[maxLng, maxLat],
+					],
+					{
+						padding: 50,
+						duration: 1000,
+					}
+				);
+			},
 		}));
 
 		/* ### Initialize map ### */
@@ -205,7 +222,7 @@ const Map = forwardRef<MapHandle, MapProps>(
 				.addTo(map.current);
 
 			popup.setHTML(`<div><b>Pickup:</b><br/>${srcAddress}</div>`);
-			map.current.flyTo({ center: [srcMarker[1], srcMarker[0]] });
+			// map.current.flyTo({ center: [srcMarker[1], srcMarker[0]] });
 		}, [srcMarker, srcAddress]);
 
 		/* ### Update destination marker ### */
@@ -239,7 +256,7 @@ const Map = forwardRef<MapHandle, MapProps>(
 				.addTo(map.current);
 
 			popup.setHTML(`<div><b>Destination:</b><br/>${destAddress}</div>`);
-			map.current.flyTo({ center: [destMarker[1], destMarker[0]] });
+			// map.current.flyTo({ center: [destMarker[1], destMarker[0]] });
 		}, [destMarker, destAddress]);
 
 		/* ### Update driver markers ### */
