@@ -38,7 +38,7 @@ export default function ProfilePage() {
 				);
 				const data = await res.json();
 				setProfile(data.data);
-				// console.log(data.data);
+				console.log("Customer profile data:", data.data);
 			} catch (err) {
 				console.error("Error fetching profile:", err);
 			} finally {
@@ -47,7 +47,7 @@ export default function ProfilePage() {
 		}
 
 		fetchProfile();
-	}, []);
+	}, [searchParams]);
 
 	if (loading) {
 		return (
@@ -120,7 +120,7 @@ export default function ProfilePage() {
 							{profile.fullname} {/* รอใส่ตัวแปร */}{" "}
 						</div>
 						<div className="flex flex-col items-center text-[#F8F8F8]">
-							Age: {profile.age}
+							Age: {profile.age || "20"}
 							<br />
 						</div>
 						<div className="flex flex-col items-center text-[#BABABA]">
