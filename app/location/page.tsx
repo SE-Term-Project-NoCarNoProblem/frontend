@@ -12,6 +12,7 @@ import LocationPicker from "../components/LocationPicker";
 import RideRequestCard from "../components/RideFareCard";
 import DriverStatusCard from "../components/DriverStatusCard";
 import DriverActionCard from "../components/DriverActionCard";
+import RateDriverModal from "../components/RateDriverModal";
 
 interface Driver {
 	driver_id: string;
@@ -123,6 +124,10 @@ export default function Home() {
 	const [rideStatus, setRideStatus] = useState<
 		"on_the_way" | "arrived" | "picked_up" | "completed"
 	>("on_the_way");
+	const [showRatingModal, setShowRatingModal] = useState(false);
+	const [completedRideForRating, setCompletedRideForRating] =
+		useState<ActiveRide | null>(null);
+	const [driverRating, setDriverRating] = useState<number>(4.9);
 
 	// Store socket and user ID in refs so they persist across renders
 	const socketRef = useRef<ReturnType<typeof io> | null>(null);
@@ -267,11 +272,46 @@ export default function Home() {
 				setRideStatus(data.progress_status);
 				setActiveRide((currentRide) => {
 					if (currentRide && currentRide.id === rideId) {
-						return {
+						const updatedRide = {
 							...currentRide,
 							ride_progress_status: data.progress_status,
 							ride_status: data.ride_status,
 						} as ActiveRide;
+
+						// If ride is completed and user is a customer, show rating modal
+						if (
+							data.progress_status === "completed" &&
+							userMode === "customer"
+						) {
+							setCompletedRideForRating(updatedRide);
+
+							// Fetch driver rating before showing modal
+							if (updatedRide.driver_id) {
+								fetchWithAuth(
+									`${process.env.NEXT_PUBLIC_BACKEND_URL}/drivers/${updatedRide.driver_id}/rating`
+								)
+									.then((res) => res.json())
+									.then((data) => {
+										if (data.average_rating) {
+											const ratingMatch = data.average_rating.match(/[\d.]+/);
+											if (ratingMatch) {
+												setDriverRating(parseFloat(ratingMatch[0]));
+											}
+										}
+									})
+									.catch((err) => {
+										console.error("Error fetching driver rating:", err);
+										setDriverRating(0); // Default if no rating
+									})
+									.finally(() => {
+										setShowRatingModal(true);
+									});
+							} else {
+								setShowRatingModal(true);
+							}
+						}
+
+						return updatedRide;
 					}
 					return currentRide;
 				});
@@ -810,6 +850,46 @@ export default function Home() {
 		}
 	};
 
+	// Handler for submitting driver rating
+	const handleRatingSubmit = async (rating: number) => {
+		if (!completedRideForRating) return;
+
+		try {
+			const res = await fetchWithAuth(
+				`${process.env.NEXT_PUBLIC_BACKEND_URL}/drivers/${completedRideForRating.id}/rating`,
+				{
+					method: "PUT",
+					body: JSON.stringify({
+						rating: rating,
+					}),
+				}
+			);
+
+			if (!res.ok) {
+				throw new Error("Failed to submit rating");
+			}
+
+			console.log("✅ Rating submitted successfully:", rating);
+
+			// Close modal and reset ride state
+			setShowRatingModal(false);
+			setCompletedRideForRating(null);
+			setActiveRide(null);
+			setUserRideRequest(null);
+			setCustomerView("select");
+			setSrcMarker(null);
+			setDestMarker(null);
+			setSrcAddress("");
+			setDestAddress("");
+
+			// Show success message
+			alert("Thank you for your feedback! 🎉");
+		} catch (err) {
+			console.error("❌ Error submitting rating:", err);
+			alert("Failed to submit rating. Please try again.");
+		}
+	};
+
 	return (
 		<div>
 			<Map
@@ -913,6 +993,26 @@ export default function Home() {
 					/>
 				)}
 			</div>
+
+			{/* Rating Modal - Shows when ride is completed (customer view) */}
+			{showRatingModal && completedRideForRating && (
+				<RateDriverModal
+					driverName={
+						completedRideForRating.verified_driver?.driver.user.fullname ||
+						"Driver"
+					}
+					driverAvatar={
+						completedRideForRating.verified_driver?.driver.user.profile_pic
+					}
+					driverInitials={
+						completedRideForRating.verified_driver?.driver.user.fullname?.charAt(
+							0
+						) || "D"
+					}
+					currentRating={driverRating}
+					onSubmit={handleRatingSubmit}
+				/>
+			)}
 		</div>
 	);
 }
