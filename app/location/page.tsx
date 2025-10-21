@@ -128,6 +128,7 @@ export default function Home() {
 	const [completedRideForRating, setCompletedRideForRating] =
 		useState<ActiveRide | null>(null);
 	const [driverRating, setDriverRating] = useState<number>(4.9);
+	const [displayDriverRating, setDisplayDriverRating] = useState<number>(0);
 
 	// Store socket and user ID in refs so they persist across renders
 	const socketRef = useRef<ReturnType<typeof io> | null>(null);
@@ -624,6 +625,42 @@ export default function Home() {
 
 	const mapRef = useRef<MapHandle>(null);
 
+	// Fetch driver rating when activeRide is set
+	useEffect(() => {
+		const fetchDriverRating = async () => {
+			if (activeRide?.driver_id && userMode === "customer") {
+				try {
+					const res = await fetchWithAuth(
+						`${process.env.NEXT_PUBLIC_BACKEND_URL}/drivers/${activeRide.driver_id}/rating`
+					);
+					if (!res.ok) {
+						console.error("Failed to fetch driver rating");
+						setDisplayDriverRating(0);
+						return;
+					}
+					const data = await res.json();
+					if (data.average_rating) {
+						// Extract numeric value from "⭐ X.XX" format
+						const ratingMatch = data.average_rating.match(/[\d.]+/);
+						if (ratingMatch) {
+							setDisplayDriverRating(parseFloat(ratingMatch[0]));
+						} else {
+							setDisplayDriverRating(0);
+						}
+					} else {
+						setDisplayDriverRating(0);
+					}
+					console.log("✅ Fetched driver rating:", data);
+				} catch (err) {
+					console.error("❌ Error fetching driver rating:", err);
+					setDisplayDriverRating(0);
+				}
+			}
+		};
+
+		fetchDriverRating();
+	}, [activeRide, userMode]);
+
 	// Fetch full ride details
 	const fetchRideDetails = async (rideId: string) => {
 		try {
@@ -940,7 +977,7 @@ export default function Home() {
 									? `${activeRide.vehicle.make} ${activeRide.vehicle.model} (${activeRide.vehicle.color})`
 									: "Searching...",
 								plateNumber: activeRide?.vehicle?.registration || "-",
-								rating: 4.8,
+								rating: displayDriverRating || 0,
 								avatar:
 									activeRide?.verified_driver?.driver.user.fullname?.charAt(
 										0
