@@ -526,14 +526,81 @@ export default function Home() {
 						setActiveRide(null);
 					}
 				} else if (userMode === "driver") {
-					// Driver mode - no need to check for existing rides on load
-					setDriverView("list");
+					// Driver mode - check for active accepted rides
+					const res = await fetchWithAuth(
+						`${process.env.NEXT_PUBLIC_BACKEND_URL}/rides/me/active`
+					);
+
+					if (res.ok) {
+						const data = await res.json();
+
+						if (data && data.length > 0 && data[0].id) {
+							const activeRideData = data[0];
+
+							// Fetch full ride details with customer and vehicle info
+							try {
+								const rideRes = await fetchWithAuth(
+									`${process.env.NEXT_PUBLIC_BACKEND_URL}/rides/${activeRideData.id}`
+								);
+
+								if (rideRes.ok) {
+									const rideData: ActiveRide = await rideRes.json();
+									setActiveRide(rideData);
+									setRideStatus(rideData.ride_progress_status);
+									setDriverView("accepted");
+
+									// Set markers for the existing ride
+									setSrcMarker([rideData.pickup_lat, rideData.pickup_lng]);
+									setDestMarker([rideData.dropoff_lat, rideData.dropoff_lng]);
+
+									// Fetch addresses for the locations
+									reverseGeocode(rideData.pickup_lat, rideData.pickup_lng).then(
+										(display_name) => {
+											setSrcAddress(display_name);
+											setSrcQuery(display_name);
+										}
+									);
+									reverseGeocode(
+										rideData.dropoff_lat,
+										rideData.dropoff_lng
+									).then((display_name) => {
+										setDestAddress(display_name);
+										setDestQuery(display_name);
+									});
+
+									zoomOverall(
+										rideData.pickup_lat,
+										rideData.pickup_lng,
+										rideData.dropoff_lat,
+										rideData.dropoff_lng
+									);
+
+									console.log(
+										"📍 Existing active driver ride found:",
+										rideData
+									);
+								}
+							} catch (err) {
+								console.error("Error fetching driver ride details:", err);
+								setDriverView("list");
+							}
+						} else {
+							setDriverView("list");
+							setActiveRide(null);
+						}
+					} else {
+						setDriverView("list");
+						setActiveRide(null);
+					}
 				}
 			} catch (err) {
 				console.error("Error checking existing ride:", err);
 				if (userMode === "customer") {
 					setCustomerView("select");
 					setUserRideRequest(null);
+					setActiveRide(null);
+				} else if (userMode === "driver") {
+					setDriverView("list");
 					setActiveRide(null);
 				}
 			}
