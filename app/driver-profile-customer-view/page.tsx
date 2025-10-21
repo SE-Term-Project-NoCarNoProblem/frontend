@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import LoginNavBar from "../components/LoginNavBar";
 import Link from "next/link";
+import { fetchWithAuth } from "../lib/api";
 
 interface Profile {
 	fullname: string;
@@ -12,41 +13,83 @@ interface Profile {
 	role: string;
 	email: string;
 	phone_number: string;
-	registration: string;
-	model: string;
+	registration?: string;
+	model?: string;
+	make?: string;
+	color?: string;
 	rating: number | null;
+}
+
+interface Vehicle {
+	id: string;
+	model: string;
+	make: string;
+	registration: string;
+	color: string;
 }
 
 export default function ProfilePage() {
 	// const themeColor1 = "#0E4663";
 	// const themeColor2 = "#F8F8F8";
 	const router = useRouter();
+	const searchParams = useSearchParams();
 	const [loading, setLoading] = useState(true);
 	const [profile, setProfile] = useState<Profile | null>(null);
+	const [vehicles, setVehicles] = useState<Vehicle[]>([]);
 
 	useEffect(() => {
 		async function fetchProfile() {
 			try {
-				const driverId = "1ad4b931-b091-4f35-8e80-a03e63e01ba6";
-				const res = await fetch(
+				const driverId =
+					searchParams.get("driverId") ||
+					"1ad4b931-b091-4f35-8e80-a03e63e01ba6";
+
+				// Fetch user basic info
+				const userRes = await fetch(
 					`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${driverId}`
 				);
-				const data = await res.json();
-				// const data = {
-				//   // mock data
-				//   firstName: "Firstname",
-				//   lastName: "Lastname",
-				//   age: 23,
-				//   role: "Driver",
-				//   email: "driver@gmail.com",
-				//   phoneNumber: "+66 xx-xxx-xxxx",
-				//   registration: "4กก 1234",
-				//   model: "Toyota Camry",
-				//   //   rating: 4.8,
-				//   rating: null,
-				// };
-				setProfile(data.data);
-				// console.log(data.data);
+				const userData = await userRes.json();
+
+				// Fetch driver rating
+				const ratingRes = await fetchWithAuth(
+					`${process.env.NEXT_PUBLIC_BACKEND_URL}/drivers/${driverId}/rating`
+				);
+				const ratingData = await ratingRes.json();
+
+				// Extract rating value
+				let ratingValue = null;
+				if (ratingData.average_rating) {
+					const ratingMatch = ratingData.average_rating.match(/[\d.]+/);
+					if (ratingMatch) {
+						ratingValue = parseFloat(ratingMatch[0]);
+					}
+				}
+
+				// Fetch driver vehicles
+				const vehiclesRes = await fetchWithAuth(
+					`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${driverId}?include=driver,vehicles`
+				);
+				const vehiclesData = await vehiclesRes.json();
+
+				// Extract vehicles if available
+				const driverVehicles =
+					vehiclesData.data?.driver?.verified_driver?.vehicle || [];
+				setVehicles(driverVehicles);
+
+				// Combine all data
+				const profileData = {
+					...userData.data,
+					rating: ratingValue,
+					...(driverVehicles.length > 0 && {
+						registration: driverVehicles[0].registration,
+						model: driverVehicles[0].model,
+						make: driverVehicles[0].make,
+						color: driverVehicles[0].color,
+					}),
+				};
+
+				setProfile(profileData);
+				console.log("Profile data:", profileData);
 			} catch (err) {
 				console.error("Error fetching profile:", err);
 			} finally {
@@ -55,7 +98,7 @@ export default function ProfilePage() {
 		}
 
 		fetchProfile();
-	}, []);
+	}, [searchParams]);
 
 	if (loading) {
 		return (
@@ -146,7 +189,6 @@ export default function ProfilePage() {
 						</div>
 					</div>
 				</div>
-
 				{/* -------------------- Middle -------------------- */}
 				<div
 					className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 `}
@@ -165,7 +207,6 @@ export default function ProfilePage() {
 						{profile.email} {/* รอใส่ตัวแปร */}
 					</div>
 				</div>
-
 				<div
 					className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}
 				>
@@ -186,27 +227,45 @@ export default function ProfilePage() {
 						{profile.phone_number} {/* รอใส่ตัวแปร */}
 					</div>
 				</div>
-
 				<div
 					className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 justify-center`}
 				>
 					<div className="flex flex-1 ">
 						<Image
-							alt="location icon"
+							alt="car icon"
 							src="/icons/location-pin-svgrepo-com.svg"
 							width={50}
 							height={50}
 						/>
-						<p className="flex items-center text-[#0E4663]">
+						<p className="flex items-center text-[#0E4663] font-semibold">
 							{" "}
-							Model : {profile.model}
+							Vehicle Information
 						</p>
 					</div>
-					<div className="px-12 text-[#0E4663]">
-						Registration : {profile.registration} {/* รอใส่ตัวแปร */}
-					</div>
-				</div>
-
+					{profile.make && profile.model ? (
+						<div className="px-12 text-[#0E4663]">
+							<div className="mb-1">
+								<span className="font-semibold">Make & Model:</span>{" "}
+								{profile.make} {profile.model}
+							</div>
+							{profile.color && (
+								<div className="mb-1">
+									<span className="font-semibold">Color:</span> {profile.color}
+								</div>
+							)}
+							{profile.registration && (
+								<div className="mb-1">
+									<span className="font-semibold">Registration:</span>{" "}
+									{profile.registration}
+								</div>
+							)}
+						</div>
+					) : (
+						<div className="px-12 text-gray-500">
+							No vehicle information available
+						</div>
+					)}
+				</div>{" "}
 				{/* -------------------- Under -------------------- */}
 				{/* -------------------- Under -------------------- */}
 				<Link

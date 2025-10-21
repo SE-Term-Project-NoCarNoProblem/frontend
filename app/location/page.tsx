@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import BottomSheet from "../components/BottomSheet";
 import { MapHandle } from "@/app/components/Map";
 import { io } from "socket.io-client";
@@ -93,6 +94,7 @@ interface ActiveRide {
 type UserMode = "customer" | "driver";
 
 export default function Home() {
+	const router = useRouter();
 	const Map = useMemo(
 		() =>
 			dynamic(() => import("@/app/components/Map"), {
@@ -927,6 +929,24 @@ export default function Home() {
 		}
 	};
 
+	// Handler for clicking driver name (customer view)
+	const handleDriverClick = () => {
+		if (activeRide?.driver_id) {
+			router.push(
+				`/driver-profile-customer-view?driverId=${activeRide.driver_id}`
+			);
+		}
+	};
+
+	// Handler for clicking customer name (driver view)
+	const handleCustomerClick = () => {
+		if (activeRide?.customer_id) {
+			router.push(
+				`/customer-profile-driver-view?customerId=${activeRide.customer_id}`
+			);
+		}
+	};
+
 	return (
 		<div>
 			<Map
@@ -963,7 +983,6 @@ export default function Home() {
 					fare && (
 						<ChooseRideCard price={fare} onRequestRide={handleRequestRide} />
 					)}
-
 				{/* Customer view - Waiting for driver or ride in progress */}
 				{userMode == "customer" &&
 					customerView === "waiting" &&
@@ -990,10 +1009,10 @@ export default function Home() {
 							isAccepted={!!activeRide}
 							onMessageDriver={() => console.log("Message driver")}
 							onCancel={handleCancelRide}
+							onDriverClick={handleDriverClick}
 							showBackButton={false}
 						/>
-					)}
-
+					)}{" "}
 				{/* Driver view - List of nearby ride requests */}
 				{userMode == "driver" && driverView === "list" && (
 					<LocationPicker
@@ -1001,7 +1020,6 @@ export default function Home() {
 						onSelectRequest={handleSelectRequest}
 					/>
 				)}
-
 				{/* Driver view - Request details before accepting */}
 				{userMode == "driver" &&
 					driverView === "details" &&
@@ -1012,7 +1030,6 @@ export default function Home() {
 							onBack={handleBackToList}
 						/>
 					)}
-
 				{/* Driver view - Accepted ride with action buttons */}
 				{userMode == "driver" && driverView === "accepted" && activeRide && (
 					<DriverActionCard
@@ -1027,6 +1044,7 @@ export default function Home() {
 						onStatusUpdate={handleDriverStatusUpdate}
 						onCancel={handleCancelRide}
 						onMessageCustomer={() => console.log("Message customer")}
+						onCustomerClick={handleCustomerClick}
 					/>
 				)}
 			</div>

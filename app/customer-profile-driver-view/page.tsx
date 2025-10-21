@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import LoginNavBar from "../components/LoginNavBar";
 import Link from "next/link";
 
@@ -23,15 +23,18 @@ export default function ProfilePage() {
 	// const themeColor1 = "#0E4663";
 	// const themeColor2 = "#F8F8F8";
 	const router = useRouter();
+	const searchParams = useSearchParams();
 	const [loading, setLoading] = useState(true);
 	const [profile, setProfile] = useState<Profile | null>(null);
 
 	useEffect(() => {
 		async function fetchProfile() {
 			try {
-				const userId = "5ed29ee2-3286-484e-b7a6-fe8830dd20d9";
+				const customerId =
+					searchParams.get("customerId") ||
+					"5ed29ee2-3286-484e-b7a6-fe8830dd20d9";
 				const res = await fetch(
-					`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${userId}`
+					`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${customerId}`
 				);
 				const data = await res.json();
 				setProfile(data.data);

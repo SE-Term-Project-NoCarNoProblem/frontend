@@ -19,6 +19,7 @@ interface DriverStatusCardProps {
 	onMessageDriver?: () => void;
 	onCancel?: () => void;
 	onBack?: () => void;
+	onDriverClick?: () => void;
 	showActions?: boolean;
 	showStatus?: boolean;
 	showBackButton?: boolean;
@@ -39,6 +40,7 @@ const DriverStatusCard = ({
 	onMessageDriver,
 	onCancel,
 	onBack,
+	onDriverClick,
 	showActions = true,
 	showStatus = true,
 	showBackButton = false,
@@ -65,7 +67,14 @@ const DriverStatusCard = ({
 			<div className="flex items-start justify-between">
 				{/* Driver Details */}
 				<div className="flex-1">
-					<h3 className="font-bold text-[#0E4663] text-lg mb-1">
+					<h3
+						className={`font-bold text-[#0E4663] text-lg mb-1 ${
+							isAccepted && onDriverClick
+								? "cursor-pointer hover:underline"
+								: ""
+						}`}
+						onClick={isAccepted && onDriverClick ? onDriverClick : undefined}
+					>
 						{isAccepted ? driver.name : "Waiting for driver"}
 					</h3>
 					{isAccepted && (
@@ -73,8 +82,7 @@ const DriverStatusCard = ({
 							{driver.vehicle} : {driver.plateNumber}
 						</p>
 					)}
-				</div>
-
+				</div>{" "}
 				{/* Avatar & Rating Column - Only show when accepted */}
 				{isAccepted && (
 					<div className="relative flex-shrink-0">

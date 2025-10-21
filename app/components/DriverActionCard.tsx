@@ -15,6 +15,7 @@ interface DriverActionCardProps {
 	onStatusUpdate: (newStatus: "arrived" | "picked_up" | "completed") => void;
 	onCancel: () => void;
 	onMessageCustomer?: () => void;
+	onCustomerClick?: () => void;
 }
 
 const DriverActionCard = ({
@@ -28,6 +29,7 @@ const DriverActionCard = ({
 	onStatusUpdate,
 	onCancel,
 	onMessageCustomer,
+	onCustomerClick,
 }: DriverActionCardProps) => {
 	// Determine which button to show based on current status
 	const getActionButton = () => {
@@ -83,7 +85,12 @@ const DriverActionCard = ({
 			<div className="flex items-start justify-between">
 				{/* Customer Details */}
 				<div className="flex-1">
-					<h3 className="font-bold text-[#0E4663] text-lg mb-1">
+					<h3
+						className={`font-bold text-[#0E4663] text-lg mb-1 ${
+							onCustomerClick ? "cursor-pointer hover:underline" : ""
+						}`}
+						onClick={onCustomerClick}
+					>
 						{customer.name}
 					</h3>
 					<p className="text-sm text-[#0E4663] mb-1">
@@ -98,8 +105,7 @@ const DriverActionCard = ({
 							? customer.dropoffAddress.substring(0, 40) + "..."
 							: customer.dropoffAddress}
 					</p>
-				</div>
-
+				</div>{" "}
 				{/* Avatar */}
 				<div className="relative flex-shrink-0">
 					<div className="w-16 h-16 bg-[#0E4663] rounded-full flex items-center justify-center text-white font-bold text-xl overflow-hidden">
