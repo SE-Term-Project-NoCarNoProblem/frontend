@@ -10,7 +10,6 @@ import { haversineM } from "../lib/geo";
 import ChooseRideCard from "../components/ChooseRideCard";
 import LocationPicker from "../components/LocationPicker";
 import RideRequestCard from "../components/RideFareCard";
-import DriverInfoCard from "../components/DriverInfoCard";
 import DriverStatusCard from "../components/DriverStatusCard";
 import DriverActionCard from "../components/DriverActionCard";
 
@@ -55,12 +54,7 @@ interface ActiveRide {
 	customer_id: string;
 	driver_id: string;
 	ride_status: string;
-	ride_progress_status:
-		| "accepted"
-		| "on_the_way"
-		| "arrived"
-		| "picked_up"
-		| "completed";
+	ride_progress_status: "on_the_way" | "arrived" | "picked_up" | "completed";
 	pickup_lat: number;
 	pickup_lng: number;
 	dropoff_lat: number;
@@ -127,8 +121,8 @@ export default function Home() {
 	const [acceptedRide, setAcceptedRide] = useState<NearbyRequest | null>(null);
 	const [activeRide, setActiveRide] = useState<ActiveRide | null>(null);
 	const [rideStatus, setRideStatus] = useState<
-		"accepted" | "on_the_way" | "arrived" | "picked_up" | "completed"
-	>("accepted");
+		"on_the_way" | "arrived" | "picked_up" | "completed"
+	>("on_the_way");
 
 	// Store socket and user ID in refs so they persist across renders
 	const socketRef = useRef<ReturnType<typeof io> | null>(null);
@@ -768,7 +762,7 @@ export default function Home() {
 
 	// Handler for driver to update ride status
 	const handleDriverStatusUpdate = async (
-		newStatus: "on_the_way" | "arrived" | "picked_up" | "completed"
+		newStatus: "arrived" | "picked_up" | "completed"
 	) => {
 		if (!activeRide) return;
 
@@ -857,7 +851,7 @@ export default function Home() {
 				{userMode == "customer" &&
 					customerView === "waiting" &&
 					(activeRide || userRideRequest) && (
-						<DriverInfoCard
+						<DriverStatusCard
 							driver={{
 								name:
 									activeRide?.verified_driver?.driver.user.fullname ||
@@ -871,9 +865,12 @@ export default function Home() {
 									activeRide?.verified_driver?.driver.user.fullname?.charAt(
 										0
 									) || "D",
+								avatarImage:
+									activeRide?.verified_driver?.driver.user.profile_pic,
 								status: activeRide?.ride_progress_status || "waiting",
 								estimatedArrival: "5 minutes",
 							}}
+							isAccepted={!!activeRide}
 							onMessageDriver={() => console.log("Message driver")}
 							onCancel={handleCancelRide}
 							showBackButton={false}
