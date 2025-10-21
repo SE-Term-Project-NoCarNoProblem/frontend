@@ -995,7 +995,7 @@ export default function Home() {
 			</div>
 
 			{/* Rating Modal - Shows when ride is completed (customer view) */}
-			{showRatingModal && completedRideForRating && (
+			{showRatingModal && completedRideForRating && userMode === "customer" && (
 				<RateDriverModal
 					driverName={
 						completedRideForRating.verified_driver?.driver.user.fullname ||
