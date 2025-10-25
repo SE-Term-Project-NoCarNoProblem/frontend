@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import LoginNavBar from "../components/LoginNavBar";
@@ -19,7 +19,7 @@ interface Profile {
 	favouriteLocation?: string | null;
 }
 
-export default function ProfilePage() {
+function ProfileContent() {
 	// const themeColor1 = "#0E4663";
 	// const themeColor2 = "#F8F8F8";
 	const router = useRouter();
@@ -188,5 +188,19 @@ export default function ProfilePage() {
 				</Link>
 			</div>
 		</>
+	);
+}
+
+export default function ProfilePage() {
+	return (
+		<Suspense
+			fallback={
+				<div className="p-12 text-xl text-[#0E4663] bg-[#F8F8F8] flex w-full justify-center">
+					Loading...
+				</div>
+			}
+		>
+			<ProfileContent />
+		</Suspense>
 	);
 }
