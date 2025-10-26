@@ -2,7 +2,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import BottomSheet from "../components/BottomSheet";
 import { MapHandle } from "@/app/components/Map";
 import { io } from "socket.io-client";
 import { fetchWithAuth } from "../lib/api";
@@ -1040,7 +1039,6 @@ export default function Home() {
 				onCurrentPositionChange={setCurrentPosition}
 				shouldShowInput={userMode === "customer" && customerView === "select"}
 			/>
-			{/* <BottomSheet onRequestRide={handleRequestRide}/> */}
 			<div className="absolute bottom-0 left-0 right-0 w-full z-10">
 				{/* Customer view - Select locations and request ride */}
 				{userMode == "customer" &&

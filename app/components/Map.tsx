@@ -12,7 +12,6 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { fetchWithAuth } from "../lib/api";
 import FavoritesSheet from "./FavoritesSheet";
-import ChooseRideCard from "./ChooseRideCard";
 
 export type MapHandle = {
 	requestRide: () => void;
