@@ -18,7 +18,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 # build
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 FROM base AS runner
 WORKDIR /app
