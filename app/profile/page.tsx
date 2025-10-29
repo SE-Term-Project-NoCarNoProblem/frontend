@@ -69,6 +69,12 @@ export default function ProfilePage() {
 		alert("You have been logged out.");
 	}
 
+	function handleDelete() {
+		localStorage.removeItem("token");
+		router.push("/");
+		alert("Your account has been deleted.");
+	}
+
 	if (loading) {
 		return (
 			<div className="p-12 text-xl text-[#0E4663] bg-[#F8F8F8] flex w-full justify-center">
@@ -157,7 +163,7 @@ export default function ProfilePage() {
 					Edit Profile
 				</button>
 				<div
-					className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 `}
+					className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 my-2 `}
 				>
 					<div className="flex flex-1 ">
 						<Image
@@ -203,7 +209,7 @@ export default function ProfilePage() {
             </div> */}
 
 				<div
-					className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}
+					className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center my-2`}
 				>
 					<div className="flex flex-1 ">
 						<Image
@@ -224,6 +230,14 @@ export default function ProfilePage() {
 				</div>
 
 				{/* -------------------- Under -------------------- */}
+				<button
+					className="mt-6 bg-[#0E4663] text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer"
+					onClick={handleDelete}
+				>
+					<div className="flex px-30 bg-red-500 py-3 rounded-xl font-medium hover:bg-red-400">
+						<p className="flex items-center text-white"> Delete Account </p>
+					</div>
+				</button>
 				<button
 					className="mt-6 mb-6 bg-[#0E4663] text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer"
 					onClick={handleLogout}
