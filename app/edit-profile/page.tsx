@@ -173,6 +173,13 @@ function EditProfile() {
 		setPreview(file ? URL.createObjectURL(file) : null);
 	};
 
+	async function handleDelete() {
+		localStorage.removeItem("token");
+		//const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${}`)
+		router.push("/");
+		alert("Your account has been deleted.");
+	}
+
 	return (
 		<>
 			<LoginNavBar />
@@ -273,7 +280,7 @@ function EditProfile() {
 				</div>
 				{/* middle part */}
 				<div
-					className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 `}
+					className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 my-4`}
 				>
 					<div className="flex flex-1 ">
 						<Image
@@ -314,7 +321,7 @@ function EditProfile() {
 				</div>
 
 				<div
-					className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}
+					className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center my-4`}
 				>
 					<div className="flex flex-1 ">
 						<Image
@@ -382,15 +389,23 @@ function EditProfile() {
 					Confirm change
 				</button>
 
-				<button className="mt-6 mb-6 bg-[#0E4663]  text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer">
-					<div className="flex px-30">
+				<button className="mt-6 bg-[#0E4663] text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer mx-auto">
+					<div className="flex w-55">
 						<Image
 							alt="log out icon"
 							src="/icons/log-out-1-svgrepo-com.svg"
 							width={50}
 							height={50}
 						/>
-						<p className="flex items-center text-[#F8F8F8]"> Log out </p>
+						<p className="p-5 text-[#F8F8F8] ml-3"> Log out </p>
+					</div>
+				</button>
+				<button
+					className="mt-6 w-55 bg-[#0E4663] text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer"
+					onClick={handleDelete}
+				>
+					<div className="flex p-5 bg-[#A74242] rounded-xl font-medium hover:bg-[#A74242]/90">
+						<p className="flex items-center text-white mx-auto"> Delete Account </p>
 					</div>
 				</button>
 			</div>
