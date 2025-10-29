@@ -174,10 +174,22 @@ function EditProfile() {
 	};
 
 	async function handleDelete() {
-		localStorage.removeItem("token");
-		//const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${}`)
-		router.push("/");
-		alert("Your account has been deleted.");
+		if (!confirm("Are you sure you want to delete your account?")) return;
+
+		try {
+			const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`, {
+				method: "DELETE",
+			});
+
+			if (!res.ok) throw new Error("Failed to delete account");
+
+			localStorage.removeItem("token");
+			alert("Your account has been deleted.");
+			router.push("/");
+		} catch (error) {
+			console.error(error);
+			alert("An error occurred while deleting your account.");
+		}
 	}
 
 	return (
