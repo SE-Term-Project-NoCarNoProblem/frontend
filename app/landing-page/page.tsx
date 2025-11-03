@@ -10,45 +10,53 @@ import Footer from "../components/Footer";
 import { fetchWithAuth } from "../lib/api";
 
 export default function Landing() {
-	const [name, setName] = useState("");
-	const [id, setId] = useState("");
-	const [profilePic, setProfilePic] = useState("/globe.svg");
-	const [loading, setLoading] = useState(false);
-	useEffect(() => {
-		async function fetchProfile() {
-			try {
-				const result = await fetchWithAuth(
-					`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`
-				);
+    const [name,setName]=useState("");
+    const [id,setId]=useState("");
+    // const [profilePic,setProfilePic]=useState("/globe.svg");
+    const [loading,setLoading]=useState(false);
+    const [avatarBust, setAvatarBust] = useState(() => Date.now());
+    const [src,setSrc]=useState("");
+    useEffect(()=>{
+        async function fetchProfile() {
+                    try {
+                        const result = await fetchWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`);
+        
+                        const apiResponse = await result.json();
+                        console.log("Data from API:", apiResponse);
+                        setName(apiResponse.data.fullname);
+                        // setProfilePic(apiResponse.data.profile_pic);
+                        setId(apiResponse.data.id);
+                        if(apiResponse.data.profile_pic!=="/globe.svg") setSrc(`${apiResponse.data.profile_pic}?ts=${avatarBust}`);
+                        else setSrc("/globe.svg");
+                    } catch (err) {
+                        console.error("Error fetching profile:", err);
+                    } finally {
+                        setLoading(false);
+                    }
+                }
+        fetchProfile();
 
-				const apiResponse = await result.json();
-				console.log("Data from API:", apiResponse);
-				setName(apiResponse.data.fullname);
-				setProfilePic(apiResponse.data.profile_pic);
-				setId(apiResponse.data.id);
-			} catch (err) {
-				console.error("Error fetching profile:", err);
-			} finally {
-				setLoading(false);
-			}
-		}
-		fetchProfile();
-	}, []);
-	return (
-		<main className="min-h-dvh bg-white">
-			<div className="">
-				<LoginNavBar profilePic={profilePic} id={id} />
-				<section className="text-center">
-					<div className="flex flex-col lg:flex-row lg:justify-around">
-						<div className="lg:w-1/2 lg:flex lg:flex-col lg:items-start lg:justify-center  mt-5">
-							<h1 className="text-5xl lg:text-left font-semibold leading-tight text-slate-800 ">
-								Welcome {name}.
-							</h1>
-							<p className="mt-7 text-slate-600 px-10 lg:px-0 lg:text-left">
-								From campus to clinics to late-night rides home, our drivers
-								arrive fast and drive with care.
-							</p>
-						</div>
+        
+    },[]);
+    return (
+        <main className="min-h-dvh bg-white">
+            <div className="">
+                {/* <LoginNavBar profileSrc={src} id={id}/> */}
+                <section className="text-center">
+                    <div className="flex flex-col lg:flex-row lg:justify-around">
+
+
+                        <div className="lg:w-1/2 lg:flex lg:flex-col lg:items-start lg:justify-center  mt-5">
+                            <h1 className="text-5xl lg:text-left font-semibold leading-tight text-slate-800 ">
+                                Welcome {name}.
+                            </h1>
+                            <p className="mt-7 text-slate-600 px-10 lg:px-0 lg:text-left">
+                                From campus to clinics to late-night rides home, our drivers arrive fast and drive with care.
+                            </p>
+                            
+
+                        </div>
+
 
 						<div className="rounded-3xl p-8 mt-10 flex justify-center">
 							<Image

@@ -17,49 +17,50 @@ interface Profile {
 	profilePic: string;
 }
 function EditProfile() {
-	const router = useRouter();
-	const [loading, setLoading] = useState(true);
-	const [profile, setProfile] = useState<Profile | null>(null);
-	const [name, setName] = useState("");
-	const [gender, setGender] = useState("");
-	// const [email, setEmail] = useState("");
-	const [phone, setPhone] = useState("");
-	const [favLoc, setFavLoc] = useState("");
-	const [form, setForm] = useState<{ profilePic: File | null }>({
-		//profilePic task
-		profilePic: null,
-	});
-	const [preview, setPreview] = useState<string | null>(null); //profilePic task
-	useEffect(() => {
-		async function fetchProfile() {
-			try {
-				const result = await fetchWithAuth(
-					`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`
-				);
+    const router = useRouter();
+    const [loading, setLoading] = useState(true);
+    const [profile, setProfile] = useState<Profile | null>(null);
+    const [name, setName] = useState("");
+    const [gender, setGender] = useState("");
+    // const [email, setEmail] = useState("");
+    const [phone, setPhone] = useState("");
+    const [favLoc, setFavLoc] = useState("");
+    const [avatarBust, setAvatarBust] = useState(() => Date.now());
+    const [src,setSrc]=useState("");
+    const [form, setForm] = useState<{ profilePic: File | null }>({//profilePic task
+        profilePic: null,
+    });
+    const [preview, setPreview] = useState<string | null>(null);//profilePic task
+    useEffect(() => {
 
-				const apiResponse = await result.json();
+        async function fetchProfile() {
+            try {
+                const result = await fetchWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`);
 
-				console.log("Data from API:", apiResponse);
-				console.log(apiResponse.data.profile_pic);
-				const data = {
-					// not complete
-					fullName: apiResponse.data.fullname,
-					age: apiResponse.data.age,
-					role: "User",
-					// email: apiResponse.data.email,
-					phoneNumber: apiResponse.data.phone_number,
-					gender: apiResponse.data.gender,
-					favouriteLocation: apiResponse.favourite_pickup_location,
-					profilePic: apiResponse.data.profile_pic || "/globe.svg",
-				};
-				setProfile(data);
-				console.log(data);
-			} catch (err) {
-				console.error("Error fetching profile:", err);
-			} finally {
-				setLoading(false);
-			}
-		}
+                const apiResponse = await result.json();
+                
+                console.log("Data from API:", apiResponse);
+                console.log(apiResponse.data.profile_pic)
+                const data = { // not complete
+                    fullName: apiResponse.data.fullname,
+                    age: apiResponse.data.age,
+                    role: "User",
+                    // email: apiResponse.data.email,
+                    phoneNumber: apiResponse.data.phone_number,
+                    gender: apiResponse.data.gender,
+                    favouriteLocation: apiResponse.favourite_pickup_location,
+                    profilePic: apiResponse.data.profile_pic || "/globe.svg",
+                };
+                setProfile(data);
+                if(data.profilePic!=="/globe.svg") setSrc(`${data.profilePic}?ts=${avatarBust}`);
+                else setSrc("/globe.svg");
+                console.log(data);
+            } catch (err) {
+                console.error("Error fetching profile:", err);
+            } finally {
+                setLoading(false);
+            }
+        }
 
 		fetchProfile();
 	}, []);
@@ -173,65 +174,57 @@ function EditProfile() {
 		setPreview(file ? URL.createObjectURL(file) : null);
 	};
 
-	return (
-		<>
-			<LoginNavBar />
-			<div className="bg-white p-12 flex flex-col items-center text-[#000000] mt-0">
-				{/* -------------------- Top -------------------- */}
-				<div
-					className={`w-full max-w-5xl bg-[#0E4663] rounded-2xl shadow-md p-8 border-r-gray-400`}
-				>
-					<div className="flex flex-col items-center justify-center space-y-4">
-						{/* -------------------- text above profile pic. -------------------- */}
-						<div
-							className={`w-full text-2xl font-semibold flex justify-between items-center text-[#F8F8F8]`}
-						>
-							<button
-								onClick={() => router.push("/profile")}
-								className="hover:cursor-pointer hover:opacity-70"
-							>
-								<Image
-									alt="arrow icon"
-									src="/icons/left-arrow-svgrepo-com.svg"
-									width={50}
-									height={50}
-								/>
-							</button>
-							<div> Profile </div>
-							<button
-								onClick={() => router.push("/")}
-								className="hover:cursor-pointer hover:opacity-70 invisible"
-							>
-								<Image
-									alt="arrow icon"
-									src="/icons/left-arrow-svgrepo-com.svg"
-									width={50}
-									height={50}
-								/>
-							</button>
-						</div>
+    return (<>
+        {/* <LoginNavBar profileSrc={src}/> */}
+        <div className="bg-white p-12 flex flex-col items-center text-[#000000] mt-0">
+
+            {/* -------------------- Top -------------------- */}
+            <div className={`w-full max-w-5xl bg-[#0E4663] rounded-2xl shadow-md p-8 border-r-gray-400`}>
+                <div className="flex flex-col items-center justify-center space-y-4">
+                    {/* -------------------- text above profile pic. -------------------- */}
+                    <div className={`w-full text-2xl font-semibold flex justify-between items-center text-[#F8F8F8]`}>
+                        <button
+                            onClick={() => router.push("/profile")}
+                            className="hover:cursor-pointer hover:opacity-70"
+                        >
+                            <Image
+                                alt="arrow icon"
+                                src="/icons/left-arrow-svgrepo-com.svg"
+                                width={50}
+                                height={50}
+                            />
+                        </button>
+                        <div> Profile </div>
+                        <button
+                            onClick={() => router.push("/")}
+                            className="hover:cursor-pointer hover:opacity-70 invisible"
+                        >
+                            <Image
+                                alt="arrow icon"
+                                src="/icons/left-arrow-svgrepo-com.svg"
+                                width={50}
+                                height={50}
+                            />
+                        </button>
+                    </div>
 
 						{/* -------------------- Profile Picture -------------------- */}
 
-						<div className="relative inline-block">
-							{/* Avatar circle */}
-							<div className="w-40 h-40 rounded-full overflow-hidden bg-gray-200">
-								{preview ? (
-									<img
-										src={preview}
-										alt="profile preview"
-										className="w-full h-full object-cover"
-									/>
-								) : (
-									<Image
-										src={`${profile.profilePic}?ts=${Date.now()}`} // fallback or old avatar from DB
-										alt="default avatar"
-										width={160}
-										height={160}
-										className="w-full h-full object-cover"
-									/>
-								)}
-							</div>
+                    <div className="relative inline-block">
+                        {/* Avatar circle */}
+                        <div className="w-40 h-40 rounded-full overflow-hidden bg-gray-200">
+                            {preview ? (
+                                <img src={preview} alt="profile preview" className="w-full h-full object-cover" />
+                            ) : (
+                                <Image
+                                    src={src}   // fallback or old avatar from DB
+                                    alt="default avatar"
+                                    width={160}
+                                    height={160}
+                                    className="w-full h-full object-cover"
+                                />
+                            )}
+                        </div>
 
 							{/* Hidden input */}
 							<input

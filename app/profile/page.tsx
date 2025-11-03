@@ -87,7 +87,7 @@ export default function ProfilePage() {
 
 	return (
 		<>
-			<LoginNavBar />
+			
 			<div className="bg-white p-12 flex flex-col items-center text-[#000000] mt-0 ">
 				{/* -------------------- Top -------------------- */}
 				<div

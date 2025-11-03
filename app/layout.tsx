@@ -1,7 +1,9 @@
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import "./globals.css";
-
+import NavBar from "./components/NavBar";
+import HeaderGate from "./components/HeaderGate";
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
 //   subsets: ["latin"],
@@ -28,9 +30,24 @@ export default function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-	return (
-		<html lang="en">
-			<body>{children}</body>
-		</html>
-	);
+      
+  return (
+    <html lang="en">
+
+      <body
+        className={`${poppins.variable} antialiased`}
+      >
+        <header>
+          <HeaderGate>
+              <NavBar />
+          </HeaderGate>
+          
+        </header>
+        <main>
+          {children}
+        </main>
+
+      </body>
+    </html>
+  );
 }

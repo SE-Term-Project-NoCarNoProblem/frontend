@@ -137,43 +137,39 @@ function EditProfile() {
 		setPreview(file ? URL.createObjectURL(file) : null);
 	};
 
-	return (
-		<>
-			<NavBar />
-			<div className="bg-white p-12 flex flex-col items-center text-[#000000] mt-0">
-				{/* -------------------- Top -------------------- */}
-				<div
-					className={`w-full max-w-5xl bg-[#0E4663] rounded-2xl shadow-md p-8 border-r-gray-400`}
-				>
-					<div className="flex flex-col items-center justify-center space-y-4">
-						{/* -------------------- text above profile pic. -------------------- */}
-						<div
-							className={`w-full text-2xl font-semibold flex justify-between items-center text-[#F8F8F8]`}
-						>
-							<button
-								onClick={() => router.push("/Profile")}
-								className="hover:cursor-pointer hover:opacity-70"
-							>
-								<Image
-									alt="arrow icon"
-									src="/icons/left-arrow-svgrepo-com.svg"
-									width={50}
-									height={50}
-								/>
-							</button>
-							<div> Profile </div>
-							<button
-								onClick={() => router.push("/")}
-								className="hover:cursor-pointer hover:opacity-70 invisible"
-							>
-								<Image
-									alt="arrow icon"
-									src="/icons/left-arrow-svgrepo-com.svg"
-									width={50}
-									height={50}
-								/>
-							</button>
-						</div>
+    return (<>
+        {/* <NavBar /> */}
+        <div className="bg-white p-12 flex flex-col items-center text-[#000000] mt-0">
+
+            {/* -------------------- Top -------------------- */}
+            <div className={`w-full max-w-5xl bg-[#0E4663] rounded-2xl shadow-md p-8 border-r-gray-400`}>
+                <div className="flex flex-col items-center justify-center space-y-4">
+                    {/* -------------------- text above profile pic. -------------------- */}
+                    <div className={`w-full text-2xl font-semibold flex justify-between items-center text-[#F8F8F8]`}>
+                        <button
+                            onClick={() => router.push("/Profile")}
+                            className="hover:cursor-pointer hover:opacity-70"
+                        >
+                            <Image
+                                alt="arrow icon"
+                                src="/icons/left-arrow-svgrepo-com.svg"
+                                width={50}
+                                height={50}
+                            />
+                        </button>
+                        <div> Profile </div>
+                        <button
+                            onClick={() => router.push("/")}
+                            className="hover:cursor-pointer hover:opacity-70 invisible"
+                        >
+                            <Image
+                                alt="arrow icon"
+                                src="/icons/left-arrow-svgrepo-com.svg"
+                                width={50}
+                                height={50}
+                            />
+                        </button>
+                    </div>
 
 						{/* -------------------- Profile Picture -------------------- */}
 
