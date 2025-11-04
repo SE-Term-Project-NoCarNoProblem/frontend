@@ -15,6 +15,7 @@ interface Profile {
 	registration: string;
 	model: string;
 	rating: number | null;
+	// status: string;
 }
 
 export default function ProfilePage() {
@@ -23,12 +24,20 @@ export default function ProfilePage() {
 	const router = useRouter();
 	const [loading, setLoading] = useState(true);
 	const [profile, setProfile] = useState<Profile | null>(null);
+	const [status, setStatus] = useState("Waiting");
 
 	useEffect(() => {
 		async function fetchProfile() {
 			try {
 				// const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/me`);
 				// const data = await res.json();
+
+				// ------------------------- fetch status -------------------------- // 
+				// const res_status = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/...`);
+				// const data_status = await res_status.json();
+				// setProfile(data_status);
+				// console.log(data_status);
+
 				const data = {
 					// mock data
 					firstName: "Firstname",
@@ -140,6 +149,9 @@ export default function ProfilePage() {
 						</div>
 						<div className="flex flex-col items-center text-[#BABABA]">
 							{profile.role} {/* รอใส่ตัวแปร */}
+						</div>
+						<div className={`flex flex-col items-center ${status === "Verified" ? "text-[#36E900]" : status === "Rejected" ? "text-[#A74242]" : "text-[#EDD900]"}`}>
+							Status : {status} 
 						</div>
 					</div>
 				</div>
