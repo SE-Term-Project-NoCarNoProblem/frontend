@@ -22,6 +22,7 @@ export default function DriverApprovals(){
 
     useEffect(() => {
         async function getDrivers() {
+            // fetch  driverId, driverProfile, idPic, licensePic
             // const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/...`);
 		    // const data = await res.json();
             // setDrivers(data)
@@ -48,7 +49,7 @@ export default function DriverApprovals(){
 
     return (
         <div className="p-6">
-            <div className="text-lg font-semibold flex items-center gap-2 mb-4 text-[#0E4663]">
+            <div className="text-[20px] text-lg font-semibold flex items-center gap-2 mb-4 text-[#0E4663]">
                 <span> 
                     <img
                         src={'../../stash_person-duotone.svg'}
