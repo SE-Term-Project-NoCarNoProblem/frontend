@@ -17,6 +17,9 @@ export default function SuspendBan() {
   const handleBan=()=>{
 
   };
+   const handleAnalytic=()=>{
+
+  };
 
   return (
     <div className="w-[50px] lg:w-1/12 min-w-[50px] h-full flex justify-center lg:justify-end  rounded-xl   lg:rounded-none ">
@@ -51,6 +54,14 @@ export default function SuspendBan() {
             <Image src="/icons/ban.svg" alt="ban icon" width={32} height={32} />
             <div className="flex justify-start w-12/12">
               <p className="text-[20px]">ban</p>
+            </div>
+          </div>
+        </MenuItem>
+        <MenuItem onClick={handleAnalytic}>
+          <div className="flex w-full justify-between gap-3 text-[#0E4663] ">
+            <Image src="/icons/analytic.svg" alt="analytic icon" width={32} height={32} />
+            <div className="flex justify-start w-12/12">
+              <p className="text-[20px]">analytic</p>
             </div>
             
           </div>
