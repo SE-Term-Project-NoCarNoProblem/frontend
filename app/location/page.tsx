@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import BottomSheet from "../components/BottomSheet";
+import { useRouter } from "next/navigation";
 import { MapHandle } from "@/app/components/Map";
 import { io } from "socket.io-client";
 import { fetchWithAuth } from "../lib/api";
@@ -10,9 +10,9 @@ import { haversineM } from "../lib/geo";
 import ChooseRideCard from "../components/ChooseRideCard";
 import LocationPicker from "../components/LocationPicker";
 import RideRequestCard from "../components/RideFareCard";
-import DriverInfoCard from "../components/DriverInfoCard";
 import DriverStatusCard from "../components/DriverStatusCard";
 import DriverActionCard from "../components/DriverActionCard";
+import RateDriverModal from "../components/RateDriverModal";
 
 interface Driver {
 	driver_id: string;
@@ -55,12 +55,7 @@ interface ActiveRide {
 	customer_id: string;
 	driver_id: string;
 	ride_status: string;
-	ride_progress_status:
-		| "accepted"
-		| "on_the_way"
-		| "arrived"
-		| "picked_up"
-		| "completed";
+	ride_progress_status: "on_the_way" | "arrived" | "picked_up" | "completed";
 	pickup_lat: number;
 	pickup_lng: number;
 	dropoff_lat: number;
@@ -98,6 +93,7 @@ interface ActiveRide {
 type UserMode = "customer" | "driver";
 
 export default function Home() {
+	const router = useRouter();
 	const Map = useMemo(
 		() =>
 			dynamic(() => import("@/app/components/Map"), {
@@ -127,8 +123,13 @@ export default function Home() {
 	const [acceptedRide, setAcceptedRide] = useState<NearbyRequest | null>(null);
 	const [activeRide, setActiveRide] = useState<ActiveRide | null>(null);
 	const [rideStatus, setRideStatus] = useState<
-		"accepted" | "on_the_way" | "arrived" | "picked_up" | "completed"
-	>("accepted");
+		"on_the_way" | "arrived" | "picked_up" | "completed"
+	>("on_the_way");
+	const [showRatingModal, setShowRatingModal] = useState(false);
+	const [completedRideForRating, setCompletedRideForRating] =
+		useState<ActiveRide | null>(null);
+	const [driverRating, setDriverRating] = useState<number>(4.9);
+	const [displayDriverRating, setDisplayDriverRating] = useState<number>(0);
 
 	// Store socket and user ID in refs so they persist across renders
 	const socketRef = useRef<ReturnType<typeof io> | null>(null);
@@ -273,11 +274,46 @@ export default function Home() {
 				setRideStatus(data.progress_status);
 				setActiveRide((currentRide) => {
 					if (currentRide && currentRide.id === rideId) {
-						return {
+						const updatedRide = {
 							...currentRide,
 							ride_progress_status: data.progress_status,
 							ride_status: data.ride_status,
 						} as ActiveRide;
+
+						// If ride is completed and user is a customer, show rating modal
+						if (
+							data.progress_status === "completed" &&
+							userMode === "customer"
+						) {
+							setCompletedRideForRating(updatedRide);
+
+							// Fetch driver rating before showing modal
+							if (updatedRide.driver_id) {
+								fetchWithAuth(
+									`${process.env.NEXT_PUBLIC_BACKEND_URL}/drivers/${updatedRide.driver_id}/rating`
+								)
+									.then((res) => res.json())
+									.then((data) => {
+										if (data.average_rating) {
+											const ratingMatch = data.average_rating.match(/[\d.]+/);
+											if (ratingMatch) {
+												setDriverRating(parseFloat(ratingMatch[0]));
+											}
+										}
+									})
+									.catch((err) => {
+										console.error("Error fetching driver rating:", err);
+										setDriverRating(0); // Default if no rating
+									})
+									.finally(() => {
+										setShowRatingModal(true);
+									});
+							} else {
+								setShowRatingModal(true);
+							}
+						}
+
+						return updatedRide;
 					}
 					return currentRide;
 				});
@@ -489,14 +525,81 @@ export default function Home() {
 						setActiveRide(null);
 					}
 				} else if (userMode === "driver") {
-					// Driver mode - no need to check for existing rides on load
-					setDriverView("list");
+					// Driver mode - check for active accepted rides
+					const res = await fetchWithAuth(
+						`${process.env.NEXT_PUBLIC_BACKEND_URL}/rides/me/active`
+					);
+
+					if (res.ok) {
+						const data = await res.json();
+
+						if (data && data.length > 0 && data[0].id) {
+							const activeRideData = data[0];
+
+							// Fetch full ride details with customer and vehicle info
+							try {
+								const rideRes = await fetchWithAuth(
+									`${process.env.NEXT_PUBLIC_BACKEND_URL}/rides/${activeRideData.id}`
+								);
+
+								if (rideRes.ok) {
+									const rideData: ActiveRide = await rideRes.json();
+									setActiveRide(rideData);
+									setRideStatus(rideData.ride_progress_status);
+									setDriverView("accepted");
+
+									// Set markers for the existing ride
+									setSrcMarker([rideData.pickup_lat, rideData.pickup_lng]);
+									setDestMarker([rideData.dropoff_lat, rideData.dropoff_lng]);
+
+									// Fetch addresses for the locations
+									reverseGeocode(rideData.pickup_lat, rideData.pickup_lng).then(
+										(display_name) => {
+											setSrcAddress(display_name);
+											setSrcQuery(display_name);
+										}
+									);
+									reverseGeocode(
+										rideData.dropoff_lat,
+										rideData.dropoff_lng
+									).then((display_name) => {
+										setDestAddress(display_name);
+										setDestQuery(display_name);
+									});
+
+									zoomOverall(
+										rideData.pickup_lat,
+										rideData.pickup_lng,
+										rideData.dropoff_lat,
+										rideData.dropoff_lng
+									);
+
+									console.log(
+										"📍 Existing active driver ride found:",
+										rideData
+									);
+								}
+							} catch (err) {
+								console.error("Error fetching driver ride details:", err);
+								setDriverView("list");
+							}
+						} else {
+							setDriverView("list");
+							setActiveRide(null);
+						}
+					} else {
+						setDriverView("list");
+						setActiveRide(null);
+					}
 				}
 			} catch (err) {
 				console.error("Error checking existing ride:", err);
 				if (userMode === "customer") {
 					setCustomerView("select");
 					setUserRideRequest(null);
+					setActiveRide(null);
+				} else if (userMode === "driver") {
+					setDriverView("list");
 					setActiveRide(null);
 				}
 			}
@@ -589,6 +692,42 @@ export default function Home() {
 	}, [srcMarker, destMarker]);
 
 	const mapRef = useRef<MapHandle>(null);
+
+	// Fetch driver rating when activeRide is set
+	useEffect(() => {
+		const fetchDriverRating = async () => {
+			if (activeRide?.driver_id && userMode === "customer") {
+				try {
+					const res = await fetchWithAuth(
+						`${process.env.NEXT_PUBLIC_BACKEND_URL}/drivers/${activeRide.driver_id}/rating`
+					);
+					if (!res.ok) {
+						console.error("Failed to fetch driver rating");
+						setDisplayDriverRating(0);
+						return;
+					}
+					const data = await res.json();
+					if (data.average_rating) {
+						// Extract numeric value from "⭐ X.XX" format
+						const ratingMatch = data.average_rating.match(/[\d.]+/);
+						if (ratingMatch) {
+							setDisplayDriverRating(parseFloat(ratingMatch[0]));
+						} else {
+							setDisplayDriverRating(0);
+						}
+					} else {
+						setDisplayDriverRating(0);
+					}
+					console.log("✅ Fetched driver rating:", data);
+				} catch (err) {
+					console.error("❌ Error fetching driver rating:", err);
+					setDisplayDriverRating(0);
+				}
+			}
+		};
+
+		fetchDriverRating();
+	}, [activeRide, userMode]);
 
 	// Fetch full ride details
 	const fetchRideDetails = async (rideId: string) => {
@@ -768,7 +907,7 @@ export default function Home() {
 
 	// Handler for driver to update ride status
 	const handleDriverStatusUpdate = async (
-		newStatus: "on_the_way" | "arrived" | "picked_up" | "completed"
+		newStatus: "arrived" | "picked_up" | "completed"
 	) => {
 		if (!activeRide) return;
 
@@ -816,6 +955,64 @@ export default function Home() {
 		}
 	};
 
+	// Handler for submitting driver rating
+	const handleRatingSubmit = async (rating: number) => {
+		if (!completedRideForRating) return;
+
+		try {
+			const res = await fetchWithAuth(
+				`${process.env.NEXT_PUBLIC_BACKEND_URL}/drivers/${completedRideForRating.id}/rating`,
+				{
+					method: "PUT",
+					body: JSON.stringify({
+						rating: rating,
+					}),
+				}
+			);
+
+			if (!res.ok) {
+				throw new Error("Failed to submit rating");
+			}
+
+			console.log("✅ Rating submitted successfully:", rating);
+
+			// Close modal and reset ride state
+			setShowRatingModal(false);
+			setCompletedRideForRating(null);
+			setActiveRide(null);
+			setUserRideRequest(null);
+			setCustomerView("select");
+			setSrcMarker(null);
+			setDestMarker(null);
+			setSrcAddress("");
+			setDestAddress("");
+
+			// Show success message
+			alert("Thank you for your feedback! 🎉");
+		} catch (err) {
+			console.error("❌ Error submitting rating:", err);
+			alert("Failed to submit rating. Please try again.");
+		}
+	};
+
+	// Handler for clicking driver name (customer view)
+	const handleDriverClick = () => {
+		if (activeRide?.driver_id) {
+			router.push(
+				`/driver-profile-customer-view?driverId=${activeRide.driver_id}`
+			);
+		}
+	};
+
+	// Handler for clicking customer name (driver view)
+	const handleCustomerClick = () => {
+		if (activeRide?.customer_id) {
+			router.push(
+				`/customer-profile-driver-view?customerId=${activeRide.customer_id}`
+			);
+		}
+	};
+
 	return (
 		<div>
 			<Map
@@ -842,7 +1039,6 @@ export default function Home() {
 				onCurrentPositionChange={setCurrentPosition}
 				shouldShowInput={userMode === "customer" && customerView === "select"}
 			/>
-			{/* <BottomSheet onRequestRide={handleRequestRide}/> */}
 			<div className="absolute bottom-0 left-0 right-0 w-full z-10">
 				{/* Customer view - Select locations and request ride */}
 				{userMode == "customer" &&
@@ -852,12 +1048,11 @@ export default function Home() {
 					fare && (
 						<ChooseRideCard price={fare} onRequestRide={handleRequestRide} />
 					)}
-
 				{/* Customer view - Waiting for driver or ride in progress */}
 				{userMode == "customer" &&
 					customerView === "waiting" &&
 					(activeRide || userRideRequest) && (
-						<DriverInfoCard
+						<DriverStatusCard
 							driver={{
 								name:
 									activeRide?.verified_driver?.driver.user.fullname ||
@@ -866,20 +1061,23 @@ export default function Home() {
 									? `${activeRide.vehicle.make} ${activeRide.vehicle.model} (${activeRide.vehicle.color})`
 									: "Searching...",
 								plateNumber: activeRide?.vehicle?.registration || "-",
-								rating: 4.8,
+								rating: displayDriverRating || 0,
 								avatar:
 									activeRide?.verified_driver?.driver.user.fullname?.charAt(
 										0
 									) || "D",
+								avatarImage:
+									activeRide?.verified_driver?.driver.user.profile_pic,
 								status: activeRide?.ride_progress_status || "waiting",
 								estimatedArrival: "5 minutes",
 							}}
+							isAccepted={!!activeRide}
 							onMessageDriver={() => console.log("Message driver")}
 							onCancel={handleCancelRide}
+							onDriverClick={handleDriverClick}
 							showBackButton={false}
 						/>
-					)}
-
+					)}{" "}
 				{/* Driver view - List of nearby ride requests */}
 				{userMode == "driver" && driverView === "list" && (
 					<LocationPicker
@@ -887,7 +1085,6 @@ export default function Home() {
 						onSelectRequest={handleSelectRequest}
 					/>
 				)}
-
 				{/* Driver view - Request details before accepting */}
 				{userMode == "driver" &&
 					driverView === "details" &&
@@ -898,7 +1095,6 @@ export default function Home() {
 							onBack={handleBackToList}
 						/>
 					)}
-
 				{/* Driver view - Accepted ride with action buttons */}
 				{userMode == "driver" && driverView === "accepted" && activeRide && (
 					<DriverActionCard
@@ -913,9 +1109,30 @@ export default function Home() {
 						onStatusUpdate={handleDriverStatusUpdate}
 						onCancel={handleCancelRide}
 						onMessageCustomer={() => console.log("Message customer")}
+						onCustomerClick={handleCustomerClick}
 					/>
 				)}
 			</div>
+
+			{/* Rating Modal - Shows when ride is completed (customer view) */}
+			{showRatingModal && completedRideForRating && userMode === "customer" && (
+				<RateDriverModal
+					driverName={
+						completedRideForRating.verified_driver?.driver.user.fullname ||
+						"Driver"
+					}
+					driverAvatar={
+						completedRideForRating.verified_driver?.driver.user.profile_pic
+					}
+					driverInitials={
+						completedRideForRating.verified_driver?.driver.user.fullname?.charAt(
+							0
+						) || "D"
+					}
+					currentRating={driverRating}
+					onSubmit={handleRatingSubmit}
+				/>
+			)}
 		</div>
 	);
 }

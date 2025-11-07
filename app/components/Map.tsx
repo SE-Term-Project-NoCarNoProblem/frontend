@@ -12,7 +12,6 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { fetchWithAuth } from "../lib/api";
 import FavoritesSheet from "./FavoritesSheet";
-import ChooseRideCard from "./ChooseRideCard";
 
 export type MapHandle = {
 	requestRide: () => void;
@@ -114,7 +113,7 @@ const Map = forwardRef<MapHandle, MapProps>(
 					return;
 				}
 
-				fetchWithAuth("http://localhost:8000/api/requests/", {
+				fetchWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/requests/`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({

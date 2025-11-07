@@ -11,12 +11,11 @@ interface DriverActionCardProps {
 		avatar: string;
 		avatarImage?: string;
 	};
-	rideStatus: "accepted" | "on_the_way" | "arrived" | "picked_up" | "completed";
-	onStatusUpdate: (
-		newStatus: "on_the_way" | "arrived" | "picked_up" | "completed"
-	) => void;
+	rideStatus: "on_the_way" | "arrived" | "picked_up" | "completed";
+	onStatusUpdate: (newStatus: "arrived" | "picked_up" | "completed") => void;
 	onCancel: () => void;
 	onMessageCustomer?: () => void;
+	onCustomerClick?: () => void;
 }
 
 const DriverActionCard = ({
@@ -30,19 +29,11 @@ const DriverActionCard = ({
 	onStatusUpdate,
 	onCancel,
 	onMessageCustomer,
+	onCustomerClick,
 }: DriverActionCardProps) => {
 	// Determine which button to show based on current status
 	const getActionButton = () => {
 		switch (rideStatus) {
-			case "accepted":
-				return (
-					<button
-						onClick={() => onStatusUpdate("on_the_way")}
-						className="flex-[2] bg-[#0E4663] text-white py-2.5 px-4 rounded-lg font-semibold hover:bg-[#0A3A50] transition-colors"
-					>
-						On the way
-					</button>
-				);
 			case "on_the_way":
 				return (
 					<button
@@ -77,13 +68,7 @@ const DriverActionCard = ({
 
 	// Determine which steps are completed based on status
 	const isStatusCompleted = (step: string) => {
-		const statusOrder = [
-			"accepted",
-			"on_the_way",
-			"arrived",
-			"picked_up",
-			"completed",
-		];
+		const statusOrder = ["on_the_way", "arrived", "picked_up", "completed"];
 		const currentIndex = statusOrder.indexOf(rideStatus);
 		const stepIndex = statusOrder.indexOf(step);
 		return currentIndex >= stepIndex;
@@ -100,7 +85,12 @@ const DriverActionCard = ({
 			<div className="flex items-start justify-between">
 				{/* Customer Details */}
 				<div className="flex-1">
-					<h3 className="font-bold text-[#0E4663] text-lg mb-1">
+					<h3
+						className={`font-bold text-[#0E4663] text-lg mb-1 ${
+							onCustomerClick ? "cursor-pointer hover:underline" : ""
+						}`}
+						onClick={onCustomerClick}
+					>
 						{customer.name}
 					</h3>
 					<p className="text-sm text-[#0E4663] mb-1">
@@ -115,8 +105,7 @@ const DriverActionCard = ({
 							? customer.dropoffAddress.substring(0, 40) + "..."
 							: customer.dropoffAddress}
 					</p>
-				</div>
-
+				</div>{" "}
 				{/* Avatar */}
 				<div className="relative flex-shrink-0">
 					<div className="w-16 h-16 bg-[#0E4663] rounded-full flex items-center justify-center text-white font-bold text-xl overflow-hidden">
@@ -138,33 +127,6 @@ const DriverActionCard = ({
 			{/* Status Progress Bar */}
 			<div className="py-4 flex-1 flex items-center">
 				<div className="flex items-center justify-between w-full px-2">
-					{/* Accepted */}
-					<div className="flex flex-col items-center">
-						<div
-							className={`w-4 h-4 rounded-full mb-2 ${
-								isStatusCompleted("accepted")
-									? "bg-[#0E4663]"
-									: "bg-white border-2 border-[#0E4663]"
-							}`}
-						></div>
-						<span
-							className={`text-xs ${
-								isStatusCompleted("accepted")
-									? "text-[#0E4663] font-medium"
-									: "text-[#0E4663]"
-							}`}
-						>
-							accepted
-						</span>
-					</div>
-
-					{/* Line */}
-					<div
-						className={`flex-1 h-0.5 mx-2 ${
-							isStatusCompleted("on_the_way") ? "bg-[#0E4663]" : "bg-gray-300"
-						}`}
-					></div>
-
 					{/* On the way */}
 					<div className="flex flex-col items-center">
 						<div

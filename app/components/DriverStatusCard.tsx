@@ -19,6 +19,7 @@ interface DriverStatusCardProps {
 	onMessageDriver?: () => void;
 	onCancel?: () => void;
 	onBack?: () => void;
+	onDriverClick?: () => void;
 	showActions?: boolean;
 	showStatus?: boolean;
 	showBackButton?: boolean;
@@ -39,6 +40,7 @@ const DriverStatusCard = ({
 	onMessageDriver,
 	onCancel,
 	onBack,
+	onDriverClick,
 	showActions = true,
 	showStatus = true,
 	showBackButton = false,
@@ -48,14 +50,14 @@ const DriverStatusCard = ({
 		// If driver hasn't accepted yet, nothing is complete
 		if (!isAccepted) return false;
 
-		const statusOrder = ["accepted", "on the way", "arrived", "completed"];
+		const statusOrder = ["on_the_way", "arrived", "picked_up", "completed"];
 		const currentIndex = statusOrder.indexOf(driver.status);
 		const stepIndex = statusOrder.indexOf(step);
 		return currentIndex >= stepIndex;
 	};
 
 	return (
-		<div className="w-full max-w-[393px] h-[271px] bg-white shadow-lg rounded-t-3xl p-6 space-y-3 flex flex-col">
+		<div className="w-full mx-auto max-w-[393px] h-[271px] bg-white shadow-lg rounded-t-3xl p-6 space-y-3 flex flex-col">
 			{/* Upper Bar */}
 			<div className="flex justify-center">
 				<Image src="/upper bar.svg" alt="Upper bar" width={148} height={4} />
@@ -65,7 +67,14 @@ const DriverStatusCard = ({
 			<div className="flex items-start justify-between">
 				{/* Driver Details */}
 				<div className="flex-1">
-					<h3 className="font-bold text-[#0E4663] text-lg mb-1">
+					<h3
+						className={`font-bold text-[#0E4663] text-lg mb-1 ${
+							isAccepted && onDriverClick
+								? "cursor-pointer hover:underline"
+								: ""
+						}`}
+						onClick={isAccepted && onDriverClick ? onDriverClick : undefined}
+					>
 						{isAccepted ? driver.name : "Waiting for driver"}
 					</h3>
 					{isAccepted && (
@@ -73,8 +82,7 @@ const DriverStatusCard = ({
 							{driver.vehicle} : {driver.plateNumber}
 						</p>
 					)}
-				</div>
-
+				</div>{" "}
 				{/* Avatar & Rating Column - Only show when accepted */}
 				{isAccepted && (
 					<div className="relative flex-shrink-0">
@@ -94,20 +102,30 @@ const DriverStatusCard = ({
 						</div>
 
 						{/* Rating - Overlapping */}
-						<div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
-							<div className="bg-[#0E4663] rounded-full px-2 py-0.5 flex items-center space-x-1 shadow-sm border-2 border-white">
-								<span className="text-xs font-semibold text-white">
-									{driver.rating}
-								</span>
-								<svg
-									className="w-3 h-3 text-yellow-400"
-									fill="currentColor"
-									viewBox="0 0 20 20"
-								>
-									<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-								</svg>
+						{driver.rating > 0 ? (
+							<div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
+								<div className="bg-[#0E4663] rounded-full px-2 py-0.5 flex items-center space-x-1 shadow-sm border-2 border-white">
+									<span className="text-xs font-semibold text-white">
+										{driver.rating.toFixed(1)}
+									</span>
+									<svg
+										className="w-3 h-3 text-yellow-400"
+										fill="currentColor"
+										viewBox="0 0 20 20"
+									>
+										<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+									</svg>
+								</div>
 							</div>
-						</div>
+						) : (
+							<div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
+								<div className="bg-[#0E4663] rounded-full px-2 py-0.5 flex items-center space-x-1 shadow-sm border-2 border-white">
+									<span className="text-[10px] font-semibold text-white">
+										New
+									</span>
+								</div>
+							</div>
+						)}
 					</div>
 				)}
 			</div>
@@ -117,45 +135,18 @@ const DriverStatusCard = ({
 				<div className="py-4 flex-1 flex items-center">
 					{/* Horizontal timeline */}
 					<div className="flex items-center justify-between w-full px-2">
-						{/* Accepted */}
-						<div className="flex flex-col items-center">
-							<div
-								className={`w-4 h-4 rounded-full mb-2 ${
-									isStatusCompleted("accepted")
-										? "bg-[#0E4663]"
-										: "bg-white border-2 border-[#0E4663]"
-								}`}
-							></div>
-							<span
-								className={`text-xs ${
-									isStatusCompleted("accepted")
-										? "text-[#0E4663] font-medium"
-										: "text-[#0E4663]"
-								}`}
-							>
-								accepted
-							</span>
-						</div>
-
-						{/* Line */}
-						<div
-							className={`flex-1 h-0.5 mx-2 ${
-								isStatusCompleted("on the way") ? "bg-[#0E4663]" : "bg-gray-300"
-							}`}
-						></div>
-
 						{/* On the way */}
 						<div className="flex flex-col items-center">
 							<div
 								className={`w-4 h-4 rounded-full mb-2 ${
-									isStatusCompleted("on the way")
+									isStatusCompleted("on_the_way")
 										? "bg-[#0E4663]"
 										: "bg-white border-2 border-[#0E4663]"
 								}`}
 							></div>
 							<span
 								className={`text-xs ${
-									isStatusCompleted("on the way")
+									isStatusCompleted("on_the_way")
 										? "text-[#0E4663] font-medium"
 										: "text-[#0E4663]"
 								}`}
@@ -171,7 +162,7 @@ const DriverStatusCard = ({
 							}`}
 						></div>
 
-						{/* Pick up */}
+						{/* Arrived */}
 						<div className="flex flex-col items-center">
 							<div
 								className={`w-4 h-4 rounded-full mb-2 ${
@@ -187,7 +178,34 @@ const DriverStatusCard = ({
 										: "text-[#0E4663]"
 								}`}
 							>
-								pick up
+								arrived
+							</span>
+						</div>
+
+						{/* Line */}
+						<div
+							className={`flex-1 h-0.5 mx-2 ${
+								isStatusCompleted("picked_up") ? "bg-[#0E4663]" : "bg-gray-300"
+							}`}
+						></div>
+
+						{/* Picked up */}
+						<div className="flex flex-col items-center">
+							<div
+								className={`w-4 h-4 rounded-full mb-2 ${
+									isStatusCompleted("picked_up")
+										? "bg-[#0E4663]"
+										: "bg-white border-2 border-[#0E4663]"
+								}`}
+							></div>
+							<span
+								className={`text-xs ${
+									isStatusCompleted("picked_up")
+										? "text-[#0E4663] font-medium"
+										: "text-[#0E4663]"
+								}`}
+							>
+								picked up
 							</span>
 						</div>
 
@@ -198,7 +216,7 @@ const DriverStatusCard = ({
 							}`}
 						></div>
 
-						{/* Drop off */}
+						{/* Completed (Drop off) */}
 						<div className="flex flex-col items-center">
 							<div
 								className={`w-4 h-4 rounded-full mb-2 ${

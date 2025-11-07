@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import LoginNavBar from "../components/LoginNavBar";
 import Link from "next/link";
 
@@ -19,23 +19,26 @@ interface Profile {
 	favouriteLocation?: string | null;
 }
 
-export default function ProfilePage() {
+function ProfileContent() {
 	// const themeColor1 = "#0E4663";
 	// const themeColor2 = "#F8F8F8";
 	const router = useRouter();
+	const searchParams = useSearchParams();
 	const [loading, setLoading] = useState(true);
 	const [profile, setProfile] = useState<Profile | null>(null);
 
 	useEffect(() => {
 		async function fetchProfile() {
 			try {
-				const userId = "5ed29ee2-3286-484e-b7a6-fe8830dd20d9";
+				const customerId =
+					searchParams.get("customerId") ||
+					"5ed29ee2-3286-484e-b7a6-fe8830dd20d9";
 				const res = await fetch(
-					`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${userId}`
+					`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${customerId}`
 				);
 				const data = await res.json();
 				setProfile(data.data);
-				// console.log(data.data);
+				console.log("Customer profile data:", data.data);
 			} catch (err) {
 				console.error("Error fetching profile:", err);
 			} finally {
@@ -44,7 +47,7 @@ export default function ProfilePage() {
 		}
 
 		fetchProfile();
-	}, []);
+	}, [searchParams]);
 
 	if (loading) {
 		return (
@@ -117,7 +120,7 @@ export default function ProfilePage() {
 							{profile.fullname} {/* รอใส่ตัวแปร */}{" "}
 						</div>
 						<div className="flex flex-col items-center text-[#F8F8F8]">
-							Age: {profile.age}
+							Age: {profile.age || "20"}
 							<br />
 						</div>
 						<div className="flex flex-col items-center text-[#BABABA]">
@@ -185,5 +188,19 @@ export default function ProfilePage() {
 				</Link>
 			</div>
 		</>
+	);
+}
+
+export default function ProfilePage() {
+	return (
+		<Suspense
+			fallback={
+				<div className="p-12 text-xl text-[#0E4663] bg-[#F8F8F8] flex w-full justify-center">
+					Loading...
+				</div>
+			}
+		>
+			<ProfileContent />
+		</Suspense>
 	);
 }
