@@ -369,36 +369,76 @@ test.describe('US2-3: View Ride Partner Profile', () => {
   test('AC1 - Alternative: Customer viewing driver profile', async ({ page }) => {
     const driverId = '1ad4b931-b091-4f35-8e80-a03e63e01ba6';
 
-    // Mock driver profile API
-    await page.route(`**/users/${driverId}`, async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          data: {
-            id: driverId,
-            fullname: 'Bob Driver',
-            age: 35,
-            role: 'Driver',
-            email: 'bob.driver@example.com',
-            phone_number: '+66 44-555-6666',
-            registration: '4กก 1234',
-            model: 'Toyota Camry',
-            rating: 4.8,
-            profile_pic: '/default_profile.webp'
-          }
-        })
-      });
-    });
-
     // Given: User is authenticated and has a matched ride
     await page.goto('http://localhost:3000/login');
     await page.evaluate(() => {
       localStorage.setItem('token', 'mock-auth-token-12345');
     });
 
+    // Mock basic user info endpoint and vehicles endpoint
+    await page.route(`http://localhost:8000/api/users/${driverId}*`, async (route) => {
+      const url = route.request().url();
+      
+      // Check if this is the vehicles endpoint (has include parameter)
+      if (url.includes('include=')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            data: {
+              id: driverId,
+              driver: {
+                verified_driver: {
+                  vehicle: [
+                    {
+                      id: 'vehicle-123',
+                      model: 'Camry',
+                      make: 'Toyota',
+                      registration: '4กก 1234',
+                      color: 'Silver'
+                    }
+                  ]
+                }
+              }
+            }
+          })
+        });
+      } else {
+        // Basic user info endpoint
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            data: {
+              id: driverId,
+              fullname: 'Bob Driver',
+              age: 35,
+              role: 'Driver',
+              email: 'bob.driver@example.com',
+              phone_number: '+66 44-555-6666',
+              profile_pic: '/default_profile.webp'
+            }
+          })
+        });
+      }
+    });
+
+    // Mock driver rating endpoint
+    await page.route(`http://localhost:8000/api/drivers/${driverId}/rating`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          average_rating: '4.8/5.0'
+        })
+      });
+    });
+
     // When: View driver's profile (customer viewing driver)
     await page.goto('http://localhost:3000/driver-profile-customer-view');
+    
+    // Wait for network to be idle
+    await page.waitForLoadState('networkidle');
 
     // Then: Driver profile should be displayed
     await expect(page.getByText('Bob Driver')).toBeVisible();
