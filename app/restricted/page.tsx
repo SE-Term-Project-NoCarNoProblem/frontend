@@ -7,7 +7,7 @@ export default function Restricted() {
 	return (
 		<section className="min-h-dvh bg-white">
 			<NavBar />
-			<div className="text-black flex flex-col items-center justify-center mt-20 gap-8 border-2 w-[400px] m-auto border-gray-100 py-8 px-4 rounded-xl shadow-md">
+			<div className="text-black flex flex-col items-center justify-center mt-20 gap-8 border-2 w-[300px] lg:w-[400px] m-auto border-gray-100 py-8 px-4 rounded-xl shadow-md">
 				<div className="text-lg font-bold"> Access Restricted</div>
 				<Image
 					src="/restricted_access.svg"
