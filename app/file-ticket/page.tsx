@@ -21,7 +21,7 @@ export default function Page() {
     return (
         <main className="min-h-dvh bg-white text-slate-800">
             {/* Top bar */}
-            <div className="sticky top-0 z-10 w-full bg-[#0E4B5D] text-white">
+            <div className="sticky top-0 z-10 w-full bg-[#0E4663] text-white">
                 <div className="mx-auto flex h-14 max-w-screen-sm items-center gap-3 px-3 sm:px-4">
                     <button
                         type="button"
@@ -90,7 +90,7 @@ export default function Page() {
                         <div className="pt-1">
                             <button
                                 type="submit"
-                                className="inline-flex w-full items-center justify-center rounded-md bg-[#0E4B5D] px-4 py-2 text-white shadow-sm hover:opacity-95 active:opacity-90 sm:w-auto"
+                                className="inline-flex w-full items-center justify-center rounded-md bg-[#0E4663] px-4 py-2 text-white shadow-sm hover:opacity-95 active:opacity-90 sm:w-auto"
                             >
                                 Submit
                             </button>
