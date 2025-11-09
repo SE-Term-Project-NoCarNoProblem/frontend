@@ -234,7 +234,7 @@ export default function SupportTicketsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-sky-50/99">
+        <div className="min-h-screen bg-sky-50">
             {/* Top bar - White background */}
             <header className="w-full bg-white shadow-sm relative">
                 <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-center">
@@ -299,7 +299,7 @@ export default function SupportTicketsPage() {
                         </div>
 
                         {/* rows */}
-                        <ul className="divide-y divide-sky-800/10 bg-sky-900/4 block min-w-[300px] overflow-x-auto">
+                        <ul className="divide-y divide-sky-800/13 bg-sky-900/6 block min-w-[300px] overflow-x-auto">
                             {filteredTickets.map((t) => (
                                 <React.Fragment key={t.id}>
                                     {/* Row */}
