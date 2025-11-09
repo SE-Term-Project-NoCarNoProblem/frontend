@@ -1,13 +1,17 @@
-import { ReactNode }  from 'react';
+import { ReactNode } from "react";
 // import SuspendedModalLayout from '../components/SuspendedModalLayout';
-import SuspendLayout from '../components/SuspendLayout';
-import { AuthProvider } from '../components/AuthContext';
+import SuspendLayout from "../components/SuspendLayout";
+import { AuthProvider } from "../components/AuthContext";
 
 interface LayoutProps {
-  children: ReactNode;
+	children: ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
-  console.log("Layout rendered");
-  return <AuthProvider><SuspendLayout>{children}</SuspendLayout></AuthProvider>;
+	console.log("Layout rendered");
+	return (
+		<AuthProvider>
+			<SuspendLayout>{children}</SuspendLayout>
+		</AuthProvider>
+	);
 }
