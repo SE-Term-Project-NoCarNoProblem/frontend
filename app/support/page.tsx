@@ -417,7 +417,11 @@ export default function SupportTicketsPage() {
                             ))}
 
                             {filteredTickets.length === 0 && (
-                                <li className="px-6 py-14 text-center text-slate-500">No tickets yet.</li>
+                                <li className="px-6 py-14 text-center flex flex-col items-center justify-center gap-4">
+                                    <img src="/icons/no-results.svg" alt="No tickets" className="w-20 h-20 mb-2 opacity-70" />
+                                    <div className="text-lg font-semibold text-slate-500">No tickets found</div>
+                                    <div className="text-slate-400 text-sm">There are currently no support tickets to display.</div>
+                                </li>
                             )}
                         </ul>
 
