@@ -90,7 +90,7 @@ export default function Page() {
                         <div className="pt-1">
                             <button
                                 type="submit"
-                                className="inline-flex w-full items-center justify-center rounded-md bg-[#0E4663] px-4 py-2 text-white shadow-sm hover:opacity-95 active:opacity-90 sm:w-auto"
+                                className="font-semibold inline-flex w-full items-center justify-center rounded-md bg-[#0E4663] px-4 py-2 text-white shadow-sm hover:opacity-95 active:opacity-90 sm:w-auto"
                             >
                                 Submit
                             </button>
