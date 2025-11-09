@@ -211,12 +211,15 @@ function renderStars(rating?: number) {
 export default function SupportTicketsPage() {
     const [openId, setOpenId] = React.useState<string | null>(null);
     const [tickets, setTickets] = React.useState(TICKETS);
-    const [filter, setFilter] = React.useState<"all" | "open">("all");
+    const [filter, setFilter] = React.useState<"all" | "open" | "resolved">("all");
 
     // Filter tickets if needed
-    const filteredTickets = filter === "open"
-        ? tickets.filter(t => t.status === "open")
-        : tickets;
+    const filteredTickets =
+        filter === "open"
+            ? tickets.filter(t => t.status === "open")
+            : filter === "resolved"
+                ? tickets.filter(t => t.status === "resolved")
+                : tickets;
 
     // Only allow toggling between "open" and "resolved"
     const nextStatus: Record<TicketStatus, TicketStatus> = {
@@ -263,12 +266,13 @@ export default function SupportTicketsPage() {
                 <div className="relative">
                     <select
                         value={filter}
-                        onChange={e => setFilter(e.target.value as "all" | "open")}
-                        className="appearance-none px-4 py-2 pr-8 rounded-md border border-slate-300 bg-white text-slate-600 font-semibold text-sm focus:outline-none" // removed focus:ring, changed rounded to rounded-md
+                        onChange={e => setFilter(e.target.value as "all" | "open" | "resolved")}
+                        className="appearance-none px-4 py-2 pr-8 rounded-md border border-slate-300 bg-white text-slate-600 font-semibold text-sm focus:outline-none"
                         style={{ minWidth: 170 }}
                     >
                         <option value="all">All Tickets</option>
                         <option value="open">Open Tickets Only</option>
+                        <option value="resolved">Resolved Tickets Only</option>
                     </select>
                     <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
                         ▼
