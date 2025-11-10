@@ -9,13 +9,26 @@ import { useRouter } from "next/navigation";
 export default function Page() {
     const router = useRouter();
     const [topic, setTopic] = useState("");
+    const [rideId, setRideId] = useState("");
     const [details, setDetails] = useState("");
 
-    function onSubmit(e: React.FormEvent) {
+    async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
-        // Replace with your submit logic / API call
-        console.log({ from: "Sippakorn Thunyahan", topic, details });
-        alert("Ticket submitted (demo)\nCheck console for payload.");
+        // // Replace with your submit logic / API call
+        // console.log({ from: "Sippakorn Thunyahan", topic, details });
+        // alert("Ticket submitted (demo)\nCheck console for payload.");
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/tickets`, {
+            method: "POST",
+            headers: {
+                Authorization: `${token}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                rideId: rideId,
+                detail: details,
+            }),
+        })
     }
 
     return (
