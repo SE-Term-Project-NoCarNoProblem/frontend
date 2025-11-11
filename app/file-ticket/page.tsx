@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 /**
  * Drop this file at: app/tickets/new/page.tsx
@@ -9,8 +9,9 @@ import { useRouter } from "next/navigation";
 export default function Page() {
     const router = useRouter();
     const [topic, setTopic] = useState("");
-    const [rideId, setRideId] = useState("");
     const [details, setDetails] = useState("");
+    const searchParams = useSearchParams();
+    const rideId = searchParams.get("rideId");
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -26,6 +27,7 @@ export default function Page() {
             },
             body: JSON.stringify({
                 rideId: rideId,
+                topic: topic,
                 detail: details,
             }),
         })
