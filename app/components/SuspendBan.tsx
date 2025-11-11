@@ -3,22 +3,28 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { IconButton, Menu, MenuItem } from "@mui/material";
-
-export default function SuspendBan() {
+import { useRouter } from "next/navigation"
+type Role="DRIVER"|"CUSTOMER";
+type SuspendBanProps = {
+  role: Role;
+  userId:string;
+};
+export default function SuspendBan(Props:SuspendBanProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const isLarge = false;
-
+  const router=useRouter();
   const handleClick = (e: React.MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget);
   const handleClose = () => setAnchorEl(null);
   const handleSuspend=()=>{
+    //some fetch endpoint using userId
 
   };
   const handleBan=()=>{
-
+    //some fetch endpoint using userId
   };
    const handleAnalytic=()=>{
-
+    router.push("/landing-page");
   };
 
   return (
@@ -57,7 +63,7 @@ export default function SuspendBan() {
             </div>
           </div>
         </MenuItem>
-        <MenuItem onClick={handleAnalytic}>
+        {Props.role==="DRIVER" &&<MenuItem onClick={handleAnalytic}>
           <div className="flex w-full justify-between gap-3 text-[#0E4663] ">
             <Image src="/icons/analytic.svg" alt="analytic icon" width={32} height={32} />
             <div className="flex justify-start w-12/12">
@@ -65,7 +71,7 @@ export default function SuspendBan() {
             </div>
             
           </div>
-        </MenuItem>
+        </MenuItem>}
         
       </Menu>
     </div>
