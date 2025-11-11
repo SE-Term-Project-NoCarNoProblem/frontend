@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import Action from "./SuspendBan";
 
 export interface UserData {
   id: string;
@@ -25,10 +25,13 @@ export default function SuspendBanDashboard(
       <div className="flex flex-col rounded-xl bg-[#F5F3F3]">
       {data.map((user, index) => (
           <div key={index} className="flex flex-row items-center p-4  rounded-none">
-              <p className="flex-1 text-lg text-[#0E4663] tet-center">{user.name}</p>
+              <p className="flex-1 text-lg text-[#0E4663] text-center">{user.name}</p>
               <p className="flex-1 text-lg text-[#0E4663] text-center">{user.email}</p>
               <p className="flex-1 text-lg text-[#0E4663] text-center">{user.status}</p>
               <p className="flex-1 text-lg text-[#0E4663] text-center">{user.rating}</p>
+              <div className="flex-1 flex justify-center">
+                <Action />
+              </div>
           </div>
       ))}
       </div>
