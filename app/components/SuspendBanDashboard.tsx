@@ -22,13 +22,13 @@ export default function SuspendBanDashboard(
 
   //show users each row with name,email,status,rating
   return (
-      <div className="flex flex-col rounded-xl bg-[#F5F3F3]">
+      <div className="flex flex-col rounded-xl bg-[#F5F3F3] divide-y-4 divide-white ">
       {data.map((user, index) => (
           <div key={index} className="flex flex-row items-center p-4  rounded-none">
-              <p className="flex-1 text-lg text-[#0E4663] text-center">{user.name}</p>
-              <p className="flex-1 text-lg text-[#0E4663] text-center">{user.email}</p>
-              <p className="flex-1 text-lg text-[#0E4663] text-center">{user.status}</p>
-              <p className="flex-1 text-lg text-[#0E4663] text-center">{user.rating}</p>
+              <p className="flex-1 text-xs md:text-lg text-[#0E4663] text-center">{user.name}</p>
+              <p className="flex-1 text-xs md:text-lg text-[#0E4663] text-center">{user.email}</p>
+              <p className="flex-1 text-xs md:text-lg text-[#0E4663] text-center">{user.status}</p>
+              <p className="flex-1 text-xs md:text-lg text-[#0E4663] text-center">{user.rating}</p>
               <div className="flex-1 flex justify-center">
                 <Action />
               </div>

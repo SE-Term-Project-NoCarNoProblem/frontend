@@ -18,9 +18,9 @@ function PerformanceCard({
   textColor = "text-white",
 }: PerformanceProps) {
   return (
-    <div className={`${bgColor} rounded-xl shadow-md p-4 flex flex-col justify-center items-center flex-1`}>
-      <p className={`text-2xl text-center mb-1 font-bold ${textColor}`}>{status}</p>
-      <h2 className={`text-8xl text-center font-bold ${textColor}`}>{number}</h2>
+    <div className={`${bgColor} rounded-xl p-4 flex flex-col justify-center items-center flex-1`}>
+      <p className={`text-lg md:text-2xl text-center mb-1 font-bold ${textColor}`}>{status}</p>
+      <h2 className={`text-5xl md:text-8xl text-center font-bold ${textColor}`}>{number}</h2>
     </div>
   );
 }
@@ -53,11 +53,15 @@ export default function PerformanceCards() {
 
 
   return (
-    <div className="flex flex-row gap-6 mx-6 my-6 h-[30vh]">
-      <PerformanceCard status="Banned Cusomter" number={bannedCustomer} textColor="text-[#A22E2D]" bgColor="bg-[#FFDADA]"/>
-      <PerformanceCard status="Banned Driver" number={bannedDriver} textColor="text-[#A22E2D]" bgColor="bg-[#FFDADA]"/>
-      <PerformanceCard status="Suspended Customer" number={suspendedCustomer} textColor="text-[#D2B813]" bgColor="bg-[#FFFBCA]" />
-      <PerformanceCard status="Suspended Driver" number={suspendedDriver} textColor="text-[#D2B813]" bgColor="bg-[#FFFBCA]"/>
+    <div className="flex md:flex-row flex-col gap-6 mx-6 my-6 md:h-[30vh] h-vh">
+      <div className="flex flex-1 flex-row gap-6">
+        <PerformanceCard status="Banned Cusomter" number={bannedCustomer} textColor="text-[#A22E2D]" bgColor="bg-[#FFDADA]"/>
+        <PerformanceCard status="Banned Driver" number={bannedDriver} textColor="text-[#A22E2D]" bgColor="bg-[#FFDADA]"/>
+      </div>
+      <div className="flex flex-row flex-1 gap-6">
+        <PerformanceCard status="Suspended Customer" number={suspendedCustomer} textColor="text-[#D2B813]" bgColor="bg-[#FFFBCA]" />
+        <PerformanceCard status="Suspended Driver" number={suspendedDriver} textColor="text-[#D2B813]" bgColor="bg-[#FFFBCA]"/>
+      </div>
     </div>
   )
 }
