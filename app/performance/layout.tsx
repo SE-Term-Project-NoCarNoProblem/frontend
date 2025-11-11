@@ -8,7 +8,7 @@ export default function RootLayout({
   children: ReactNode;
 }) {
  return (
-   <div className="h-screen w-screen flex flex-col bg-white">
+   <div className="min-h-dvh w-screen flex flex-col bg-white">
      <Navbar />
      {/*<div className="flex flex-row gap-6 mx-6 my-6 h-[30vh]">
        <PerformanceCard status="No Results" number={0} />
