@@ -19,6 +19,14 @@ export default function Page() {
         // console.log({ from: "Sippakorn Thunyahan", topic, details });
         // alert("Ticket submitted (demo)\nCheck console for payload.");
         const token = localStorage.getItem("token");
+        if (!token) {
+            alert("Authentication token not found. Please login first.");
+            return;
+        }
+        if (!topic || !details) {
+            alert("Please fill in both topic and details.");
+            return;
+        }
         const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/tickets`, {
             method: "POST",
             headers: {
