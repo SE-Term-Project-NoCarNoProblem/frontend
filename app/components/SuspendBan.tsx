@@ -4,26 +4,53 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import { useRouter } from "next/navigation"
-type Role="DRIVER"|"CUSTOMER";
+import { fetchWithAuth } from "../lib/api";
+type Role = "DRIVER" | "CUSTOMER";
 type SuspendBanProps = {
   role: Role;
-  userId:string;
+  userId: string;
 };
-export default function SuspendBan(Props:SuspendBanProps) {
+export default function SuspendBan(Props: SuspendBanProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const isLarge = false;
-  const router=useRouter();
+  const router = useRouter();
   const handleClick = (e: React.MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget);
   const handleClose = () => setAnchorEl(null);
-  const handleSuspend=()=>{
+  const handleSuspend = async () => {
     //some fetch endpoint using userId
-
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${Props.userId}/status`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "suspend",
+        // until: 
+      })
+    })
+    const response = await res.json();
+    if (!response) alert("Error suspending user");
   };
-  const handleBan=()=>{
+  const handleBan = async () => {
     //some fetch endpoint using userId
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${Props.userId}/status`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "suspend",
+      })
+    })
+    const response = await res.json();
+    if (!response) alert("Error banning user");
   };
-   const handleAnalytic=()=>{
+  const handleAnalytic = () => {
     router.push("/landing-page");
   };
 
@@ -42,7 +69,7 @@ export default function SuspendBan(Props:SuspendBanProps) {
         slotProps={{
           paper: {
             className: "mt-2 translate-y-[5px] lg:translate-y-0px[]",
-            sx: { backgroundColor: "#FFFFFF", borderRadius: 2,  },
+            sx: { backgroundColor: "#FFFFFF", borderRadius: 2, },
           },
         }}
       >
@@ -63,16 +90,16 @@ export default function SuspendBan(Props:SuspendBanProps) {
             </div>
           </div>
         </MenuItem>
-        {Props.role==="DRIVER" &&<MenuItem onClick={handleAnalytic}>
+        {Props.role === "DRIVER" && <MenuItem onClick={handleAnalytic}>
           <div className="flex w-full justify-between gap-3 text-[#0E4663] ">
             <Image src="/icons/analytic.svg" alt="analytic icon" width={32} height={32} />
             <div className="flex justify-start w-12/12">
               <p className="text-[20px]">analytic</p>
             </div>
-            
+
           </div>
         </MenuItem>}
-        
+
       </Menu>
     </div>
   );
