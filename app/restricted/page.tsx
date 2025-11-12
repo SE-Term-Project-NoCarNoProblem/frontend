@@ -18,8 +18,7 @@ export default function Restricted() {
 					height={150}
 				/>
 				<div className="text-center">
-					Your driver status is not approved. <br /> You cannot access this
-					page.
+					Your driver status hasn’t been verified yet. <br /> You can’t access this feature.
 				</div>
 				<button
 					onClick={() => router.back()}
