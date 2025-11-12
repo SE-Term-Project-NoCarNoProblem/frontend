@@ -19,6 +19,9 @@ export default function SuspendBan(Props: SuspendBanProps) {
   const handleClose = () => setAnchorEl(null);
   const handleSuspend = async () => {
     //some fetch endpoint using userId
+    const now = new Date();
+    now.setDate(now.getDate() + 7);
+    const suspendUntil = now.toISOString();
     const token = localStorage.getItem("token");
     const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${Props.userId}/status`, {
       method: "PATCH",
@@ -28,7 +31,7 @@ export default function SuspendBan(Props: SuspendBanProps) {
       },
       body: JSON.stringify({
         action: "suspend",
-        // until: 
+        until: suspendUntil
       })
     })
     const response = await res.json();
