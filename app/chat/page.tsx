@@ -127,9 +127,19 @@ export default function Chat() {
             >
 
                 <InputBase
-                    sx={{ ml: 1, flex: 1 }}
+                    multiline
+                    minRows={1}
+                    maxRows={5}
+                    sx={{
+                        ml: 1,
+                        flex: 1,
+                        '& .MuiInputBase-input': {
+                            resize: 'none',
+                            whiteSpace: 'pre-wrap'
+                        }
+                    }}
                     placeholder={`send message to ${driverName}`}
-                    inputProps={{ 'aria-label': 'search google maps' }}
+                    inputProps={{ 'aria-label': `send message to ${driverName}` }}
                 />
 
                 <IconButton color="primary" sx={{ p: '10px' }} aria-label="directions">
