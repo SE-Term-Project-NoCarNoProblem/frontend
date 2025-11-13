@@ -2,12 +2,6 @@
 import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-/**
- * Drop at: app/ride-history/page.tsx
- * Tailwind required. Mobile-first, desktop-friendly.
- * This page is adapted from your Tickets page and redesigned for ride history.
- */
-
 // ---- Types ---------------------------------------------------------------
 export type VehicleType = "motorcycle" | "car" | "van";
 export type RideStatus = "ongoing" | "completed" | "canceled";
@@ -19,16 +13,16 @@ export interface RideItem {
     driverName: string;
     vehicle: {
         color: string;
-        model: string; // e.g., "Toyota Vios"
-        plate: string; // e.g., "1กก-1234"
+        model: string;
+        plate: string;
     };
     pickup: string;
     destination: string;
-    priceTHB: number; // THB
+    priceTHB: number;
     rating: 1 | 2 | 3 | 4 | 5;
     status: RideStatus;
-    requestedAt: string; // ISO
-    endedAt?: string; // ISO
+    requestedAt: string;
+    endedAt?: string;
     endReason?: EndReason;
 }
 
@@ -338,7 +332,7 @@ export default function RideHistoryPage() {
                                                     {/* Route & price */}
                                                     <div className="flex flex-col gap-2">
                                                         <div className="flex items-start gap-2">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="mt-0.5 h-4 w-4 text-[#0E4B5D]" fill="none" stroke="currentColor" strokeWidth="2">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="mt-1 h-8 w-4 text-[#0E4B5D]" fill="none" stroke="currentColor" strokeWidth="2">
                                                                 <path d="M12 2v20" />
                                                                 <path d="M5 15l7 7 7-7" />
                                                             </svg>
