@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import { useRouter } from "next/navigation"
@@ -12,25 +12,44 @@ type SuspendBanProps = {
 };
 export default function SuspendBan(Props: SuspendBanProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [suspend, setSuspend] = useState<boolean>(false);
   const open = Boolean(anchorEl);
   const isLarge = false;
   const router = useRouter();
+
+  useEffect(() => {
+    async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${Props.userId}`, {
+          method: "GET"
+        })
+        const data = await res.json()
+        setSuspend(data.suspended)
+      }
+      catch (error) {
+        console.log(error)
+      }
+    }
+  }, [suspend])
+
   const handleClick = (e: React.MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget);
   const handleClose = () => setAnchorEl(null);
   const handleSuspend = async () => {
     //some fetch endpoint using userId
+    setSuspend(!suspend)
     const now = new Date();
     now.setDate(now.getDate() + 7);
     const suspendUntil = now.toISOString();
     const token = localStorage.getItem("token");
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${Props.userId}/status`, {
+    const action = suspend ? "suspend" : "activate"
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${Props.userId}/status`, {
       method: "PATCH",
       headers: {
         Authorization: `${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        action: "suspend",
+        action: action,
         until: suspendUntil
       })
     })
@@ -39,7 +58,9 @@ export default function SuspendBan(Props: SuspendBanProps) {
   };
   const handleBan = async () => {
     //some fetch endpoint using userId
+    setSuspend(!suspend)
     const token = localStorage.getItem("token");
+    const action = suspend ? "suspend" : "activate"
     const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${Props.userId}/status`, {
       method: "PATCH",
       headers: {
@@ -47,7 +68,7 @@ export default function SuspendBan(Props: SuspendBanProps) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        action: "suspend",
+        action: action,
       })
     })
     const response = await res.json();
@@ -80,7 +101,7 @@ export default function SuspendBan(Props: SuspendBanProps) {
           <div className="flex w-full justify-between gap-3 text-[#0E4663]">
             <Image src="/icons/suspend.svg" alt="suspend icon" width={32} height={32} />
             <div className="flex justify-start w-12/12">
-              <p className="text-[20px]">suspend</p>
+              <p className="text-[20px]">{suspend ? "Unsuspend" : "Suspend"}</p>
             </div>
 
           </div>
@@ -89,7 +110,7 @@ export default function SuspendBan(Props: SuspendBanProps) {
           <div className="flex w-full justify-between gap-3 text-[#0E4663] ">
             <Image src="/icons/ban.svg" alt="ban icon" width={32} height={32} />
             <div className="flex justify-start w-12/12">
-              <p className="text-[20px]">ban</p>
+              <p className="text-[20px]">{suspend ? "Unban" : "ban"}</p>
             </div>
           </div>
         </MenuItem>
