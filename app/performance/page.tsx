@@ -3,12 +3,13 @@ import { useEffect, useState } from "react";
 import SearchBar from "../components/SearchBar";
 import { fetchWithAuth } from "../lib/api";
 import SuspendBanDashboard, { UserData } from "../components/SuspendBanDashboard";
+import RoleToggle from "../components/RoleToggle";
 
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
-  // const [results, setResults] = useState<string[]>([]);
   const [results, setResults] = useState<Array<UserData>>([]);
+  const [role, setRole] = useState<"DRIVER" | "CUSTOMER">("DRIVER");
 
   useEffect(() => {
     // Simulate a search operation
@@ -19,7 +20,7 @@ export default function HomePage() {
     async function fetchData() {
       try {
 				const result = await fetchWithAuth(
-					`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/` // get all rides
+					`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/`
 				);
 
 				const apiResponse = await result.json();
@@ -32,9 +33,9 @@ export default function HomePage() {
 
     // const allItems = ["Apple", "Banana", "Orange", "Grapes", "Pineapple", "Mango", "Strawberry", "Blueberry", "Watermelon"];
     const MockData: Array<UserData> = [
-      { id: "12323", name: "John Doe", email: "test@gmail.com" , status: "Banned", rating: 4.5 },
-      { id: "123132323", name: "Jane Smith", email: "fdfdf@fdfdf.com", status: "Suspended", rating: 4.0 },
-      { id: "121-21212", name: "Alice Johnson", email: "fdfdfefef@fdfd.com" , status: "Active", rating: 5.0 }
+      { id: "12323", name: "John Doe", email: "test@gmail.com" , status: "Banned", rating: 4.5, role: "DRIVER" },
+      { id: "123132323", name: "Jane Smith", email: "fdfdf@fdfdf.com", status: "Suspended", role: "CUSTOMER" },
+      { id: "121-21212", name: "Alice Johnson", email: "fdfdfefef@fdfd.com" , status: "Active", rating: 5.0, role: "DRIVER" }
     ];
 
 
@@ -54,7 +55,8 @@ export default function HomePage() {
         onChange={setSearchQuery}
         className="mb-4"
       />
-      <SuspendBanDashboard users={results} />
+      <RoleToggle value={role} onChange={setRole} />
+      <SuspendBanDashboard users={results} role={role} />
     </div>
   );
 }

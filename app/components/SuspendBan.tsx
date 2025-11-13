@@ -24,7 +24,7 @@ export default function SuspendBan(Props:SuspendBanProps) {
     //some fetch endpoint using userId
   };
    const handleAnalytic=()=>{
-    router.push("/landing-page");
+    router.push(`/performance/${Props.userId}`);
   };
 
   return (
@@ -69,10 +69,10 @@ export default function SuspendBan(Props:SuspendBanProps) {
             <div className="flex justify-start w-12/12">
               <p className="text-[20px]">analytic</p>
             </div>
-            
+
           </div>
         </MenuItem>}
-        
+
       </Menu>
     </div>
   );
