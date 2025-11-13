@@ -8,42 +8,34 @@ import RoleToggle from "../components/RoleToggle";
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [allDrivers, setAllDrivers] = useState<Array<UserData>>([]);
   const [results, setResults] = useState<Array<UserData>>([]);
   const [role, setRole] = useState<"DRIVER" | "CUSTOMER">("DRIVER");
 
-  useEffect(() => {
-    // Simulate a search operation
-    // In a real app, you would fetch results from an API
-    // Here we just filter a static list for demonstration
-    // For example purposes, we use a static list
-    // In a real application, replace this with an API call
+    useEffect(() => {
     async function fetchData() {
       try {
-				const result = await fetchWithAuth(
-					`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/`
-				);
+        const result = await fetchWithAuth(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/users/`
+        );
 
-				const apiResponse = await result.json();
-				console.log("Data from API:", apiResponse);
-
+        const apiResponse = await result.json();
+        console.log("Data from API:", apiResponse);
+        setAllDrivers(apiResponse);
+        setResults(apiResponse);
       } catch {
         console.error("Failed to fetch data from API");
       }
     }
-
-    // const allItems = ["Apple", "Banana", "Orange", "Grapes", "Pineapple", "Mango", "Strawberry", "Blueberry", "Watermelon"];
-    const MockData: Array<UserData> = [
-      { id: "12323", name: "John Doe", email: "test@gmail.com" , status: "Banned", rating: 4.5, role: "DRIVER" },
-      { id: "123132323", name: "Jane Smith", email: "fdfdf@fdfdf.com", status: "Suspended", role: "CUSTOMER" },
-      { id: "121-21212", name: "Alice Johnson", email: "fdfdfefef@fdfd.com" , status: "Active", rating: 5.0, role: "DRIVER" }
-    ];
+    fetchData();
+  }, [])
+  useEffect(() => {
 
 
-    const filtered = MockData.filter(item =>
+    const filtered = allDrivers.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setResults(filtered);
-    // fetchData();
   }
   , [searchQuery]);
 
