@@ -42,7 +42,7 @@ export default function SuspendBan(Props: SuspendBanProps) {
     const suspendUntil = now.toISOString();
     const token = localStorage.getItem("token");
     const action = suspend ? "suspend" : "activate"
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${Props.userId}/status`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/status/${Props.userId}`, {
       method: "PATCH",
       headers: {
         Authorization: `${token}`,
@@ -61,7 +61,7 @@ export default function SuspendBan(Props: SuspendBanProps) {
     setSuspend(!suspend)
     const token = localStorage.getItem("token");
     const action = suspend ? "suspend" : "activate"
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${Props.userId}/status`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/status/${Props.userId}`, {
       method: "PATCH",
       headers: {
         Authorization: `${token}`,
