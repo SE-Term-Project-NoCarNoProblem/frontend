@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React,{useEffect} from "react";
 
 // --- Mock Data ---------------------------------------------------------------
 
@@ -7,6 +7,7 @@ type TicketStatus = "open" | "resolved";
 type RideStatus = "ongoing" | "completed" | "canceled";
 
 interface RideInfo {
+    id: string;
     pickup: string;
     destination: string;
     price: number;
@@ -30,109 +31,9 @@ interface SupportTicket {
     topic: string;
     status: TicketStatus;
     createdAt: string;
+    resolvedAt: string | null;
+    resolvedBy: string | null;
 }
-
-const TICKETS: SupportTicket[] = [
-    {
-        id: "T-92457fasdfsadfasd1",
-        from: { name: "Ploy Somkiafasdfadsfsadfasdfadsfasdfadsftfsadfsadfdsafdsafdsa", role: "customer" },
-        ride: { id: "R-100238afdsfasdfased" },
-        topic: "Driver missed pickup pointfadsfdsafasdfasdfads",
-        status: "open",
-        createdAt: "2025-11-08T09:13:00Z",
-    },
-    {
-        id: "T-924429",
-        from: { name: "Arthit Kulwinit", role: "rider" },
-        ride: { id: "R-100120" },
-        topic: "App crashed during navigation",
-        status: "open",
-        createdAt: "2025-11-08T08:02:00Z",
-    },
-    {
-        id: "T-924301",
-        from: { name: "Mint Arnut", role: "customer" },
-        ride: { id: "R-099928" },
-        topic: "Overcharge dispute (toll)",
-        status: "resolved",
-        createdAt: "2025-11-08T06:47:00Z",
-    },
-    {
-        id: "T-924188",
-        from: { name: "Somchai Prapakpong", role: "customer" },
-        ride: { id: "R-099771" },
-        topic: "Lost item: wallet",
-        status: "open",
-        createdAt: "2025-11-08T05:10:00Z",
-    },
-    {
-        id: "T-924070",
-        from: { name: "Kanya Chitawan", role: "rider" },
-        ride: { id: "R-099632" },
-        topic: "Unfair rating appeal",
-        status: "open",
-        createdAt: "2025-11-08T03:39:00Z",
-    },
-
-];
-
-const RIDES: Record<string, RideInfo> = {
-    "R-100238afdsfasdfased": {
-        pickup: "Siam Paragon Gate 1",
-        destination: "Chulalongkorn Universityfasfdasfasddfsfadsfsfdsafdassadfasfsdsdafsafas",
-        price: 125.5,
-        vehicle: { color: "Black", model: "Toyota Corolla", plate: "1กข-1234" },
-        startAt: "2025-11-08T09:00:00Z",
-        endAt: "2025-11-08T09:35:00Z",
-        status: "completed",
-        endReason: "Arrived",
-        rating: 4
-    },
-    "R-100120": {
-        pickup: "EmQuartier",
-        destination: "Bang Kapi",
-        price: 210,
-        vehicle: { color: "White", model: "Honda City", plate: "4ขค-7788" },
-        startAt: "2025-11-08T07:45:00Z",
-        endAt: null,
-        status: "ongoing",
-        endReason: "Arrived",
-        rating: 5
-    },
-    "R-099928": {
-        pickup: "Don Mueang Airport",
-        destination: "Victory Monument",
-        price: 180,
-        vehicle: { color: "Blue", model: "Mazda 2", plate: "7ทว-4455" },
-        startAt: "2025-11-08T06:15:00Z",
-        endAt: "2025-11-08T06:50:00Z",
-        status: "completed",
-        endReason: "Arrived",
-        rating: 3
-    },
-    "R-099771": {
-        pickup: "MBK Center",
-        destination: "Asok BTS",
-        price: 95,
-        vehicle: { color: "Red", model: "Nissan Almera", plate: "2ฮล-2244" },
-        startAt: "2025-11-08T05:00:00Z",
-        endAt: "2025-11-08T05:25:00Z",
-        status: "completed",
-        endReason: "Arrived",
-        rating: 5
-    },
-    "R-099632": {
-        pickup: "IconSiam",
-        destination: "Samyan Mitrtown",
-        price: 130,
-        vehicle: { color: "Silver", model: "Toyota Vios", plate: "9ญย-9900" },
-        startAt: "2025-11-08T03:10:00Z",
-        endAt: "2025-11-08T03:40:00Z",
-        status: "completed",
-        endReason: "Arrived",
-        rating: 2
-    }
-};
 
 const thb = new Intl.NumberFormat(undefined, { style: "currency", currency: "THB" });
 
@@ -209,9 +110,70 @@ function renderStars(rating?: number) {
 // --- Page --------------------------------------------------------------------
 
 export default function SupportTicketsPage() {
-    const [openId, setOpenId] = React.useState<string | null>(null);
-    const [tickets, setTickets] = React.useState(TICKETS);
-    const [filter, setFilter] = React.useState<"all" | "open" | "resolved">("all");
+  const [openId, setOpenId] = React.useState<string | null >(null);
+  const [tickets, setTickets] = React.useState < Array<SupportTicket>>([]);
+  const [filter, setFilter] = React.useState<"all" | "open" | "resolved">("all");
+  const [rides, setRides] = React.useState < Array<RideInfo>>([]);
+
+  useEffect(() => {
+    //fetch tickets
+    async function fetchTickets() {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/tickets`, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        });
+        // console.log(res);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const result = await res.json();
+        //format result into  SupportTicket interface
+        const supportTickets = result.map((ticket: any) => ({
+          id: ticket.id,
+          from: {
+            name: ticket.ride_support_ticket_rideToride.customer_id,
+            role: ticket.is_customer ? "customer" : "rider",
+          },
+          ride: {
+            id: ticket.ride,
+          },
+          topic: ticket.topic,
+          status: ticket.resolved_at ? "resolved" : "open",
+          createdAt: ticket.timestamp,
+          resolvedAt: ticket.resolved_at,
+          resolvedBy: ticket.support_id,
+        }));
+
+        const rides = result.map((ticket: any) => ({
+          id: ticket.ride,
+          pickup: ticket.ride_support_ticket_rideToride.pickup_lat + "," + ticket.ride_support_ticket_rideToride.pickup_lng,
+          destination: ticket.ride_support_ticket_rideToride.dropoff_lat + "," + ticket.ride_support_ticket_rideToride.dropoff_lng,
+          price: ticket.ride_support_ticket_rideToride.price,
+          vehicle: {
+            color: ticket.ride_support_ticket_rideToride.vehicle.color,
+            model: ticket.ride_support_ticket_rideToride.vehicle.model,
+            plate: ticket.ride_support_ticket_rideToride.vehicle.registration,
+          },
+          startAt: ticket.ride_support_ticket_rideToride.timestamp,
+          endAt: ticket.ride_support_ticket_rideToride.ended_at,
+          status: ticket.ride_support_ticket_rideToride.ride_status,
+          endReason: ticket.ride_support_ticket_rideToride.end_reason,
+          rating: ticket.ride_support_ticket_rideToride.rating,
+        }));
+        // console.log(result);
+        // console.log(supportTickets);
+        setTickets(supportTickets);
+        setRides(rides);
+      } catch (error) {
+        console.error("Failed to fetch tickets:", error);
+      }
+    }
+
+    fetchTickets();
+
+  }, []);
+
 
     // Filter tickets if needed
     const filteredTickets =
@@ -322,7 +284,8 @@ export default function SupportTicketsPage() {
                                     {openId === t.id && (
                                         <li className="px-6 py-4 bg-white/70 text-sm">
                                             {(() => {
-                                                const ride = RIDES[t.ride.id];
+                                                //ride = rides that match t.ride.id
+                                                const ride = rides.find(r => r.id === t.ride.id);
                                                 return (
                                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                                         {/* Ticket basics (left column) */}
@@ -392,11 +355,11 @@ export default function SupportTicketsPage() {
                                                             <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
                                                                 <div>
                                                                     <div className="text-slate-600">Resolved at</div>
-                                                                    <div className="mt-1 text-slate-500">{formatDateTime(ride?.endAt)}</div>
+                                                                    <div className="mt-1 text-slate-500">{formatDateTime(t.resolvedAt)}</div>
                                                                 </div>
                                                                 <div>
                                                                     <div className="text-slate-600">Resolved by</div>
-                                                                    <div className="mt-1 text-slate-500">Agent NCP-042 (placeholder)</div>
+                                                                    <div className="mt-1 text-slate-500">{t.resolvedBy || "-"}</div>
                                                                 </div>
                                                             </div>
                                                         )}
