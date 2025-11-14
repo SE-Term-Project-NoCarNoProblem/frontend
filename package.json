@@ -23,6 +23,7 @@
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3",
+		"@playwright/test": "^1.56.1",
 		"@tailwindcss/postcss": "^4",
 		"@types/node": "^24.8.1",
 		"@types/react": "^19",
