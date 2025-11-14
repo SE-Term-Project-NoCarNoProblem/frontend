@@ -14,7 +14,6 @@ export default function Home() {
 				<Footer /> */}
 				{/* <CancelOverTime driverId="00efb904-f1e1-4ca6-b61a-42444aeb6913" /> */}
 				<RatingOverTime driverId="00efb904-f1e1-4ca6-b61a-42444aeb6913" />
-				
 			</div>
 		</main>
 	);

@@ -51,7 +51,6 @@
 //             });
 //             if (wrapRef.current) ro.observe(wrapRef.current);
 
-
 //             const onShow = () => chartInstance.current?.resize();
 //             window.addEventListener("visibilitychange", onShow);
 
@@ -161,7 +160,6 @@
 //             });
 //             if (wrapRef.current) ro.observe(wrapRef.current);
 
-
 //             const onShow = () => chartInstance.current?.resize();
 //             window.addEventListener("visibilitychange", onShow);
 
@@ -184,98 +182,101 @@ import { useEffect, useRef } from "react";
 import Chart from "chart.js/auto";
 
 function todayThailandYYYYMMDD(): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Bangkok",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
+	return new Intl.DateTimeFormat("en-CA", {
+		timeZone: "Asia/Bangkok",
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit",
+	}).format(new Date());
 }
 
 type Props = {
-  driverId: string;
+	driverId: string;
 };
 
 export default function CancelOverTime({ driverId }: Props) {
-  const wrapRef = useRef<HTMLDivElement | null>(null);
-  const chartRef = useRef<HTMLCanvasElement | null>(null);
-  const chartInstance = useRef<Chart<"line", number[], string> | null>(null);
+	const wrapRef = useRef<HTMLDivElement | null>(null);
+	const chartRef = useRef<HTMLCanvasElement | null>(null);
+	const chartInstance = useRef<Chart<"line", number[], string> | null>(null);
 
-  useEffect(() => {
-    const todayTH = todayThailandYYYYMMDD();
+	useEffect(() => {
+		const todayTH = todayThailandYYYYMMDD();
 
-    async function fetchRatingOverTime() {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/drivers/${driverId}/cancelOverTime?date=${todayTH}`
-        );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const result = (await res.json()) as { labels: string[]; data: number[] };
-        console.log(result);
-        // destroy any old chart before creating a new one
-        if (chartInstance.current) chartInstance.current.destroy();
+		async function fetchRatingOverTime() {
+			try {
+				const res = await fetch(
+					`${process.env.NEXT_PUBLIC_BACKEND_URL}/drivers/${driverId}/cancelOverTime?date=${todayTH}`
+				);
+				if (!res.ok) throw new Error(`HTTP ${res.status}`);
+				const result = (await res.json()) as {
+					labels: string[];
+					data: number[];
+				};
+				console.log(result);
+				// destroy any old chart before creating a new one
+				if (chartInstance.current) chartInstance.current.destroy();
 
-        if (chartRef.current) {
-          chartInstance.current = new Chart(chartRef.current, {
-            type: "line",
-            data: {
-              labels: result.labels,
-              datasets: [
-                {
-                  label: "Cancellation Over Time",
-                  data: result.data,
-                  fill: false,
-                  borderColor: "#EF4444",
-                  tension: 0.2,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { display: true },
-              },
-              scales: {
-                x: { title: { display: true, text: "Time (TH)" } },
-                y: {
-                  min: 0,
-                  ticks: { stepSize: 1, precision: 0 },
-                  title: { display: true, text: "Cancellation" },
-                  beginAtZero: true,
-                },
-              },
-            },
-          });
+				if (chartRef.current) {
+					chartInstance.current = new Chart(chartRef.current, {
+						type: "line",
+						data: {
+							labels: result.labels,
+							datasets: [
+								{
+									label: "Cancellation Over Time",
+									data: result.data,
+									fill: false,
+									borderColor: "#EF4444",
+									tension: 0.2,
+								},
+							],
+						},
+						options: {
+							responsive: true,
+							maintainAspectRatio: false,
+							plugins: {
+								legend: { display: true },
+							},
+							scales: {
+								x: { title: { display: true, text: "Time (TH)" } },
+								y: {
+									min: 0,
+									ticks: { stepSize: 1, precision: 0 },
+									title: { display: true, text: "Cancellation" },
+									beginAtZero: true,
+								},
+							},
+						},
+					});
 
-          // auto-resize when container changes size
-          const ro = new ResizeObserver(() => chartInstance.current?.resize());
-          if (wrapRef.current) ro.observe(wrapRef.current);
+					// auto-resize when container changes size
+					const ro = new ResizeObserver(() => chartInstance.current?.resize());
+					if (wrapRef.current) ro.observe(wrapRef.current);
 
-          const onShow = () => chartInstance.current?.resize();
-          window.addEventListener("visibilitychange", onShow);
+					const onShow = () => chartInstance.current?.resize();
+					window.addEventListener("visibilitychange", onShow);
 
-          // cleanup
-          return () => {
-            window.removeEventListener("visibilitychange", onShow);
-            ro.disconnect();
-            chartInstance.current?.destroy();
-          };
-        }
-      } catch (err) {
-        console.error("Failed to fetch data", err);
-      }
-    }
+					// cleanup
+					return () => {
+						window.removeEventListener("visibilitychange", onShow);
+						ro.disconnect();
+						chartInstance.current?.destroy();
+					};
+				}
+			} catch (err) {
+				console.error("Failed to fetch data", err);
+			}
+		}
 
-    fetchRatingOverTime();
-  }, [driverId]);
+		fetchRatingOverTime();
+	}, [driverId]);
 
-  return (
-    <div
-      ref={wrapRef}
-      className="min-w-0 h-full flex justify-center items-center"
-    >
-      <canvas ref={chartRef} id="graph1" />
-    </div>
-  );
+	return (
+		<div
+			ref={wrapRef}
+			className="min-w-0 h-full flex justify-center items-center"
+		>
+			<canvas ref={chartRef} id="graph1" />
+		</div>
+	);
 }
