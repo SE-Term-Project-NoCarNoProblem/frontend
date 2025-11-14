@@ -51,7 +51,7 @@
 //             });
 //             if (wrapRef.current) ro.observe(wrapRef.current);
 
-            
+
 //             const onShow = () => chartInstance.current?.resize();
 //             window.addEventListener("visibilitychange", onShow);
 
@@ -273,10 +273,9 @@ export default function CancelOverTime({ driverId }: Props) {
   return (
     <div
       ref={wrapRef}
-      className="w-full min-w-0 h-[381px] flex justify-center items-center"
+      className="min-w-0 h-full flex justify-center items-center"
     >
       <canvas ref={chartRef} id="graph1" />
     </div>
   );
 }
-

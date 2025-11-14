@@ -203,10 +203,9 @@ export default function RatingOverTime({ driverId }: Props) {
   return (
     <div
       ref={wrapRef}
-      className="w-full min-w-0 h-[381px] flex justify-center items-center"
+      className="min-w-0 h-full flex justify-center items-center"
     >
       <canvas ref={chartRef} id="graph1" />
     </div>
   );
 }
-
