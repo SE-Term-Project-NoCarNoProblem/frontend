@@ -1,6 +1,7 @@
 "use client";
 import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 // ---- Types ---------------------------------------------------------------
 export type VehicleType = "motorcycle" | "car" | "van";
@@ -391,6 +392,16 @@ export default function RideHistoryPage() {
                                                             </div>
                                                         )}
                                                     </div>
+                                                    {/* File a ticket button */}
+                                                    <div className="mt-4">
+                                                        <Link
+                                                            href={`/file-ticket?rideId=${r.id}`}
+                                                            className="block w-full rounded-lg bg-[#0E4B5D] py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#0c3f4e] active:bg-[#0a3442]"
+                                                        >
+                                                            File a Ticket
+                                                        </Link>
+                                                    </div>
+
                                                 </div>
                                             )}
                                         </div>
