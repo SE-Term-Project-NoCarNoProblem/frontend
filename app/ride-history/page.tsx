@@ -185,7 +185,7 @@ const clamp2 = {
 
 const VEHICLE_ICON: Record<VehicleType, string> = {
     motorcycle: "/icons/motorcycle.svg",
-    car: "/icons/car2.svg",
+    car: "/icons/car3.svg",
     van: "/icons/van.svg",
 };
 
