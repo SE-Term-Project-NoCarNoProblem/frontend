@@ -18,6 +18,8 @@ export default function createAccountPage() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [googleLink, setGoogleLink] = useState("#");
+	const [consentGiven, setConsentGiven] = useState(false);
+
 
 	useEffect(() => {
 		async function fetchGoogleLink() {
@@ -189,6 +191,23 @@ export default function createAccountPage() {
 								Show password
 							</label>
 
+							<label
+								className="flex items-start gap-2 text-xs my-1 mb-4"
+								style={{ color: themeColor }}
+							>
+								<input
+									type="checkbox"
+									checked={consentGiven}
+									onChange={() => setConsentGiven(!consentGiven)}
+									className="mt-0.5"
+								/>
+								<span>
+									I consent to the collection and use of my personal information to
+									create my account and provide NoCarNoProblem&apos;s services.
+								</span>
+							</label>
+
+
 							{error && (
 								<div className="p-3 text-sm text-red-700 bg-red-100 border border-red-400 rounded-md">
 									{error}
@@ -198,9 +217,13 @@ export default function createAccountPage() {
 							{/* ---------------- Submit botton ---------------- */}
 							<button
 								type="submit"
-								className={`w-full text-white p-2 rounded-md  hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
+								className={`w-full text-white p-2 rounded-md
+									transform transition-all duration-100
+									disabled:cursor-not-allowed
+									${consentGiven ? "opacity-100 shadow-md" : "opacity-50"}
+								`}
 								style={{ backgroundColor: themeColor }}
-								disabled={isLoading}
+								disabled={isLoading || !consentGiven}
 							>
 								{isLoading ? "Creating Account..." : "Create Account"}
 							</button>
