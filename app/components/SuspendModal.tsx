@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { createPortal } from "react-dom";
 
 export interface SuspendModalProps {
 	userStatus: "suspended" | "banned" | "active";
@@ -36,15 +35,8 @@ export const SuspendModal: React.FC<SuspendModalProps> = ({
 		body: "",
 	});
 	const dialogRef = React.useRef<HTMLDivElement>(null);
-	// console.log("SuspendModal userStatus:", userStatus);
 
 	useEffect(() => {
-		// console.log("useEffect");
-		// if (userStatus === "active") return;
-		if (userStatus == "suspended" || userStatus == "banned") {
-			//prevent scrolling
-			// document.body.style.overflow = 'hidden';
-		}
 		switch (userStatus) {
 			case "suspended":
 				setTheme({

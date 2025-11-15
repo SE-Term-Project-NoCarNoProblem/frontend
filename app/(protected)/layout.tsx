@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-// import SuspendedModalLayout from '../components/SuspendedModalLayout';
 import SuspendLayout from "../components/SuspendLayout";
 import { AuthProvider } from "../components/AuthContext";
 

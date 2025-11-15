@@ -18,19 +18,6 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
 
 	const modalOpen = userStatus !== "active";
 
-	// return (
-	//   <>
-	//     {(userStatus === 'active') ? (
-	//       // <>{children}</>
-	//       <>test</>
-	//     ) : (
-	//       <>
-	//         <div className="blur-sm-filter">{children}</div>
-	//         <SuspendModal userStatus={userStatus} suspendedTime={suspendedTime} />
-	//       </>
-	//     )}
-	//   </>
-	// );
 	return (
 		<>
 			<div
