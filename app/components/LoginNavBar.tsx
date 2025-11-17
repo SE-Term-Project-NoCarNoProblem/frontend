@@ -149,8 +149,8 @@ function LoginNavBar(Props: any) {
 					</button>
 				</div>
 
-				<div className="md:flex hidden justify-between items-center md:w-4/12 lg:w-3/12">
-					<div className="flex w-8/12 gap-5 justify-between">
+				<div className="md:flex hidden items-center gap-6">
+					<div className="flex gap-6 whitespace-nowrap">
 						<Link
 							href="/landing-page"
 							className="text-xl text-slate-800 px-2 py-2 rounded-xl hover:bg-amber-50"
