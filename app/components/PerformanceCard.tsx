@@ -74,7 +74,7 @@ export default function PerformanceCards() {
 		<div className="flex md:flex-row flex-col gap-6 mx-6 my-6 md:h-[30vh] h-vh">
 			<div className="flex flex-1 flex-row gap-6">
 				<PerformanceCard
-					status="Banned Cusomter"
+					status="Banned Customer"
 					number={bannedCustomer}
 					textColor="text-[#A22E2D]"
 					bgColor="bg-[#FFDADA]"
