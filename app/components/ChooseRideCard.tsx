@@ -121,14 +121,14 @@ const ChooseRideCard = ({
 							key={option.type}
 							type="button"
 							onClick={() => setSelectedType(option.type)}
-							className={`w-full border-2 rounded-xl p-3 flex items-center justify-between transition-all cursor-pointer ${isSelected
+							className={`w-full border-2 rounded-xl p-2 flex items-center justify-between transition-all cursor-pointer ${isSelected
 								? "border-[#0E4663] bg-[#E8F1F5]"
 								: "border-gray-300 hover:border-[#0E4663]"
 								}`}
 						>
 							{/* Icon + details */}
 							<div className="flex items-center gap-3">
-								<div className="w-12 h-12 flex items-center justify-center">
+								<div className="w-10 h-10 flex items-center justify-center">
 									<Image
 										src={option.icon}
 										alt={option.label}
