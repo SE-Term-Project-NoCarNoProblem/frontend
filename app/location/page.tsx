@@ -360,6 +360,7 @@ export default function Home() {
 		const socket = socketRef.current;
 		if (!socket) return;
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const handleRequestCreated = (data: any) => {
 			console.log("New ride request created:", data);
 

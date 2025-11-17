@@ -44,6 +44,14 @@ type MapProps = {
 	shouldShowInput?: boolean;
 };
 
+type FavoritePlace = {
+	name: string;
+	lat: number;
+	lng: number;
+	distance: string;
+};
+
+
 const Map = forwardRef<MapHandle, MapProps>(
 	(
 		{
@@ -83,6 +91,24 @@ const Map = forwardRef<MapHandle, MapProps>(
 
 		const searchRef = useRef<HTMLDivElement>(null);
 		const [searchH, setSearchH] = useState(0);
+
+		const [pickupFavorites, setPickupFavorites] = useState<FavoritePlace[]>([
+			{ name: "Home", lat: 13.7563, lng: 100.5018, distance: "1.5 km" },
+			{
+				name: "Chulalongkorn University",
+				lat: 13.738,
+				lng: 100.532,
+				distance: "2.1 km",
+			},
+			{ name: "Central World", lat: 13.746, lng: 100.539, distance: "3.2 km" },
+		]);
+
+		const [dropoffFavorites, setDropoffFavorites] = useState<FavoritePlace[]>([
+			{ name: "Samyan Mitrtown", lat: 13.735, lng: 100.529, distance: "2.0 km" },
+			{ name: "Siam Paragon", lat: 13.746, lng: 100.534, distance: "3.0 km" },
+			{ name: "ICONSIAM", lat: 13.726, lng: 100.51, distance: "5.8 km" },
+		]);
+
 
 		useLayoutEffect(() => {
 			if (!searchRef.current) return;
@@ -356,21 +382,43 @@ const Map = forwardRef<MapHandle, MapProps>(
 								</div>
 								<button
 									type="button"
-									onClick={() =>
-										lastFocused == "src"
-											? setLastFocused(null)
-											: setLastFocused("src")
-									}
+									onClick={() => {
+										const isFieldPicked = favoritesTarget === "src";
+
+										// If the pickup box is picked -> "+" = add to favorites
+										if (isFieldPicked) {
+											if (!srcMarker) {
+												alert("Please select a pickup point on the map first.");
+												return;
+											}
+											setPickupFavorites((prev) => [
+												...prev,
+												{
+													name: srcQuery || "Unnamed location",
+													lat: srcMarker[0],
+													lng: srcMarker[1],
+													distance: "",
+												},
+											]);
+										} else {
+											// normal behaviour: toggle 'place pin' mode
+											setLastFocused((prev) => (prev === "src" ? null : "src"));
+										}
+									}}
 									className={`flex-shrink-0 px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base rounded-lg border-2 transition-all duration-200
-                ${
-									lastFocused === "src"
-										? "bg-emerald-100 border-emerald-500 text-emerald-700"
-										: "border-gray-300 hover:border-emerald-500 text-gray-600 hover:text-emerald-700"
-								}`}
-									title="Place pickup location on map"
+                ${lastFocused === "src"
+											? "bg-emerald-100 border-emerald-500 text-emerald-700"
+											: "border-gray-300 hover:border-emerald-500 text-gray-600 hover:text-emerald-700"
+										}`}
+									title={
+										favoritesTarget === "src"
+											? "Add this pickup to favorites"
+											: "Place pickup location on map"
+									}
 								>
-									📍
+									{favoritesTarget === "src" ? "+" : "📍"}
 								</button>
+
 								<button
 									type="button"
 									onClick={() => onSrcSearch()}
@@ -414,21 +462,41 @@ const Map = forwardRef<MapHandle, MapProps>(
 								</div>
 								<button
 									type="button"
-									onClick={() =>
-										lastFocused == "dest"
-											? setLastFocused(null)
-											: setLastFocused("dest")
-									}
+									onClick={() => {
+										const isFieldPicked = favoritesTarget === "dest";
+
+										if (isFieldPicked) {
+											if (!destMarker) {
+												alert("Please select a destination point on the map first.");
+												return;
+											}
+											setDropoffFavorites((prev) => [
+												...prev,
+												{
+													name: destQuery || "Unnamed location",
+													lat: destMarker[0],
+													lng: destMarker[1],
+													distance: "",
+												},
+											]);
+										} else {
+											setLastFocused((prev) => (prev === "dest" ? null : "dest"));
+										}
+									}}
 									className={`flex-shrink-0 px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base rounded-lg border-2 transition-all duration-200
-                ${
-									lastFocused === "dest"
-										? "bg-red-100 border-red-500 text-red-700"
-										: "border-gray-300 hover:border-red-500 text-gray-600 hover:text-red-700"
-								}`}
-									title="Place destination on map"
+                ${lastFocused === "dest"
+											? "bg-red-100 border-red-500 text-red-700"
+											: "border-gray-300 hover:border-red-500 text-gray-600 hover:text-red-700"
+										}`}
+									title={
+										favoritesTarget === "dest"
+											? "Add this destination to favorites"
+											: "Place destination on map"
+									}
 								>
-									📍
+									{favoritesTarget === "dest" ? "+" : "📍"}
 								</button>
+
 								<button
 									type="button"
 									onClick={() => onDestSearch()}
@@ -468,6 +536,15 @@ const Map = forwardRef<MapHandle, MapProps>(
 					open={showFavorites}
 					target={favoritesTarget}
 					topOffset={searchH}
+					pickupFavorites={pickupFavorites}
+					dropoffFavorites={dropoffFavorites}
+					onDeleteFavorite={(which, index) => {
+						if (which === "pickup") {
+							setPickupFavorites((prev) => prev.filter((_, i) => i !== index));
+						} else {
+							setDropoffFavorites((prev) => prev.filter((_, i) => i !== index));
+						}
+					}}
 					onClose={() => onShowFavoritesChange(false)}
 					onSelect={(place, which) => {
 						const coords: [number, number] = [place.lat, place.lng];
@@ -485,6 +562,7 @@ const Map = forwardRef<MapHandle, MapProps>(
 						onFavoritesTargetChange(null);
 					}}
 				/>
+
 			</div>
 		);
 	}
