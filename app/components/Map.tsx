@@ -405,8 +405,8 @@ const Map = forwardRef<MapHandle, MapProps>(
 											setLastFocused((prev) => (prev === "src" ? null : "src"));
 										}
 									}}
-									className={`flex-shrink-0 px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base rounded-lg border-2 transition-all duration-200
-                ${lastFocused === "src"
+									className={`h-10 w-11 flex items-center justify-center rounded-lg border-2 transition-all duration-200
+		${lastFocused === "src"
 											? "bg-emerald-100 border-emerald-500 text-emerald-700"
 											: "border-gray-300 hover:border-emerald-500 text-gray-600 hover:text-emerald-700"
 										}`}
@@ -416,8 +416,11 @@ const Map = forwardRef<MapHandle, MapProps>(
 											: "Place pickup location on map"
 									}
 								>
-									{favoritesTarget === "src" ? "+" : "📍"}
+									<span className="text-lg">
+										{favoritesTarget === "src" ? "+" : "📍"}
+									</span>
 								</button>
+
 
 								<button
 									type="button"
@@ -483,8 +486,8 @@ const Map = forwardRef<MapHandle, MapProps>(
 											setLastFocused((prev) => (prev === "dest" ? null : "dest"));
 										}
 									}}
-									className={`flex-shrink-0 px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base rounded-lg border-2 transition-all duration-200
-                ${lastFocused === "dest"
+									className={`h-10 w-11 flex items-center justify-center rounded-lg border-2 transition-all duration-200
+		${lastFocused === "dest"
 											? "bg-red-100 border-red-500 text-red-700"
 											: "border-gray-300 hover:border-red-500 text-gray-600 hover:text-red-700"
 										}`}
@@ -494,8 +497,11 @@ const Map = forwardRef<MapHandle, MapProps>(
 											: "Place destination on map"
 									}
 								>
-									{favoritesTarget === "dest" ? "+" : "📍"}
+									<span className="text-lg">
+										{favoritesTarget === "dest" ? "+" : "📍"}
+									</span>
 								</button>
+
 
 								<button
 									type="button"
