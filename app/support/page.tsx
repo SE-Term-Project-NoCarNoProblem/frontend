@@ -26,7 +26,9 @@ export default function SupportPage() {
 					</div>
 				</div>
 			</header>
-			<SupportTicketsTable />
+			<div className="bg-sky-50">
+				<SupportTicketsTable />
+			</div>
 		</div>
 	);
 }

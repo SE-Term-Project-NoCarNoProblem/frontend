@@ -213,7 +213,7 @@ export default function SupportTicketsTable() {
 	}
 
 	return (
-		<div className="min-h-screen bg-sky-50">
+		<div className="min-h-screen">
 			{/* Filter dropdown above table (left side, styled like image) */}
 			<div className="mx-auto max-w-6xl px-6 pt-6 pb-2 flex justify-start">
 				<div className="relative">
