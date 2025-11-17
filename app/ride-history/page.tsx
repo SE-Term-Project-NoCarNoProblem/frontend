@@ -129,8 +129,10 @@ function mapRideFromApi(ride: BackendRideHistoryItem): RideItem {
 			: null;
 
 	// Use address if available, otherwise fall back to coordinates
-	const pickupDisplay = ride.pickup_address || formatCoords(ride.pickup_lat, ride.pickup_lng);
-	const dropoffDisplay = ride.dropoff_address || formatCoords(ride.dropoff_lat, ride.dropoff_lng);
+	const pickupDisplay =
+		ride.pickup_address || formatCoords(ride.pickup_lat, ride.pickup_lng);
+	const dropoffDisplay =
+		ride.dropoff_address || formatCoords(ride.dropoff_lat, ride.dropoff_lng);
 
 	return {
 		id: ride.id,
