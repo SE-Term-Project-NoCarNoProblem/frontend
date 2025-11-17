@@ -41,19 +41,19 @@ const ChooseRideCard = ({
 				type: "motorcycle",
 				label: "Motorcycle ride",
 				capacity: "1 person",
-				icon: "/motorcycle.svg",
+				icon: "/motorcycle-blue.svg",
 			},
 			{
 				type: "car",
 				label: rideType,
 				capacity,
-				icon: "/car.svg",
+				icon: "/car-blue.svg",
 			},
 			{
 				type: "van",
 				label: "Van ride",
 				capacity: "6 people",
-				icon: "/van.svg",
+				icon: "/van-blue.svg",
 			},
 		];
 
@@ -76,14 +76,14 @@ const ChooseRideCard = ({
 
 
 	return (
-		<div className="w-full mx-auto max-w-[393px] bg-white rounded-t-3xl shadow-lg p-4 flex flex-col">
+		<div className="w-full mx-auto max-w-[393px] bg-white rounded-t-3xl shadow-lg p-4 flex flex-col pt-1.5">
 			{/* Upper Bar */}
 			<div className="flex justify-center mb-2">
 				<Image src="/upper bar.svg" alt="Upper bar" width={148} height={4} />
 			</div>
 
 			{/* Header with Back Button */}
-			<div className="flex items-center mb-3">
+			<div className="flex items-center mb-2">
 				{showBackButton && (
 					<button
 						onClick={handleBack}
@@ -121,7 +121,7 @@ const ChooseRideCard = ({
 							key={option.type}
 							type="button"
 							onClick={() => setSelectedType(option.type)}
-							className={`w-full border-2 rounded-xl p-2 flex items-center justify-between transition-all cursor-pointer ${isSelected
+							className={`w-full border-2 rounded-xl px-2 py-1 flex items-center justify-between transition-all cursor-pointer ${isSelected
 								? "border-[#0E4663] bg-[#E8F1F5]"
 								: "border-gray-300 hover:border-[#0E4663]"
 								}`}
@@ -138,7 +138,7 @@ const ChooseRideCard = ({
 									/>
 								</div>
 								<div>
-									<h3 className="text-base font-bold text-[#0E4663]">
+									<h3 className="text-sm font-bold text-[#0E4663]">
 										{option.label}
 									</h3>
 									<p className="text-sm text-gray-600">{option.capacity}</p>
@@ -148,7 +148,7 @@ const ChooseRideCard = ({
 							{/* Price */}
 							<div className="flex items-center gap-2">
 								<div className="text-right">
-									<p className="text-lg font-bold text-[#0E4663]">
+									<p className="text-base font-bold text-[#0E4663]">
 										{priceToShow} {currency}
 									</p>
 									<p className="text-xs text-gray-500">after tax</p>
