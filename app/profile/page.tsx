@@ -157,7 +157,7 @@ export default function ProfilePage() {
 					Edit Profile
 				</button>
 				<div
-					className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 `}
+					className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 my-2 `}
 				>
 					<div className="flex flex-1 ">
 						<Image
@@ -203,7 +203,7 @@ export default function ProfilePage() {
             </div> */}
 
 				<div
-					className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}
+					className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center my-2`}
 				>
 					<div className="flex flex-1 ">
 						<Image
