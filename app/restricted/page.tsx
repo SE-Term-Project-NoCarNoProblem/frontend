@@ -1,9 +1,11 @@
 "use client";
 import NavBar from "../components/NavBar";
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Restricted() {
+	const router = useRouter();
+
 	return (
 		<section className="min-h-dvh bg-white">
 			<NavBar />
@@ -16,17 +18,16 @@ export default function Restricted() {
 					height={150}
 				/>
 				<div className="text-center">
-					Your driver status is not approved. <br /> You cannot access this
-					page.
+					Your driver status hasn’t been verified yet. <br /> You can’t access this feature.
 				</div>
-				<Link
-					href="/"
+				<button
+					onClick={() => router.back()}
 					className="mt-6 mb-6 bg-[#0E4663] text-[#F8F8F8] rounded-xl hover:bg-[#0E4663]/90 hover:cursor-pointer shadow-xl"
 				>
 					<div className="flex px-20 py-2">
-						<p className="flex items-center text-[#F8F8F8]"> Back </p>
+						<p className="flex items-center text-[#F8F8F8]">Back</p>
 					</div>
-				</Link>
+				</button>
 			</div>
 		</section>
 	);

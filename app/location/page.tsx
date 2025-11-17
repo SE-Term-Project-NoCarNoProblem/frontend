@@ -818,7 +818,12 @@ export default function Home() {
 					method: "POST",
 				}
 			);
-
+			// Check 403 forbidden from backend
+			if (res.status === 403) {
+				console.warn("Driver not verified. Redirecting...");
+				window.location.href = "/restricted"; // client-side redirect
+				return;
+			}
 			if (!res.ok) {
 				throw new Error("Failed to accept ride request");
 			}
@@ -894,7 +899,12 @@ export default function Home() {
 						method: "DELETE",
 					}
 				);
-
+				// Check 403 forbidden from backend
+				if (res.status === 403) {
+					console.warn("Driver not verified. Redirecting...");
+					window.location.href = "/restricted"; // client-side redirect
+					return;
+				}
 				if (!res.ok) {
 					throw new Error("Failed to cancel ongoing ride");
 				}
@@ -948,7 +958,12 @@ export default function Home() {
 					}),
 				}
 			);
-
+			// Check 403 forbidden from backend
+			if (res.status === 403) {
+				console.warn("Driver not verified. Redirecting...");
+				window.location.href = "/restricted"; // client-side redirect
+				return;
+			}
 			if (!res.ok) {
 				throw new Error("Failed to update ride status");
 			}
