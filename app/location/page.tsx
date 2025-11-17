@@ -91,6 +91,7 @@ interface ActiveRide {
 }
 
 type UserMode = "customer" | "driver";
+type VehicleType = "motorcycle" | "car" | "van";
 
 export default function Home() {
 	const router = useRouter();
@@ -360,6 +361,7 @@ export default function Home() {
 		const socket = socketRef.current;
 		if (!socket) return;
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const handleRequestCreated = (data: any) => {
 			console.log("New ride request created:", data);
 
@@ -623,7 +625,12 @@ export default function Home() {
 		setUserMode(newMode);
 	};
 
-	const [fare, setFare] = useState<number | null>(null);
+	const [fares, setFares] = useState<Record<VehicleType, number | null>>({
+		motorcycle: null,
+		car: null,
+		van: null,
+	});
+
 
 	// Fetch nearby ride requests for drivers (initial load only, updates via Socket.IO)
 	useEffect(() => {
@@ -663,33 +670,53 @@ export default function Home() {
 
 	useEffect(() => {
 		if (srcMarker && destMarker) {
-			setFare(null);
+			// reset while loading
+			setFares({
+				motorcycle: null,
+				car: null,
+				van: null,
+			});
 
-			const fetchFare = async () => {
-				try {
-					const params = new URLSearchParams({
-						pickup_lat: srcMarker[0].toString(),
-						pickup_lng: srcMarker[1].toString(),
-						dropoff_lat: destMarker[0].toString(),
-						dropoff_lng: destMarker[1].toString(),
-					});
+			const fetchFareForType = async (vehicleType: VehicleType) => {
+				const params = new URLSearchParams({
+					pickup_lat: srcMarker[0].toString(),
+					pickup_lng: srcMarker[1].toString(),
+					dropoff_lat: destMarker[0].toString(),
+					dropoff_lng: destMarker[1].toString(),
+					// 👇 must match your backend param name
+					service: vehicleType,
+				});
 
-					const res = await fetch(
-						`${process.env.NEXT_PUBLIC_BACKEND_URL}/requests/fare?${params}`
-					);
-					if (!res.ok) {
-						throw new Error("Failed to fetch fare");
-					}
-					const data = await res.json();
-					setFare(Math.round(data.fare_baht * 1.07));
-				} catch (err) {
-					console.error("Error fetching fare:", err);
+				const res = await fetch(
+					`${process.env.NEXT_PUBLIC_BACKEND_URL}/requests/fare?${params}`
+				);
+				if (!res.ok) {
+					throw new Error("Failed to fetch fare");
 				}
+				const data = await res.json();
+				return Math.round(data.fare_baht * 1.07); // add tax here
 			};
 
-			fetchFare();
+			(async () => {
+				try {
+					const [motorcycle, car, van] = await Promise.all([
+						fetchFareForType("motorcycle"),
+						fetchFareForType("car"),
+						fetchFareForType("van"),
+					]);
+
+					setFares({
+						motorcycle,
+						car,
+						van,
+					});
+				} catch (err) {
+					console.error("Error fetching fares:", err);
+				}
+			})();
 		}
 	}, [srcMarker, destMarker]);
+
 
 	const mapRef = useRef<MapHandle>(null);
 
@@ -811,7 +838,7 @@ export default function Home() {
 		}
 	};
 
-	const handleRequestRide = async () => {
+	const handleRequestRide = async (service: VehicleType = "car") => {
 		if (!srcMarker || !destMarker) {
 			alert("Please select both pickup and destination!");
 			return;
@@ -823,7 +850,7 @@ export default function Home() {
 				{
 					method: "POST",
 					body: JSON.stringify({
-						service: "car",
+						service,
 						note_to_driver: "",
 						pickup_lat: srcMarker[0],
 						pickup_lng: srcMarker[1],
@@ -1013,6 +1040,9 @@ export default function Home() {
 		}
 	};
 
+	const hasAllFares =
+		fares.motorcycle !== null && fares.car !== null && fares.van !== null;
+
 	return (
 		<div>
 			<Map
@@ -1045,9 +1075,13 @@ export default function Home() {
 					customerView === "select" &&
 					srcAddress &&
 					destAddress &&
-					fare && (
-						<ChooseRideCard price={fare} onRequestRide={handleRequestRide} />
+					hasAllFares && (
+						<ChooseRideCard
+							pricesByType={fares as Record<VehicleType, number>}
+							onRequestRide={handleRequestRide}
+						/>
 					)}
+
 				{/* Customer view - Waiting for driver or ride in progress */}
 				{userMode == "customer" &&
 					customerView === "waiting" &&

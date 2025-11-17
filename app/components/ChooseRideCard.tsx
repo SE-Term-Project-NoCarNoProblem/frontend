@@ -4,27 +4,59 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+type VehicleType = "motorcycle" | "car" | "van";
+
 interface ChooseRideCardProps {
 	rideType?: string;
 	capacity?: string;
 	price?: number;
 	currency?: string;
+	pricesByType?: Partial<Record<VehicleType, number>>;
 	onBack?: () => void;
-	onRequestRide?: () => void;
+	onRequestRide?: (type: VehicleType) => void;
 	showBackButton?: boolean;
 }
+
 
 const ChooseRideCard = ({
 	rideType = "Car ride",
 	capacity = "3 people",
 	price = 120,
 	currency = "Baht",
+	pricesByType,
 	onBack,
 	onRequestRide,
 	showBackButton = true,
 }: ChooseRideCardProps) => {
 	const router = useRouter();
-	const [isSelected, setIsSelected] = useState(false);
+	const [selectedType, setSelectedType] = useState<VehicleType>("car");
+
+	const rideOptions: {
+		type: VehicleType;
+		label: string;
+		capacity: string;
+		icon: string;
+	}[] = [
+			{
+				type: "motorcycle",
+				label: "Motorcycle ride",
+				capacity: "1 person",
+				icon: "/motorcycle.svg",
+			},
+			{
+				type: "car",
+				label: rideType,
+				capacity,
+				icon: "/car.svg",
+			},
+			{
+				type: "van",
+				label: "Van ride",
+				capacity: "6 people",
+				icon: "/van.svg",
+			},
+		];
+
 
 	const handleBack = () => {
 		if (onBack) {
@@ -36,14 +68,15 @@ const ChooseRideCard = ({
 
 	const handleRequestRide = () => {
 		if (onRequestRide) {
-			onRequestRide();
+			onRequestRide(selectedType);
 		} else {
 			router.push("/ride-request");
 		}
 	};
 
+
 	return (
-		<div className="w-full mx-auto max-w-[393px] h-[215px] bg-white rounded-t-3xl shadow-lg p-4 flex flex-col">
+		<div className="w-full mx-auto max-w-[393px] bg-white rounded-t-3xl shadow-lg p-4 flex flex-col">
 			{/* Upper Bar */}
 			<div className="flex justify-center mb-2">
 				<Image src="/upper bar.svg" alt="Upper bar" width={148} height={4} />
@@ -76,42 +109,56 @@ const ChooseRideCard = ({
 				</h2>
 			</div>
 
-			{/* Ride Option Box */}
-			<div
-				onClick={() => setIsSelected(!isSelected)}
-				className={`mb-3 border-2 rounded-xl p-3 flex items-center justify-between transition-all cursor-pointer ${
-					isSelected
-						? "border-[#0E4663] bg-[#E8F1F5]"
-						: "border-gray-300 hover:border-[#0E4663]"
-				}`}
-			>
-				{/* Car Icon and Details */}
-				<div className="flex items-center gap-3">
-					<div className="w-12 h-12 flex items-center justify-center">
-						<Image
-							src="/car.svg"
-							alt="Car"
-							width={48}
-							height={48}
-							className="object-contain"
-						/>
-					</div>
-					<div>
-						<h3 className="text-base font-bold text-[#0E4663]">{rideType}</h3>
-						<p className="text-sm text-gray-600">{capacity}</p>
-					</div>
-				</div>
+			{/* Ride Option Boxes */}
+			<div className="space-y-2 mb-3">
+				{rideOptions.map((option) => {
+					const isSelected = selectedType === option.type;
+					const priceToShow =
+						pricesByType?.[option.type] ?? price; // fallback to single price
 
-				{/* Price and Scissors Icon */}
-				<div className="flex items-center gap-2">
-					<div className="text-right">
-						<p className="text-lg font-bold text-[#0E4663]">
-							{price} {currency}
-						</p>
-						<p className="text-xs text-gray-500">after tax</p>
-					</div>
-				</div>
+					return (
+						<button
+							key={option.type}
+							type="button"
+							onClick={() => setSelectedType(option.type)}
+							className={`w-full border-2 rounded-xl p-3 flex items-center justify-between transition-all cursor-pointer ${isSelected
+								? "border-[#0E4663] bg-[#E8F1F5]"
+								: "border-gray-300 hover:border-[#0E4663]"
+								}`}
+						>
+							{/* Icon + details */}
+							<div className="flex items-center gap-3">
+								<div className="w-12 h-12 flex items-center justify-center">
+									<Image
+										src={option.icon}
+										alt={option.label}
+										width={48}
+										height={48}
+										className="object-contain"
+									/>
+								</div>
+								<div>
+									<h3 className="text-base font-bold text-[#0E4663]">
+										{option.label}
+									</h3>
+									<p className="text-sm text-gray-600">{option.capacity}</p>
+								</div>
+							</div>
+
+							{/* Price */}
+							<div className="flex items-center gap-2">
+								<div className="text-right">
+									<p className="text-lg font-bold text-[#0E4663]">
+										{priceToShow} {currency}
+									</p>
+									<p className="text-xs text-gray-500">after tax</p>
+								</div>
+							</div>
+						</button>
+					);
+				})}
 			</div>
+
 
 			{/* Request Button */}
 			<button
