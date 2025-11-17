@@ -39,22 +39,30 @@ export default function PerformanceCards() {
 	const [suspendedCustomer, setSuspendedCustomer] = useState(0);
 	const [suspendedDriver, setSuspendedDriver] = useState(0);
 
+	const fetchStats = async () => {
+		try {
+			const response = await fetchWithAuth(
+				`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/stats/`
+			);
+			if (response.ok) {
+				const result = await response.json();
+				const data = result.data;
+				setBannedCustomer(data.bannedCustomers);
+				setBannedDriver(data.bannedDrivers);
+				setSuspendedCustomer(data.suspendedCustomers);
+				setSuspendedDriver(data.suspendedDrivers);
+			}
+		} catch (error) {
+			console.error("Failed to fetch admin stats:", error);
+		}
+	};
+
 	useEffect(() => {
-		//fetch data
-		//Mock
-		setBannedCustomer(Math.floor(Math.random() * 100));
-		setBannedDriver(Math.floor(Math.random() * 100));
-		setSuspendedCustomer(Math.floor(Math.random() * 100));
-		setSuspendedDriver(Math.floor(Math.random() * 100));
+		fetchStats();
 
 		const interval = setInterval(
 			() => {
-				//fetch data
-				//Mock
-				setBannedCustomer(Math.floor(Math.random() * 100));
-				setBannedDriver(Math.floor(Math.random() * 100));
-				setSuspendedCustomer(Math.floor(Math.random() * 100));
-				setSuspendedDriver(Math.floor(Math.random() * 100));
+				fetchStats();
 			},
 			10 * 60 * 1000
 		);
