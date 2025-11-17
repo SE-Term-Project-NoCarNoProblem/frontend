@@ -15,7 +15,7 @@ export default function AdminLayout({
 			<AdminSidebar />
 
 			{/* Main Content */}
-			<main className="flex-1 p-8">{children}</main>
+			<main className="flex-1">{children}</main>
 		</div>
 	);
 }

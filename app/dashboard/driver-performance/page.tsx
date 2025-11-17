@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import SearchBar from "../components/SearchBar";
-import { fetchWithAuth } from "../lib/api";
+import SearchBar from "../../components/SearchBar";
+import { fetchWithAuth } from "../../lib/api";
 import SuspendBanDashboard, {
 	UserData,
-} from "../components/SuspendBanDashboard";
-import RoleToggle from "../components/RoleToggle";
+} from "../../components/SuspendBanDashboard";
+import RoleToggle from "../../components/RoleToggle";
 
 export default function HomePage() {
 	const [searchQuery, setSearchQuery] = useState("");

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React from "react";
+import { useRouter, usePathname } from "next/navigation";
 
 interface SidebarItemProps {
 	label: string;
@@ -49,39 +49,42 @@ const SidebarLogo: React.FC = () => (
 
 const AdminSidebar: React.FC = () => {
 	const router = useRouter();
-	const [activePage, setActivePage] = useState("driver-approval");
+	const pathname = usePathname();
 
 	const handleClick = (page: string) => {
-		setActivePage(page);
-		router.push(`/${page}`);
+		router.push(`/dashboard/${page}`);
+	};
+
+	const isActive = (page: string) => {
+		return pathname?.includes(`/dashboard/${page}`);
 	};
 
 	return (
-		<div className="h-screen w-64 bg-white shadow-md flex flex-col">
+		<div className="h-screen w-64 bg-white shadow-md flex flex-col border-r border-gray-200">
 			<SidebarLogo />
 			<div className="flex-1 flex flex-col">
 				<SidebarItem
 					label="Driver Approvals"
 					page="driver-approval"
-					isActive={activePage === "driver-approval"}
+					isActive={isActive("driver-approval")}
 					onClick={() => handleClick("driver-approval")}
 				/>
 				<SidebarItem
 					label="Driver Performance"
 					page="driver-performance"
-					isActive={activePage === "driver-performance"}
+					isActive={isActive("driver-performance")}
 					onClick={() => handleClick("driver-performance")}
 				/>
 				<SidebarItem
 					label="Account Management"
 					page="account-management"
-					isActive={activePage === "account-management"}
+					isActive={isActive("account-management")}
 					onClick={() => handleClick("account-management")}
 				/>
 				<SidebarItem
 					label="Support Tickets"
 					page="support-tickets"
-					isActive={activePage === "support-tickets"}
+					isActive={isActive("support-tickets")}
 					onClick={() => handleClick("support-tickets")}
 				/>
 			</div>
