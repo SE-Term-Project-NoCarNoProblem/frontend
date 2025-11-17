@@ -204,12 +204,66 @@ export default function SupportTicketsTable() {
 		resolved: "open",
 	};
 
-	function toggleTicketStatus(id: string) {
-		setTickets((prev) =>
-			prev.map((t) =>
-				t.id === id ? { ...t, status: nextStatus[t.status] } : t
-			)
-		);
+	async function toggleTicketStatus(id: string) {
+		const ticket = tickets.find((t) => t.id === id);
+		if (!ticket) return;
+
+		const newStatus = nextStatus[ticket.status];
+
+		if (newStatus === "resolved") {
+			try {
+				const token = localStorage.getItem("token");
+				const res = await fetch(
+					`${process.env.NEXT_PUBLIC_BACKEND_URL}/tickets/${id}/resolve`,
+					{
+						method: "PATCH",
+						headers: {
+							Authorization: `${token}`,
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+							resolution_notes: "Ticket resolved by support staff",
+						}),
+					}
+				);
+
+				if (!res.ok) {
+					throw new Error(`Failed to resolve ticket: ${res.status}`);
+				}
+
+				const result = await res.json();
+				//console.log("Ticket resolved successfully:", result);
+
+				setTickets((prev) =>
+					prev.map((t) =>
+						t.id === id
+							? {
+									...t,
+									status: "resolved",
+									resolvedAt: result.data?.resolved_at || new Date().toISOString(),
+									resolvedBy: result.data?.support_id || "current_user",
+								}
+							: t
+					)
+				);
+			} catch (error) {
+				console.error("Failed to resolve ticket:", error);
+				alert("Failed to resolve ticket. Please try again.");
+			}
+		} else {
+			setTickets((prev) =>
+				prev.map((t) =>
+					t.id === id
+						? {
+								...t,
+								status: newStatus,
+								resolvedAt: null,
+								resolvedBy: null,
+							}
+						: t
+				)
+			);
+		}
 	}
 
 	return (
