@@ -2,7 +2,7 @@
 import { Avatar } from "@mui/material";
 import { IconButton } from "@mui/material";
 import Image from "next/image";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import Paper from "@mui/material/Paper";
 import InputBase from "@mui/material/InputBase";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -51,7 +51,7 @@ interface RideDetails {
 	};
 }
 
-export default function Chat() {
+function ChatContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const rideId = searchParams.get("rideId");
@@ -367,5 +367,19 @@ export default function Chat() {
 				</Paper>
 			</div>
 		</div>
+	);
+}
+
+export default function Chat() {
+	return (
+		<Suspense
+			fallback={
+				<div className="flex items-center justify-center h-screen">
+					<p>Loading...</p>
+				</div>
+			}
+		>
+			<ChatContent />
+		</Suspense>
 	);
 }
