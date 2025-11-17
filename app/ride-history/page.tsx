@@ -43,8 +43,10 @@ type BackendRideHistoryItem = {
 	rating?: number | null;
 	pickup_lat?: number | null;
 	pickup_lng?: number | null;
+	pickup_address?: string | null;
 	dropoff_lat?: number | null;
 	dropoff_lng?: number | null;
+	dropoff_address?: string | null;
 	driver?: {
 		id: string;
 		name: string | null;
@@ -126,6 +128,10 @@ function mapRideFromApi(ride: BackendRideHistoryItem): RideItem {
 			? Math.min(5, Math.max(1, Math.round(ride.rating)))
 			: null;
 
+	// Use address if available, otherwise fall back to coordinates
+	const pickupDisplay = ride.pickup_address || formatCoords(ride.pickup_lat, ride.pickup_lng);
+	const dropoffDisplay = ride.dropoff_address || formatCoords(ride.dropoff_lat, ride.dropoff_lng);
+
 	return {
 		id: ride.id,
 		vehicleType,
@@ -135,8 +141,8 @@ function mapRideFromApi(ride: BackendRideHistoryItem): RideItem {
 			model: buildVehicleModel(ride.vehicle?.make, ride.vehicle?.model),
 			plate: ride.vehicle?.registration ?? "-",
 		},
-		pickup: formatCoords(ride.pickup_lat, ride.pickup_lng),
-		destination: formatCoords(ride.dropoff_lat, ride.dropoff_lng),
+		pickup: pickupDisplay,
+		destination: dropoffDisplay,
 		priceTHB: Math.round(ride.fare ?? 0),
 		rating: ratingValue,
 		status: ride.ride_status,
