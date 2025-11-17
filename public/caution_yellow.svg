@@ -1,0 +1,23 @@
+<svg width="512" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gold triangle background -->
+  <path
+    d="M24 5L2 43h44L24 5z"
+    fill="#FFD54C"
+    stroke="#FFD54C"
+    stroke-width="4"
+    stroke-linejoin="round"
+  />
+  <!-- White exclamation mark -->
+  <path
+    d="M24 19l.008 10"
+    stroke="#FFFFFF"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+  <path
+    d="M24 35v1"
+    stroke="#FFFFFF"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+</svg>
