@@ -1,8 +1,7 @@
 "use client";
 
-import DriverApprovalCard from "../components/DriverApprovalCard";
+import DriverApprovalCard from "../../components/DriverApprovalCard";
 import { useEffect, useState } from "react";
-import AdminSidebar from "../components/AdminSideBar";
 
 interface Driver {
 	driverId: string;
@@ -85,8 +84,7 @@ export default function DriverApprovals() {
 	};
 
 	return (
-		<div className="py-6 bg-white min-h-screen flex">
-			<AdminSidebar />
+		<div className="p-6 bg-white min-h-screen flex">
 			<div className="flex-1">
 				<div className="text-[20px] text-lg font-semibold flex items-center gap-2 mb-4 text-[#0E4663]">
 					<span>
