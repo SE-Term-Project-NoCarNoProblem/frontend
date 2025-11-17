@@ -1072,7 +1072,11 @@ export default function Home() {
 								estimatedArrival: "5 minutes",
 							}}
 							isAccepted={!!activeRide}
-							onMessageDriver={() => console.log("Message driver")}
+							onMessageDriver={() =>
+								router.push(
+									`/chat?rideId=${activeRide?.id || userRideRequest?.id}`
+								)
+							}
 							onCancel={handleCancelRide}
 							onDriverClick={handleDriverClick}
 							showBackButton={false}
@@ -1108,7 +1112,9 @@ export default function Home() {
 						rideStatus={rideStatus}
 						onStatusUpdate={handleDriverStatusUpdate}
 						onCancel={handleCancelRide}
-						onMessageCustomer={() => console.log("Message customer")}
+						onMessageCustomer={() =>
+							router.push(`/chat?rideId=${activeRide.id}`)
+						}
 						onCustomerClick={handleCustomerClick}
 					/>
 				)}
