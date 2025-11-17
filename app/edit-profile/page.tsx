@@ -20,7 +20,7 @@ interface Profile {
 	profilePic: string;
 }
 function EditProfile() {
-	const isDriver =false;
+	const isDriver = false;
 	const isCustomer = true;
 	const role = isDriver ? "Driver" : "Customer";
 
@@ -122,18 +122,18 @@ function EditProfile() {
 
 		const phoneNormalized = phone.trim();
 		const genderNormalized = gender.trim().toLowerCase();
-		
+
 
 		setName(nameNormalized);
 		setPhone(phoneNormalized);
 		setGender(genderNormalized);
-		
+
 
 		const payload: Record<string, string> = {};
 		if (nameNormalized) payload.fullname = nameNormalized;
 		if (genderNormalized) payload.gender = genderNormalized;
 		if (phoneNormalized) payload.phone_number = phoneNormalized;
-		
+
 
 		if (Object.keys(payload).length > 0) {
 			const result = await fetchWithAuth(
