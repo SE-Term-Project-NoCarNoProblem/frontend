@@ -1,12 +1,12 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 /**
  * Drop this file at: app/tickets/new/page.tsx
  * TailwindCSS required. Mobile-first, desktop-friendly.
  */
-export default function Page() {
+function FileTicketContent() {
 	const router = useRouter();
 	const [topic, setTopic] = useState("");
 	const [details, setDetails] = useState("");
@@ -160,5 +160,19 @@ export default function Page() {
 				</div>
 			</div>
 		</main>
+	);
+}
+
+export default function Page() {
+	return (
+		<Suspense
+			fallback={
+				<div className="flex items-center justify-center min-h-dvh">
+					<p>Loading...</p>
+				</div>
+			}
+		>
+			<FileTicketContent />
+		</Suspense>
 	);
 }
