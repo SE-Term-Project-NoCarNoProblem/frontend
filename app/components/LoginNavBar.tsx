@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 
 type Anchor = "top";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function LoginNavBar(Props: any) {
 	const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 	const open = Boolean(anchorEl);
@@ -50,29 +51,28 @@ function LoginNavBar(Props: any) {
 	};
 	const handlers = [
 		handleProfile,
-		() => {
-			router.push("/landing-page");
-		},
-		() => {
-			router.push("/location");
-		},
+		() => { router.push("/landing-page"); },   // Home
+		() => { router.push("/location"); },       // Transport
+		() => { router.push("/ride-history"); },   // Ride History
+		() => { router.push("/ticket-history"); }, // Ticket History
 	];
+
 	const [state, setState] = React.useState({
 		top: false,
 	});
 	const toggleDrawer =
 		(anchor: Anchor, open: boolean) =>
-		(event: React.KeyboardEvent | React.MouseEvent) => {
-			if (
-				event.type === "keydown" &&
-				((event as React.KeyboardEvent).key === "Tab" ||
-					(event as React.KeyboardEvent).key === "Shift")
-			) {
-				return;
-			}
+			(event: React.KeyboardEvent | React.MouseEvent) => {
+				if (
+					event.type === "keydown" &&
+					((event as React.KeyboardEvent).key === "Tab" ||
+						(event as React.KeyboardEvent).key === "Shift")
+				) {
+					return;
+				}
 
-			setState({ ...state, [anchor]: open });
-		};
+				setState({ ...state, [anchor]: open });
+			};
 	const list = (anchor: Anchor) => (
 		<Box
 			sx={{ width: anchor === "top" || anchor === "bottom" ? "auto" : 250 }}
@@ -81,35 +81,32 @@ function LoginNavBar(Props: any) {
 			onKeyDown={toggleDrawer(anchor, false)}
 		>
 			<List>
-				{["Profile", "Home", "Transport"].map((text, index) => (
-					<ListItem key={text} disablePadding>
-						<ListItemButton onClick={handlers[index]}>
-							<ListItemIcon>
-								{index === 0 ? (
-									<Avatar
-										src={`${Props.profilePic}?ts=${Date.now()}`}
-										sx={{ width: 30, height: 30 }}
-									/>
-								) : index === 1 ? (
-									<Image
-										alt="home icon"
-										src="/icons/home.svg"
-										width={30}
-										height={30}
-									/>
-								) : index === 2 ? (
-									<Image
-										alt="transport icon"
-										src="/icons/car.svg"
-										width={30}
-										height={30}
-									/>
-								) : null}
-							</ListItemIcon>
-							<ListItemText primary={text} />
-						</ListItemButton>
-					</ListItem>
-				))}
+				{["Profile", "Home", "Transport", "Ride History", "Ticket History"].map(
+					(text, index) => (
+
+						<ListItem key={text} disablePadding>
+							<ListItemButton onClick={handlers[index]}>
+								<ListItemIcon>
+									{index === 0 ? (
+										<Avatar
+											src={`${Props.profilePic}?ts=${Date.now()}`}
+											sx={{ width: 30, height: 30 }}
+										/>
+									) : index === 1 ? (
+										<Image alt="home icon" src="/icons/home.svg" width={30} height={30} />
+									) : index === 2 ? (
+										<Image alt="transport icon" src="/icons/car.svg" width={30} height={30} />
+									) : index === 3 ? (
+										<Image alt="ride history icon" src="/icons/ride-history.svg" width={30} height={30} />
+									) : index === 4 ? (
+										<Image alt="ticket history icon" src="/icons/ticket.svg" width={30} height={30} />
+									) : null}
+
+								</ListItemIcon>
+								<ListItemText primary={text} />
+							</ListItemButton>
+						</ListItem>
+					))}
 			</List>
 			<Divider />
 			<List>
@@ -165,6 +162,18 @@ function LoginNavBar(Props: any) {
 							className="text-xl text-slate-800 px-2 py-2 rounded-xl hover:bg-amber-50"
 						>
 							Transport
+						</Link>
+						<Link
+							href="/ride-history"
+							className="text-xl text-slate-800 px-2 py-2 rounded-xl hover:bg-amber-50"
+						>
+							Ride History
+						</Link>
+						<Link
+							href="/ticket-history"
+							className="text-xl text-slate-800 px-2 py-2 rounded-xl hover:bg-amber-50"
+						>
+							Ticket History
 						</Link>
 					</div>
 					<Tooltip title="Account settings">
