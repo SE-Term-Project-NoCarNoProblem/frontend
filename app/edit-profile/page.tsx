@@ -6,6 +6,10 @@ import { useRouter } from "next/navigation";
 import LoginNavBar from "../components/LoginNavBar";
 import EditProfileInput from "../components/EditProfileInput";
 import { fetchWithAuth, fetchWithAuthFile } from "../lib/api";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
+import InputLabel from "@mui/material/InputLabel";
 interface Profile {
 	fullName: string;
 	age: string;
@@ -13,23 +17,31 @@ interface Profile {
 	role: string;
 	// email: string;
 	phoneNumber: string;
-	favouriteLocation: string;
 	profilePic: string;
 }
 function EditProfile() {
+	const isDriver = false;
+	const isCustomer = true;
+	const role = isDriver ? "Driver" : "Customer";
+
 	const router = useRouter();
+	const [vehiclesData, setVehiclesData] = React.useState<any[]>([]);
+	const [selectedVehicleIds, setSelectedVehicleIds] = React.useState<string[]>([]);
+	const [driverId, setDriverId] = useState<string | null>(null);
+
 	const [loading, setLoading] = useState(true);
 	const [profile, setProfile] = useState<Profile | null>(null);
 	const [name, setName] = useState("");
 	const [gender, setGender] = useState("");
-	// const [email, setEmail] = useState("");
 	const [phone, setPhone] = useState("");
-	const [favLoc, setFavLoc] = useState("");
 	const [form, setForm] = useState<{ profilePic: File | null }>({
-		//profilePic task
 		profilePic: null,
 	});
 	const [preview, setPreview] = useState<string | null>(null); //profilePic task
+	const handleVehicleChange = (event: SelectChangeEvent<string>) => {
+		const value = event.target.value;
+		setSelectedVehicleIds(value ? [value] : []);
+	};
 	useEffect(() => {
 		async function fetchProfile() {
 			try {
@@ -37,8 +49,17 @@ function EditProfile() {
 					`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`
 				);
 
-				const apiResponse = await result.json();
 
+				const apiResponse = await result.json();
+				if (isDriver) {
+					const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/drivers/${apiResponse.data.id}/getVehicles`);
+					const result2 = await res.json();
+					setVehiclesData(result2);
+					const activeVehicle = result2.find((vehicle: any) => vehicle.active);
+					if (activeVehicle) {
+						setSelectedVehicleIds([activeVehicle.id]);
+					}
+				}
 				console.log("Data from API:", apiResponse);
 				console.log(apiResponse.data.profile_pic);
 				const data = {
@@ -46,13 +67,12 @@ function EditProfile() {
 					fullName: apiResponse.data.fullname,
 					age: apiResponse.data.age,
 					role: "User",
-					// email: apiResponse.data.email,
 					phoneNumber: apiResponse.data.phone_number,
 					gender: apiResponse.data.gender,
-					favouriteLocation: apiResponse.favourite_pickup_location,
 					profilePic: apiResponse.data.profile_pic || "/globe.svg",
 				};
 				setProfile(data);
+				setDriverId(apiResponse.data.id);
 				console.log(data);
 			} catch (err) {
 				console.error("Error fetching profile:", err);
@@ -100,39 +120,36 @@ function EditProfile() {
 			)
 			.join(" ");
 
+		const phoneNormalized = phone.trim();
+		const genderNormalized = gender.trim().toLowerCase();
+
+
 		setName(nameNormalized);
-		// setEmail(email.trim());
-		setPhone(phone.trim());
-		setGender(gender.trim().toLowerCase());
-		console.log(gender);
-		const data = {
-			fullname: name,
-			// email: email,
-			gender: gender,
-			phone_number: phone,
-			favorite_pickup_location: favLoc,
-		};
+		setPhone(phoneNormalized);
+		setGender(genderNormalized);
 
-		const result = await fetchWithAuth(
-			`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`,
-			{
-				method: "PATCH",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(data),
-			}
-		);
 
-		if (!result.ok) throw new Error(`PATCH /me failed: ${result.status}`);
+		const payload: Record<string, string> = {};
+		if (nameNormalized) payload.fullname = nameNormalized;
+		if (genderNormalized) payload.gender = genderNormalized;
+		if (phoneNormalized) payload.phone_number = phoneNormalized;
+
+
+		if (Object.keys(payload).length > 0) {
+			const result = await fetchWithAuth(
+				`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`,
+				{
+					method: "PATCH",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(payload),
+				}
+			);
+
+			if (!result.ok) throw new Error(`PATCH /me failed: ${result.status}`);
+		}
 		if (form.profilePic != null) {
-			// const fd = new FormData();
-			// fd.append('profilePicture', form.profilePic);
-			// const result2 = await fetch("http://localhost:8000/api/profile/upload", {
-			//     method: 'POST',            // or PATCH
-			//     body: fd,                  // don't set Content-Type yourself
-			//     credentials: 'include',
-			// });
 			if (profile != null) {
 				if (profile.profilePic != "/globe.svg") {
 					const deleteOldProfile = await fetchWithAuth(
@@ -158,16 +175,27 @@ function EditProfile() {
 			} catch (err) {
 				console.log(err);
 			}
-			// if (!result2.ok){
-			//     console.log("failed to upload new profile")
-			//     throw new Error(`POST /profile/upload failed: ${result2.status}`);
-			// }
 		}
+		if (isDriver && driverId && selectedVehicleIds.length > 0) {
+			const vehicleId = selectedVehicleIds[0];
+			const vehicleUpdateResult = await fetchWithAuth(
+				`${process.env.NEXT_PUBLIC_BACKEND_URL}/drivers/${vehicleId}/${driverId}/vehicle`,
+				{
+					method: "PUT",
+				}
+			);
+			if (!vehicleUpdateResult.ok)
+				throw new Error(
+					`PUT /drivers/${vehicleId}/${driverId}/vehicle failed: ${vehicleUpdateResult.status}`
+				);
+		}
+
 		console.log("saved");
+		router.push("/profile");
 	}
 
 	//handleChange of upload new profilePic
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0] ?? null;
 		setForm({ profilePic: file });
 		setPreview(file ? URL.createObjectURL(file) : null);
@@ -259,7 +287,7 @@ function EditProfile() {
 								name="profilePic"
 								className="hidden"
 								accept="image/*"
-								onChange={handleChange}
+								onChange={handleProfilePicChange}
 							/>
 
 							{/* Camera button */}
@@ -286,7 +314,7 @@ function EditProfile() {
 							<br />
 						</div>
 						<div className="flex flex-col items-center text-[#F8F8F8]">
-							{profile.role} {/* รอใส่ตัวแปร */}
+							{role} {/* รอใส่ตัวแปร */}
 						</div>
 					</div>
 				</div>
@@ -355,45 +383,58 @@ function EditProfile() {
 					/>
 				</div>
 
-				{/* <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 justify-center`}>
-                <div className="flex flex-1 ">
-                    <Image
-                        alt="location icon"
-                        src="/icons/location-pin-svgrepo-com.svg"
-                        width={50}
-                        height={50}
-                    />
-                    <p className="flex items-center text-[#0E4663]"> Home : </p>
-                </div>
-                <EditProfileInput name="home" value={home} text="" onChange={setHome} />
-            </div> */}
+				{
+					isDriver ? <div
+						className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}
+					>
+						<div className="flex flex-1 items-center gap-3">
+							<Image
+								alt="car icon"
+								src="/icons/car.svg"
+								width={40}
+								height={40}
+							/>
+							<p className="flex items-center text-[#0E4663]">
+								Vehicle:
+							</p>
+						</div>
+						<div>
+							<div className="flex lg:justify-center">
+								<div className="w-full lg:w-9/12">
+									<FormControl sx={{ mt: 1 }} fullWidth>
+										<InputLabel id="active-vehicle-label">
+											Active vehicle
+										</InputLabel>
+										<Select
+											labelId="active-vehicle-label"
+											id="active-vehicle-select"
+											value={selectedVehicleIds[0] ?? ""}
+											label="Active vehicle"
+											displayEmpty
+											onChange={handleVehicleChange}
+											disabled={vehiclesData.length === 0}
+										>
+											<MenuItem value="">
+												<em>
+													{vehiclesData.length
+														? "Choose active vehicle"
+														: "No vehicles available"}
+												</em>
+											</MenuItem>
+											{vehiclesData.map((vehicle: any) => (
+												<MenuItem key={vehicle.id} value={vehicle.id}>
+													{vehicle.make} {vehicle.model} {vehicle.registration}
+												</MenuItem>
+											))}
+										</Select>
+									</FormControl>
+								</div>
+							</div>
 
-				<div
-					className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}
-				>
-					<div className="flex flex-1 ">
-						<Image
-							alt="heart icon"
-							src="/icons/heart-svgrepo-com.svg"
-							width={50}
-							height={50}
-						/>
-						<p className="flex items-center text-[#0E4663]">
-							{" "}
-							Favourite location :{" "}
-						</p>
-					</div>
-					<EditProfileInput
-						name="favLoc"
-						value={favLoc}
-						text=""
-						onChange={setFavLoc}
-					/>
-				</div>
+						</div>
 
-				{/* <div className={`w-full max-w-5xl bg-[#F8F8F8] rounded-2xl shadow-md p-4 border-r-gray-400 justify-center`}>
-                
-            </div> */}
+					</div> : ""
+				}
 				<button
 					className={`bg-[#0E4663] mt-15 text-[#F5F5F5] min-w-fit max-w-56 w-1/4 p-5 rounded-xl  hover:bg-[#0E4663]/90 hover:cursor-pointer`}
 					onClick={onSave}
