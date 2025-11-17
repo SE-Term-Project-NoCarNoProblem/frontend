@@ -60,7 +60,7 @@ const AdminSidebar: React.FC = () => {
 	};
 
 	return (
-		<div className="h-screen w-64 bg-white shadow-md flex flex-col">
+		<div className="h-screen w-64 bg-white shadow-md flex flex-col border-r border-gray-200">
 			<SidebarLogo />
 			<div className="flex-1 flex flex-col">
 				<SidebarItem
