@@ -137,12 +137,12 @@ const ChooseRideCard = ({
 										className="object-contain"
 									/>
 								</div>
-								<div>
-									<h3 className="text-sm font-bold text-[#0E4663]">
-										{option.label}
-									</h3>
-									<p className="text-sm text-gray-600">{option.capacity}</p>
+								<div className="ml-2 leading-tight text-left">
+									<h3 className="text-sm font-bold text-[#0E4663]">{option.label}</h3>
+									<p className="text-xs text-gray-600">{option.capacity}</p>
 								</div>
+
+
 							</div>
 
 							{/* Price */}
