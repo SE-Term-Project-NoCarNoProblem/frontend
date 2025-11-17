@@ -75,12 +75,12 @@ const AdminSidebar: React.FC = () => {
 					isActive={isActive("driver-performance")}
 					onClick={() => handleClick("driver-performance")}
 				/>
-				<SidebarItem
+				{/* <SidebarItem
 					label="Account Management"
 					page="account-management"
 					isActive={isActive("account-management")}
 					onClick={() => handleClick("account-management")}
-				/>
+				/> */}
 				<SidebarItem
 					label="Support Tickets"
 					page="support-tickets"
