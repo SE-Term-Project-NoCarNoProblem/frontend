@@ -33,9 +33,9 @@ export default function DriverApprovals() {
 		// Transform shape if needed
 		const mapped = data.map((d: any) => ({
 			driverId: d.id,
-			driverProfile: `/driver/${d.id}`, // TODO adjust front route
-			idPic: d.user?.id_pic,
-			licensePic: d.license_pic,
+			driverProfile: `/driver-profile-customer-view/${d.id}`,
+			idPic: d.driver?.user?.id_pic || "",
+			licensePic: d.driver?.license_pic || "",
 		}));
 
 		setDrivers(mapped);
