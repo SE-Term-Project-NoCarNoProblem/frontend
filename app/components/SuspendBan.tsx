@@ -24,7 +24,7 @@ export default function SuspendBan(Props: SuspendBanProps) {
 		//some fetch endpoint using userId
 	};
 	const handleAnalytic = () => {
-		router.push(`/performance/${Props.userId}`);
+		router.push(`/dashboard/driver-performance/${Props.userId}`);
 	};
 
 	return (
