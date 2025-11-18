@@ -130,6 +130,12 @@ function EditProfile() {
 		const phoneNormalized = phone.trim();
 		const genderNormalized = gender.trim().toLowerCase();
 
+		// Validate phone number if provided
+		if (phoneNormalized && !/^[0-9+\- ]+$/.test(phoneNormalized)) {
+			alert("Invalid phone number format. Only digits and '+' are allowed.");
+			return;
+		}
+
 		setName(nameNormalized);
 		setPhone(phoneNormalized);
 		setGender(genderNormalized);
@@ -195,7 +201,7 @@ function EditProfile() {
 		}
 
 		console.log("saved");
-		router.push("/profile");
+		// router.push("/profile");
 	}
 
 	//handleChange of upload new profilePic
