@@ -20,17 +20,18 @@ interface Profile {
 	profilePic: string;
 }
 function EditProfile() {
-	const isDriver = false;
-	const isCustomer = true;
-	const role = isDriver ? "Driver" : "Customer";
-
 	const router = useRouter();
 	const [vehiclesData, setVehiclesData] = React.useState<any[]>([]);
-	const [selectedVehicleIds, setSelectedVehicleIds] = React.useState<string[]>([]);
+	const [selectedVehicleIds, setSelectedVehicleIds] = React.useState<string[]>(
+		[]
+	);
 	const [driverId, setDriverId] = useState<string | null>(null);
 
 	const [loading, setLoading] = useState(true);
 	const [profile, setProfile] = useState<Profile | null>(null);
+	const [isDriver, setIsDriver] = useState(false);
+	const [isCustomer, setIsCustomer] = useState(false);
+	const role = isDriver ? "Driver" : "Customer";
 	const [name, setName] = useState("");
 	const [gender, setGender] = useState("");
 	const [phone, setPhone] = useState("");
@@ -49,10 +50,16 @@ function EditProfile() {
 					`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`
 				);
 
-
 				const apiResponse = await result.json();
-				if (isDriver) {
-					const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/drivers/${apiResponse.data.id}/getVehicles`);
+
+				// Set role booleans from backend response
+				setIsDriver(apiResponse.data.isDriver || false);
+				setIsCustomer(apiResponse.data.isCustomer || false);
+
+				if (apiResponse.data.isDriver) {
+					const res = await fetch(
+						`${process.env.NEXT_PUBLIC_BACKEND_URL}/drivers/${apiResponse.data.id}/getVehicles`
+					);
 					const result2 = await res.json();
 					setVehiclesData(result2);
 					const activeVehicle = result2.find((vehicle: any) => vehicle.active);
@@ -123,17 +130,14 @@ function EditProfile() {
 		const phoneNormalized = phone.trim();
 		const genderNormalized = gender.trim().toLowerCase();
 
-
 		setName(nameNormalized);
 		setPhone(phoneNormalized);
 		setGender(genderNormalized);
-
 
 		const payload: Record<string, string> = {};
 		if (nameNormalized) payload.fullname = nameNormalized;
 		if (genderNormalized) payload.gender = genderNormalized;
 		if (phoneNormalized) payload.phone_number = phoneNormalized;
-
 
 		if (Object.keys(payload).length > 0) {
 			const result = await fetchWithAuth(
@@ -205,9 +209,12 @@ function EditProfile() {
 		if (!confirm("Are you sure you want to delete your account?")) return;
 
 		try {
-			const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`, {
-				method: "DELETE",
-			});
+			const res = await fetchWithAuth(
+				`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`,
+				{
+					method: "DELETE",
+				}
+			);
 
 			if (!res.ok) throw new Error("Failed to delete account");
 
@@ -383,8 +390,8 @@ function EditProfile() {
 					/>
 				</div>
 
-				{
-					isDriver ? <div
+				{isDriver ? (
+					<div
 						className={`w-full max-w-5xl bg-[#FFFFFF] rounded-2xl shadow-md p-4  border-r-gray-400 justify-center`}
 					>
 						<div className="flex flex-1 items-center gap-3">
@@ -394,9 +401,7 @@ function EditProfile() {
 								width={40}
 								height={40}
 							/>
-							<p className="flex items-center text-[#0E4663]">
-								Vehicle:
-							</p>
+							<p className="flex items-center text-[#0E4663]">Vehicle:</p>
 						</div>
 						<div>
 							<div className="flex lg:justify-center">
@@ -430,11 +435,11 @@ function EditProfile() {
 									</FormControl>
 								</div>
 							</div>
-
 						</div>
-
-					</div> : ""
-				}
+					</div>
+				) : (
+					""
+				)}
 				<button
 					className={`bg-[#0E4663] mt-15 text-[#F5F5F5] min-w-fit max-w-56 w-1/4 p-5 rounded-xl  hover:bg-[#0E4663]/90 hover:cursor-pointer`}
 					onClick={onSave}
@@ -458,7 +463,10 @@ function EditProfile() {
 					onClick={handleDelete}
 				>
 					<div className="flex p-5 bg-[#A74242] rounded-xl font-medium hover:bg-[#A74242]/90">
-						<p className="flex items-center text-white mx-auto"> Delete Account </p>
+						<p className="flex items-center text-white mx-auto">
+							{" "}
+							Delete Account{" "}
+						</p>
 					</div>
 				</button>
 			</div>
